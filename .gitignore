@@ -1,0 +1,29 @@
+# ── Données scraping (non nécessaires pour le web) ─────────────────────────
+*.csv
+*.log
+*.zip
+*.py
+*.json
+!package.json
+
+# ── Fichiers de travail / backups ──────────────────────────────────────────
+*.backup.*
+NinjaScores Prototype.backup.html
+NinjaScores APP.zip
+INTEGRATION POLYMARKET/
+screenshots/
+uploads/
+
+# ── Fichiers système ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Fichiers de données lourds non utilisés par le web ────────────────────
+historical_standings_master.csv
+standings_data.js
+standings_data_v2.js
+
+# ── Dev ────────────────────────────────────────────────────────────────────
+node_modules/
+.env
+.env.local
