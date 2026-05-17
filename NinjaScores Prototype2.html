@@ -1279,13 +1279,13 @@
   var STATUS_COLORS = { live: '#EF4444', upcoming: '#F59E0B', ended: '#9CA3AF' };
   var STATUS_LABELS = { live: '● Live', upcoming: 'À venir', ended: 'Terminé' };
 
-  // ── Tennis live backend (Vercel serverless functions) ────────────────────
-  var TENNIS_API = '';  // même domaine → /api/tennis-*
+  // ── Tennis live backend ───────────────────────────────────────────────────
+  var TENNIS_API = 'http://localhost:3000';
 
   function fetchTennisComps() {
     return Promise.all([
-      fetch('/api/tennis-livescore').then(function(r) { return r.json(); }),
-      fetch('/api/tennis-fixtures').then(function(r) { return r.json(); })
+      fetch(TENNIS_API + '/api/livescore').then(function(r) { return r.json(); }),
+      fetch(TENNIS_API + '/api/fixtures').then(function(r) { return r.json(); })
     ]).then(function(res) {
       var live = Array.isArray(res[0]) ? res[0] : [];
       var fixtures = Array.isArray(res[1]) ? res[1] : [];
@@ -1877,7 +1877,7 @@ window.FavMatchesStore = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=119"></script>
+<script src="app.compiled.js?v=118"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
@@ -1965,7 +1965,7 @@ window.FavMatchesStore = (function() {
 <!-- ── Tennis live backend patch ─────────────────────────────────────────── -->
 <script>
 (function() {
-  var TENNIS_API = '';  // Vercel serverless — même domaine
+  var TENNIS_API = 'http://localhost:3000';
 
   // SportsWS score store: slug → wsScore object used by MatchDetailScreen
   var _scoreStore = {};
@@ -2125,9 +2125,9 @@ window.FavMatchesStore = (function() {
     var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
     var tomorrowStr = tomorrow.toISOString().slice(0, 10);
     return Promise.all([
-      fetch('/api/tennis-livescore').then(function(r) { return r.json(); }),
-      fetch('/api/tennis-fixtures').then(function(r) { return r.json(); }),
-      fetch('/api/tennis-fixtures?date=' + tomorrowStr).then(function(r) { return r.json(); }).catch(function() { return []; })
+      fetch(TENNIS_API + '/api/livescore').then(function(r) { return r.json(); }),
+      fetch(TENNIS_API + '/api/fixtures').then(function(r) { return r.json(); }),
+      fetch(TENNIS_API + '/api/fixtures?date=' + tomorrowStr).then(function(r) { return r.json(); }).catch(function() { return []; })
     ]).then(function(res) {
       var live        = Array.isArray(res[0]) ? res[0] : [];
       var fixtures    = Array.isArray(res[1]) ? res[1] : [];
