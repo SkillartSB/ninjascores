@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NinjaScores — Prototype</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <!-- ── Fonts locales (no CDN) ────────────────────────────────────────── -->
 <style>
 @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU7NSg.ttf) format('truetype')}
@@ -19,6 +20,306 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; background: #E8E8F0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
   #root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+  /* ══ NAV BAR ══ */
+  #ninja-nav {
+    width: 100%; height: 54px; flex-shrink: 0;
+    background: linear-gradient(90deg, #0d0225 0%, #1a0840 50%, #0d0225 100%);
+    border-bottom: 1px solid rgba(97,51,224,0.3);
+    display: flex; align-items: center; padding: 0 24px; gap: 0; z-index: 1000;
+    position: relative;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-right: auto; }
+  .nav-logo img { width: 26px; height: 26px; }
+  .nav-logo span { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+  .nav-logo span em { color: #6133E0; font-style: normal; }
+
+  .nav-center { display: flex; align-items: center; gap: 4px; position: absolute; left: 50%; transform: translateX(-50%); }
+  .nav-dd { position: relative; }
+  .nav-dd-btn {
+    background: none; border: none; cursor: pointer; padding: 6px 16px;
+    font-family: inherit; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85);
+    border-radius: 8px; display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-dd-btn:hover, .nav-dd-btn.open { background: rgba(97,51,224,0.2); color: #fff; }
+  .nav-dd-btn svg { transition: transform 0.2s; }
+  .nav-dd-btn.open svg { transform: rotate(180deg); }
+
+  .nav-dropdown {
+    position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+    background: #12052a; border: 1px solid rgba(97,51,224,0.4);
+    border-radius: 16px; padding: 8px; width: 300px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(97,51,224,0.1);
+    display: none; flex-direction: column; gap: 2px;
+    animation: navFadeIn 0.18s ease;
+  }
+  .nav-dropdown.show { display: flex; }
+  @keyframes navFadeIn { from { opacity:0; transform: translateX(-50%) translateY(-6px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  .nav-dd-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: 10px; cursor: pointer; text-decoration: none;
+    transition: background 0.12s;
+  }
+  .nav-dd-item:hover { background: rgba(97,51,224,0.15); }
+  .nav-dd-item.premium { border: 1px solid rgba(97,51,224,0.4); background: rgba(97,51,224,0.08); margin-top: 4px; }
+  .nav-dd-item.premium:hover { background: rgba(97,51,224,0.2); }
+  .nav-dd-item.myprono { border: 1px solid rgba(255,255,255,0.08); margin-top: 2px; }
+  .nav-dd-item.myprono:hover { background: rgba(255,255,255,0.05); }
+  .nav-dd-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .nav-dd-text { display: flex; flex-direction: column; gap: 1px; }
+  .nav-dd-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .nav-dd-sub { font-size: 11px; color: rgba(255,255,255,0.45); }
+  .nav-dd-badge {
+    margin-left: auto; background: #6133E0; color: #fff;
+    font-size: 9px; font-weight: 800; padding: 2px 7px;
+    border-radius: 20px; letter-spacing: 0.4px; flex-shrink: 0;
+  }
+  .nav-dd-sep { height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+
+  .nav-cta {
+    background: linear-gradient(135deg, #6133E0, #9B59B6);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 7px 16px; font-family: inherit; font-size: 12px; font-weight: 800;
+    cursor: pointer; letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px;
+    transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* ══ PRICING MODAL ══ */
+  .ns-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+    z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .ns-modal-overlay.show { display: flex; }
+  .ns-modal {
+    background: #12052a; border: 1px solid rgba(97,51,224,0.4);
+    border-radius: 24px; padding: 32px; max-width: 680px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+    animation: navFadeIn 0.2s ease;
+  }
+  .ns-modal-header { text-align: center; margin-bottom: 28px; }
+  .ns-modal-header h2 { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .ns-modal-header p { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .ns-modal-close {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    color: rgba(255,255,255,0.5); font-size: 22px; cursor: pointer; padding: 4px;
+  }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pricing-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
+    position: relative; transition: border-color 0.2s;
+  }
+  .pricing-card.popular {
+    border-color: #6133E0; background: rgba(97,51,224,0.1);
+    transform: scale(1.02);
+  }
+  .pricing-popular-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #6133E0, #9B59B6); color: #fff;
+    font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px;
+    letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .pricing-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+  .pricing-price { display: flex; align-items: baseline; gap: 4px; }
+  .pricing-price .amount { font-size: 32px; font-weight: 900; color: #fff; }
+  .pricing-price .period { font-size: 12px; color: rgba(255,255,255,0.4); }
+  .pricing-price .annual-note { font-size: 10px; color: #6133E0; font-weight: 600; }
+  .pricing-features { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .pricing-feature { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.7); }
+  .pricing-feature .check { color: #6133E0; font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+  .pricing-feature .cross { color: rgba(255,255,255,0.2); font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+  .pricing-btn {
+    width: 100%; padding: 11px; border-radius: 10px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 700; transition: opacity 0.15s;
+  }
+  .pricing-btn.free { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+  .pricing-btn.paid { background: linear-gradient(135deg, #6133E0, #9B59B6); color: #fff; }
+  .pricing-btn.paid:hover { opacity: 0.9; }
+
+  /* ══ MES PRONOSTICS PANEL ══ */
+  .prono-panel {
+    position: fixed; right: -380px; top: 54px; width: 360px;
+    height: calc(100vh - 54px); background: #12052a;
+    border-left: 1px solid rgba(97,51,224,0.3);
+    z-index: 1500; transition: right 0.3s cubic-bezier(0.32,0.72,0,1);
+    display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  }
+  .prono-panel.open { right: 0; }
+  .prono-panel-header {
+    padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .prono-panel-header h3 { font-size: 16px; font-weight: 800; color: #fff; }
+  .prono-panel-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; }
+  .prono-slip { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .prono-slip-item {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .prono-slip-item .sport-icon { font-size: 18px; flex-shrink: 0; }
+  .prono-slip-item .info { flex: 1; min-width: 0; }
+  .prono-slip-item .match-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+  .prono-slip-item .pick { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prono-slip-item .cote { font-size: 14px; font-weight: 900; color: #6133E0; flex-shrink: 0; }
+  .prono-slip-item .remove-btn { background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; font-size: 16px; padding: 0; flex-shrink: 0; }
+  .prono-slip-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: rgba(255,255,255,0.3); text-align: center; }
+  .prono-slip-empty .empty-icon { font-size: 40px; }
+  .prono-slip-empty p { font-size: 13px; }
+  .prono-panel-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+  .prono-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .prono-total .label { font-size: 12px; color: rgba(255,255,255,0.5); }
+  .prono-total .value { font-size: 20px; font-weight: 900; color: #6133E0; }
+  .prono-total .type { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; text-align: right; }
+  .prono-bet-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 800; letter-spacing: 0.3px;
+    background: linear-gradient(135deg, #6133E0, #9B59B6); color: #fff;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s;
+  }
+  .prono-bet-btn:hover { opacity: 0.9; }
+  .prono-bet-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .prono-disclaimer { font-size: 9px; color: rgba(255,255,255,0.25); text-align: center; margin-top: 10px; line-height: 1.4; }
+
+  /* ══ BOOKMAKERS PANEL ══ */
+  .bk-overlay {
+    position: fixed; inset: 0; z-index: 3100;
+    display: none; align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0); transition: background 0.25s;
+  }
+  .bk-overlay.show { display: flex; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+  .bk-panel {
+    width: 100%; max-width: 430px; max-height: 88vh;
+    background: #0d0520; border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(97,51,224,0.3); border-bottom: none;
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    display: flex; flex-direction: column;
+  }
+  .bk-overlay.show .bk-panel { transform: translateY(0); }
+  .bk-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+  .bk-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+  }
+  .bk-header-title { font-size: 16px; font-weight: 800; color: #fff; }
+  .bk-header-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bk-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .bk-list { overflow-y: auto; padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .bk-card { background: #141726; border-radius: 16px; border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+  .bk-card-badge { display: flex; justify-content: flex-end; padding: 8px 12px 0; }
+  .bk-verified { font-size: 10px; font-weight: 700; color: #a78bfa; background: rgba(97,51,224,0.2); border: 1px solid rgba(97,51,224,0.35); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
+  .bk-card-top { display: flex; align-items: flex-start; gap: 12px; padding: 8px 14px 12px; }
+  .bk-logo { width: 60px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; flex-shrink: 0; letter-spacing: -0.5px; }
+  .bk-logo-rating { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+  .bk-rating { font-size: 11px; font-weight: 800; color: #fff; background: rgba(97,51,224,0.3); border: 1px solid rgba(97,51,224,0.5); border-radius: 8px; padding: 3px 10px; }
+  .bk-offer { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.4; flex: 1; }
+  .bk-benefits { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .bk-benefit { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+  .bk-check { color: #6133E0; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .bk-cta-wrap { padding: 12px 14px 14px; }
+  .bk-cta { display: block; width: 100%; background: #6133E0; border: none; border-radius: 12px; padding: 13px; color: #fff; font-weight: 800; font-size: 14px; letter-spacing: 0.3px; cursor: pointer; font-family: inherit; text-align: center; transition: background 0.15s; }
+  .bk-cta:hover { background: #7445f5; }
+  .bk-disclaimer { font-size: 9px; color: rgba(255,255,255,0.25); padding: 0 14px 12px; line-height: 1.4; }
+
+  /* ══ MONEY / CREATOR PANEL ══ */
+  .mn-overlay {
+    position: fixed; inset: 0; z-index: 3200;
+    display: none; align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0); transition: background 0.25s;
+  }
+  .mn-overlay.show { display: flex; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); }
+  .mn-panel {
+    width: 100%; max-width: 430px; max-height: 90vh;
+    background: #0d0520; border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(97,51,224,0.3); border-bottom: none;
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .mn-overlay.show .mn-panel { transform: translateY(0); }
+  .mn-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+  .mn-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+  .mn-title { font-size: 16px; font-weight: 800; color: #fff; }
+  .mn-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .mn-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .mn-body { overflow-y: auto; flex: 1; padding: 16px 14px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .mn-section-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .mn-steps { display: flex; flex-direction: column; gap: 0; }
+  .mn-step { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 18px; position: relative; }
+  .mn-step:not(:last-child)::after { content:''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: rgba(97,51,224,0.3); }
+  .mn-step-num { width: 34px; height: 34px; border-radius: 50%; background: #6133E0; color: #fff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mn-step-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .mn-step-sub { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+  .mn-calc-box { background: #141726; border-radius: 16px; border: 1px solid rgba(97,51,224,0.2); padding: 16px; }
+  .mn-calc-views { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 2px; }
+  .mn-calc-views-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+  .mn-slider { width: 100%; -webkit-appearance: none; height: 4px; background: rgba(97,51,224,0.25); border-radius: 2px; outline: none; margin-bottom: 8px; cursor: pointer; }
+  .mn-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #6133E0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+  .mn-slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 14px; }
+  .mn-calc-divider { height: 1px; background: rgba(255,255,255,0.07); margin-bottom: 14px; }
+  .mn-calc-results { display: flex; }
+  .mn-calc-result { flex: 1; text-align: center; }
+  .mn-calc-result:first-child { border-right: 1px solid rgba(255,255,255,0.07); }
+  .mn-calc-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+  .mn-calc-val { font-size: 22px; font-weight: 900; color: #22c55e; }
+  .mn-faq { display: flex; flex-direction: column; }
+  .mn-faq-item { border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .mn-faq-q { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; font-size: 13px; color: rgba(255,255,255,0.8); cursor: pointer; gap: 10px; }
+  .mn-faq-icon { color: rgba(97,51,224,0.8); font-size: 20px; font-weight: 300; flex-shrink: 0; transition: transform 0.2s; line-height: 1; }
+  .mn-faq-a { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6; padding-bottom: 12px; display: none; }
+  .mn-faq-a.open { display: block; }
+  .mn-cta-wrap { padding: 12px 14px 16px; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.07); }
+  .mn-cta { display: block; width: 100%; background: linear-gradient(135deg, #6133E0, #8b5cf6); border: none; border-radius: 14px; padding: 15px; color: #fff; font-weight: 800; font-size: 15px; letter-spacing: 0.3px; cursor: pointer; font-family: inherit; text-align: center; transition: opacity 0.15s; }
+  .mn-cta:hover { opacity: 0.9; }
+
+  /* ══ PRONOSTICS BOTTOM SHEET ══ */
+  .prono-sheet-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0); z-index: 3000;
+    display: none; align-items: flex-end; justify-content: center;
+    transition: background 0.25s;
+  }
+  .prono-sheet-overlay.show { display: flex; background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); }
+  .prono-sheet {
+    background: #12052a; border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(97,51,224,0.35); border-bottom: none;
+    width: 100%; max-width: 430px;
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  .prono-sheet-overlay.show .prono-sheet { transform: translateY(0); }
+  .prono-sheet-handle {
+    width: 36px; height: 4px; background: rgba(255,255,255,0.15);
+    border-radius: 2px; margin: 12px auto 4px;
+  }
+  .prono-sheet-title {
+    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4);
+    text-align: center; letter-spacing: 1px; text-transform: uppercase;
+    padding: 8px 0 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin: 0 16px;
+  }
+  .prono-sheet-items { padding: 8px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+  .prono-sheet-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 12px; border-radius: 12px; cursor: pointer;
+    transition: background 0.12s; border: none; background: none;
+    width: 100%; text-align: left; font-family: inherit;
+  }
+  .prono-sheet-item:hover, .prono-sheet-item:active { background: rgba(97,51,224,0.12); }
+  .prono-sheet-item.premium { background: rgba(97,51,224,0.08); border: 1px solid rgba(97,51,224,0.3); margin-top: 4px; }
+  .prono-sheet-item.premium:hover { background: rgba(97,51,224,0.18); }
+  .prono-sheet-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .prono-sheet-text { flex: 1; min-width: 0; }
+  .prono-sheet-label { font-size: 14px; font-weight: 700; color: #fff; display: block; margin-bottom: 2px; }
+  .prono-sheet-desc { font-size: 11px; color: rgba(255,255,255,0.4); display: block; }
+  .prono-sheet-arrow { color: rgba(255,255,255,0.2); font-size: 16px; flex-shrink: 0; }
+  .prono-sheet-sep { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 12px; }
 
   @keyframes shimmer {
     0% { background-position: -400px 0; }
@@ -54,6 +355,386 @@
 </style>
 </head>
 <body>
+
+<!-- ══ PRONOSTICS BOTTOM SHEET ══ -->
+<div class="prono-sheet-overlay" id="prono-sheet-overlay" onclick="handleSheetOverlayClick(event)">
+  <div class="prono-sheet" id="prono-sheet">
+    <div class="prono-sheet-handle"></div>
+    <div class="prono-sheet-title">Pronostics</div>
+    <div class="prono-sheet-items">
+
+      <button class="prono-sheet-item" onclick="closePronoSheet()">
+        <div class="prono-sheet-icon" style="background:rgba(251,146,60,0.15)">🔥</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label">Top du jour</span>
+          <span class="prono-sheet-desc">Le meilleur pari sélectionné par IA</span>
+        </div>
+        <span class="prono-sheet-arrow">›</span>
+      </button>
+
+      <button class="prono-sheet-item" onclick="closePronoSheet()">
+        <div class="prono-sheet-icon" style="background:rgba(234,179,8,0.15)">⚡</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label">Value Bets</span>
+          <span class="prono-sheet-desc">Cotes sous-évaluées par les bookmakers</span>
+        </div>
+        <span class="prono-sheet-arrow">›</span>
+      </button>
+
+      <button class="prono-sheet-item" onclick="closePronoSheet()">
+        <div class="prono-sheet-icon" style="background:rgba(97,51,224,0.2)">🎯</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label">Combinés du jour</span>
+          <span class="prono-sheet-desc">Sélections optimisées prêtes à jouer</span>
+        </div>
+        <span class="prono-sheet-arrow">›</span>
+      </button>
+
+      <button class="prono-sheet-item" onclick="closePronoSheet()">
+        <div class="prono-sheet-icon" style="background:rgba(34,197,94,0.12)">🏆</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label">Prono par sport</span>
+          <span class="prono-sheet-desc">Football · Tennis · Basket · Rugby</span>
+        </div>
+        <span class="prono-sheet-arrow">›</span>
+      </button>
+
+      <div class="prono-sheet-sep"></div>
+
+      <button class="prono-sheet-item premium" onclick="closePronoSheet();openPricing();">
+        <div class="prono-sheet-icon" style="background:rgba(97,51,224,0.25)">👑</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label" style="color:#a78bfa">NinjaPro Premium</span>
+          <span class="prono-sheet-desc">Débloque toutes les analyses IA · dès 7,99€</span>
+        </div>
+        <span class="prono-sheet-arrow" style="color:#6133E0">›</span>
+      </button>
+
+      <button class="prono-sheet-item" onclick="closePronoSheet();openPronoPanel();" style="margin-top:2px">
+        <div class="prono-sheet-icon" style="background:rgba(255,255,255,0.06)">🔖</div>
+        <div class="prono-sheet-text">
+          <span class="prono-sheet-label">Mes pronostics</span>
+          <span class="prono-sheet-desc">Tes sélections &amp; ton combiné</span>
+        </div>
+        <span id="sheet-prono-badge" style="display:none;background:#6133E0;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-right:6px"></span>
+        <span class="prono-sheet-arrow">›</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOOKMAKERS PANEL ══ -->
+<div class="bk-overlay" id="bk-overlay" onclick="if(event.target===this)closeBk()">
+  <div class="bk-panel">
+    <div class="bk-handle"></div>
+    <div class="bk-header">
+      <div>
+        <div class="bk-header-title">🎁 Bonus &amp; Bookmakers</div>
+        <div class="bk-header-sub">Offres vérifiées · Liens affiliés</div>
+      </div>
+      <button class="bk-close" onclick="closeBk()">×</button>
+    </div>
+    <div class="bk-list">
+
+      <!-- Winamax -->
+      <div class="bk-card">
+        <div class="bk-card-badge"><span class="bk-verified">✓ OPÉRATEUR VÉRIFIÉ</span></div>
+        <div class="bk-card-top">
+          <div class="bk-logo-rating">
+            <div class="bk-logo" style="background:#e63000;color:#fff">WINA<br>MAX</div>
+            <div class="bk-rating">⭐ 97%</div>
+          </div>
+          <div class="bk-offer">10€ sans dépôt avec le code FLASH + jusqu'à 100€ en CASH</div>
+        </div>
+        <div class="bk-benefits">
+          <div class="bk-benefit"><span class="bk-check">✓</span>Bonus de bienvenue en cash.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Cotes très compétitives.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Cashout et paris en direct efficaces.</div>
+        </div>
+        <div class="bk-cta-wrap">
+          <button class="bk-cta" onclick="window.open('https://winamax.fr','_blank')">OBTENIR LE BONUS →</button>
+        </div>
+        <div class="bk-disclaimer">*si pari perdant</div>
+      </div>
+
+      <!-- Unibet -->
+      <div class="bk-card">
+        <div class="bk-card-badge"><span class="bk-verified">✓ OPÉRATEUR VÉRIFIÉ</span></div>
+        <div class="bk-card-top">
+          <div class="bk-logo-rating">
+            <div class="bk-logo" style="background:#00a651;color:#fff;font-size:10px">UNI<br>BET</div>
+            <div class="bk-rating">⭐ 95%</div>
+          </div>
+          <div class="bk-offer">15€ sans dépôt avec code FLASH15 + jusqu'à 85€ de bonus</div>
+        </div>
+        <div class="bk-benefits">
+          <div class="bk-benefit"><span class="bk-check">✓</span>Plus de 20 disciplines disponibles.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Bonus de bienvenue jusqu'à 100€.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Streaming, Cash Out et paris live.</div>
+        </div>
+        <div class="bk-cta-wrap">
+          <button class="bk-cta" onclick="window.open('https://unibet.fr','_blank')">OBTENIR LE BONUS →</button>
+        </div>
+        <div class="bk-disclaimer">*Si votre 1er pari est perdant &amp; votre compte validé</div>
+      </div>
+
+      <!-- Betclic -->
+      <div class="bk-card">
+        <div class="bk-card-badge"><span class="bk-verified">✓ OPÉRATEUR VÉRIFIÉ</span></div>
+        <div class="bk-card-top">
+          <div class="bk-logo-rating">
+            <div class="bk-logo" style="background:#1a1a2e;color:#6133E0;border:1px solid #6133E0;font-size:10px">BET<br>CLIC</div>
+            <div class="bk-rating">⭐ 93%</div>
+          </div>
+          <div class="bk-offer">100€ offerts en freebets sur votre 1er dépôt</div>
+        </div>
+        <div class="bk-benefits">
+          <div class="bk-benefit"><span class="bk-check">✓</span>Interface simple et intuitive.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Cotes boostées chaque semaine.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Paiement rapide par virement.</div>
+        </div>
+        <div class="bk-cta-wrap">
+          <button class="bk-cta" onclick="window.open('https://betclic.fr','_blank')">OBTENIR LE BONUS →</button>
+        </div>
+        <div class="bk-disclaimer">*Sous conditions de mise</div>
+      </div>
+
+      <!-- PMU -->
+      <div class="bk-card">
+        <div class="bk-card-badge"><span class="bk-verified">✓ OPÉRATEUR VÉRIFIÉ</span></div>
+        <div class="bk-card-top">
+          <div class="bk-logo-rating">
+            <div class="bk-logo" style="background:#003087;color:#fff;font-size:13px">PMU</div>
+            <div class="bk-rating">⭐ 90%</div>
+          </div>
+          <div class="bk-offer">100€ remboursés sur votre 1er pari sportif perdant</div>
+        </div>
+        <div class="bk-benefits">
+          <div class="bk-benefit"><span class="bk-check">✓</span>Opérateur historique agréé ANJ.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Large couverture des courses hippiques.</div>
+          <div class="bk-benefit"><span class="bk-check">✓</span>Application mobile bien notée.</div>
+        </div>
+        <div class="bk-cta-wrap">
+          <button class="bk-cta" onclick="window.open('https://pmu.fr','_blank')">OBTENIR LE BONUS →</button>
+        </div>
+        <div class="bk-disclaimer">*1er pari remboursé en freebet si perdant</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ MONEY / CREATOR PANEL ══ -->
+<div class="mn-overlay" id="mn-overlay" onclick="if(event.target===this)closeMoney()">
+  <div class="mn-panel">
+    <div class="mn-handle"></div>
+    <div class="mn-header">
+      <div>
+        <div class="mn-title">💰 Gagne avec NinjaScores</div>
+        <div class="mn-sub">Partage du contenu · Gagne des récompenses</div>
+      </div>
+      <button class="mn-close" onclick="closeMoney()">×</button>
+    </div>
+    <div class="mn-body">
+
+      <!-- Étapes -->
+      <div>
+        <div class="mn-section-title">Comment ça marche</div>
+        <div class="mn-steps">
+          <div class="mn-step">
+            <div class="mn-step-num">1</div>
+            <div>
+              <div class="mn-step-title">Crée du contenu</div>
+              <div class="mn-step-sub">Poste sur TikTok, Instagram Reels ou YouTube Shorts avec #NinjaScores</div>
+            </div>
+          </div>
+          <div class="mn-step">
+            <div class="mn-step-num">2</div>
+            <div>
+              <div class="mn-step-title">Soumets ton lien</div>
+              <div class="mn-step-sub">Colle le lien de ta vidéo et on s'occupe du reste</div>
+            </div>
+          </div>
+          <div class="mn-step">
+            <div class="mn-step-num">3</div>
+            <div>
+              <div class="mn-step-title">On vérifie sous 48h</div>
+              <div class="mn-step-sub">Un humain revoit ta vidéo pour garantir l'authenticité</div>
+            </div>
+          </div>
+          <div class="mn-step">
+            <div class="mn-step-num">4</div>
+            <div>
+              <div class="mn-step-title">Gagne tes récompenses</div>
+              <div class="mn-step-sub">Crédités sur ton compte. Atteins 1M de vues = bonus 500 €</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulateur -->
+      <div>
+        <div class="mn-section-title">Simule tes gains</div>
+        <div class="mn-calc-box">
+          <div class="mn-calc-views" id="mn-views-display">10 000</div>
+          <div class="mn-calc-views-label">vues par vidéo</div>
+          <input type="range" class="mn-slider" id="mn-slider" min="1000" max="5000000" step="1000" value="10000" oninput="updateMnCalc(this.value)">
+          <div class="mn-slider-labels">
+            <span>1K</span><span>10K</span><span>100K</span><span>1M</span><span>5M+</span>
+          </div>
+          <div class="mn-calc-divider"></div>
+          <div class="mn-calc-results">
+            <div class="mn-calc-result">
+              <div class="mn-calc-label">Par vidéo</div>
+              <div class="mn-calc-val" id="mn-per-vid">7,50 €</div>
+            </div>
+            <div class="mn-calc-result">
+              <div class="mn-calc-label">3 vidéos / mois</div>
+              <div class="mn-calc-val" id="mn-per-month">~22,50 €</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div>
+        <div class="mn-section-title">Questions fréquentes</div>
+        <div class="mn-faq">
+          <div class="mn-faq-item">
+            <div class="mn-faq-q" onclick="toggleMnFaq(this)">
+              <span>Comment sont calculées mes récompenses ?</span>
+              <span class="mn-faq-icon">+</span>
+            </div>
+            <div class="mn-faq-a">Tes récompenses sont basées sur les vues vérifiées de tes vidéos à hauteur de 0,75 € pour 1 000 vues. Les vues sont contrôlées sous 48h.</div>
+          </div>
+          <div class="mn-faq-item">
+            <div class="mn-faq-q" onclick="toggleMnFaq(this)">
+              <span>Quel contenu est accepté ?</span>
+              <span class="mn-faq-icon">+</span>
+            </div>
+            <div class="mn-faq-a">Tout contenu authentique lié au sport, aux pronostics ou à NinjaScores. Les vues achetées ou artificielles sont exclues et entraînent une suspension du compte.</div>
+          </div>
+          <div class="mn-faq-item">
+            <div class="mn-faq-q" onclick="toggleMnFaq(this)">
+              <span>Comment recevoir mes gains ?</span>
+              <span class="mn-faq-icon">+</span>
+            </div>
+            <div class="mn-faq-a">Par virement bancaire ou crédit NinjaPro. Minimum de retrait : 20 €. Paiement sous 7 jours ouvrés après validation.</div>
+          </div>
+          <div class="mn-faq-item">
+            <div class="mn-faq-q" onclick="toggleMnFaq(this)">
+              <span>Y a-t-il un bonus pour 1M de vues ?</span>
+              <span class="mn-faq-icon">+</span>
+            </div>
+            <div class="mn-faq-a">Oui ! Chaque vidéo atteignant 1 million de vues génère un bonus exceptionnel de 500 € en plus des récompenses standard.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="mn-cta-wrap">
+      <button class="mn-cta" onclick="window.open('mailto:creators@ninjascores.com','_blank')">Soumettre mon contenu →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRICING MODAL ══ -->
+<div class="ns-modal-overlay" id="pricing-modal" onclick="closePricing(event)">
+  <div class="ns-modal" style="position:relative">
+    <button class="ns-modal-close" onclick="closePricingBtn()">✕</button>
+    <div class="ns-modal-header">
+      <h2>Choisissez votre plan</h2>
+      <p>Accédez aux analyses NinjaPro et maximisez vos pronostics</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="pricing-card">
+        <div class="pricing-name">Gratuit</div>
+        <div class="pricing-price"><span class="amount">0€</span><span class="period">/mois</span></div>
+        <div class="pricing-features">
+          <div class="pricing-feature"><span class="check">✓</span>Scores en direct</div>
+          <div class="pricing-feature"><span class="check">✓</span>Calendrier des matchs</div>
+          <div class="pricing-feature"><span class="check">✓</span>Stats de base</div>
+          <div class="pricing-feature"><span class="check">✓</span>Classements</div>
+          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Top du jour</span></div>
+          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Value Bets</span></div>
+          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Combinés premium</span></div>
+          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Analyses IA</span></div>
+        </div>
+        <button class="pricing-btn free">Offre actuelle</button>
+      </div>
+      <!-- MENSUEL -->
+      <div class="pricing-card popular">
+        <div class="pricing-popular-badge">⚡ LE PLUS POPULAIRE</div>
+        <div class="pricing-name">NinjaPro Mensuel</div>
+        <div class="pricing-price">
+          <span class="amount">9,99€</span><span class="period">/mois</span>
+        </div>
+        <div class="pricing-features">
+          <div class="pricing-feature"><span class="check">✓</span>Tout le plan Gratuit</div>
+          <div class="pricing-feature"><span class="check">✓</span><strong>Top du jour</strong></div>
+          <div class="pricing-feature"><span class="check">✓</span><strong>Value Bets</strong></div>
+          <div class="pricing-feature"><span class="check">✓</span><strong>Combinés premium</strong></div>
+          <div class="pricing-feature"><span class="check">✓</span><strong>Analyses NinjoPro IA</strong></div>
+          <div class="pricing-feature"><span class="check">✓</span>Alertes personnalisées</div>
+          <div class="pricing-feature"><span class="check">✓</span>Historique complet</div>
+          <div class="pricing-feature"><span class="check">✓</span>Support prioritaire</div>
+        </div>
+        <button class="pricing-btn paid" onclick="handleSubscribe('mensuel')">Commencer — 9,99€/mois</button>
+      </div>
+      <!-- ANNUEL -->
+      <div class="pricing-card">
+        <div class="pricing-name">NinjaPro Annuel</div>
+        <div class="pricing-price" style="flex-direction:column;align-items:flex-start;gap:2px">
+          <div style="display:flex;align-items:baseline;gap:4px">
+            <span class="amount">7,99€</span><span class="period">/mois</span>
+          </div>
+          <span class="annual-note">✦ Soit 95,88€/an — économisez 24%</span>
+        </div>
+        <div class="pricing-features">
+          <div class="pricing-feature"><span class="check">✓</span>Tout le plan Mensuel</div>
+          <div class="pricing-feature"><span class="check">✓</span><strong>Accès prioritaire</strong> aux nouveautés</div>
+          <div class="pricing-feature"><span class="check">✓</span>Badge <em style="color:#a78bfa">NinjaPro ✦</em> exclusif</div>
+          <div class="pricing-feature"><span class="check">✓</span>Économie de 24%</div>
+          <div class="pricing-feature"><span class="check">✓</span>Sans engagement mensuel</div>
+          <div class="pricing-feature" style="opacity:.5"><span class="check">✓</span>Facturation annuelle</div>
+        </div>
+        <button class="pricing-btn paid" onclick="handleSubscribe('annuel')">Commencer — 95,88€/an</button>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.2);margin-top:20px">Paiement sécurisé · Résiliation à tout moment · Sans engagement pour le plan mensuel</p>
+  </div>
+</div>
+
+<!-- ══ MES PRONOSTICS PANEL ══ -->
+<div class="prono-panel" id="prono-panel">
+  <div class="prono-panel-header">
+    <h3>🔖 Mes pronostics</h3>
+    <button class="prono-panel-close" onclick="closePronoPanel()">✕</button>
+  </div>
+  <div class="prono-slip" id="prono-slip">
+    <div class="prono-slip-empty" id="prono-empty">
+      <div class="empty-icon">🎯</div>
+      <p>Aucune sélection pour l'instant.<br>Ajoute des pronos depuis l'app.</p>
+    </div>
+  </div>
+  <div class="prono-panel-footer">
+    <div class="prono-total">
+      <div>
+        <div class="label">Cote totale</div>
+        <div id="prono-type" class="type">—</div>
+      </div>
+      <div class="value" id="prono-total-odds">—</div>
+    </div>
+    <button class="prono-bet-btn" id="prono-bet-btn" disabled onclick="betNow()">
+      <span>Parier chez Betclic</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+    <p class="prono-disclaimer">Jouer comporte des risques. Réservé aux +18 ans. Le jeu excessif est dangereux. Appelez le 09 74 75 13 13 (appel non surtaxé).</p>
+  </div>
+</div>
+
 <div id="root"></div>
 
 <!-- ── tweaks-panel (inlined) ──────────────────────────────────────────────── -->
@@ -920,8 +1601,36 @@
     'Ligue des Nations':         'https://media.api-sports.io/football/leagues/5.png',
     'UEFA Nations League':       'https://media.api-sports.io/football/leagues/5.png',
     'EURO 2024':                 'https://media.api-sports.io/football/leagues/4.png',
-    'Coupe du Monde':            'https://media.api-sports.io/football/leagues/1.png',
-    'Coupe du Monde 2026':       'https://media.api-sports.io/football/leagues/1.png',
+    'Coupe du Monde':            'assets/logos/leagues/worldcup.svg',
+    'Coupe du Monde 2026':       'assets/logos/leagues/worldcup.svg',
+    'Copa América':              'https://media.api-sports.io/football/leagues/9.png',
+    'CAN':                       'https://media.api-sports.io/football/leagues/6.png',
+    // ── Basketball — Coupes continentales ──
+    'EuroLeague Basket':             'https://media.api-sports.io/basketball/leagues/10.png',
+    'EuroCup Basket':                'https://media.api-sports.io/basketball/leagues/11.png',
+    'Basketball Champions League':   'https://media.api-sports.io/basketball/leagues/212.png',
+    'EuroLeague Women Basket':       'https://media.api-sports.io/basketball/leagues/13.png',
+    'BAL Basketball':                'https://media.api-sports.io/basketball/leagues/370.png',
+    // ── Basketball — Ligues nationales ──
+    'NBA':                           'https://media.api-sports.io/basketball/leagues/12.png',
+    'WNBA':                          'https://media.api-sports.io/basketball/leagues/14.png',
+    'NBA G League':                  'https://media.api-sports.io/basketball/leagues/15.png',
+    'Liga ACB':                      'https://media.api-sports.io/basketball/leagues/116.png',
+    'Betclic Élite':                 'https://media.api-sports.io/basketball/leagues/100.png',
+    'Pro B':                         'https://media.api-sports.io/basketball/leagues/101.png',
+    'Lega Basket Serie A':           'https://media.api-sports.io/basketball/leagues/131.png',
+    'BBL':                           'https://media.api-sports.io/basketball/leagues/112.png',
+    'Turkish Super League':          'https://media.api-sports.io/basketball/leagues/186.png',
+    'Greek Basket League':           'https://media.api-sports.io/basketball/leagues/120.png',
+    'ABA Liga':                      'https://media.api-sports.io/basketball/leagues/91.png',
+    'VTB United League':             'https://media.api-sports.io/basketball/leagues/158.png',
+    'Israeli Premier League':        'https://media.api-sports.io/basketball/leagues/128.png',
+    'PLK':                           'https://media.api-sports.io/basketball/leagues/152.png',
+    'CBA':                           'https://media.api-sports.io/basketball/leagues/20.png',
+    'B.League':                      'https://media.api-sports.io/basketball/leagues/30.png',
+    'KBL':                           'https://media.api-sports.io/basketball/leagues/32.png',
+    'NBL':                           'https://media.api-sports.io/basketball/leagues/50.png',
+    'NBB':                           'https://media.api-sports.io/basketball/leagues/66.png',
     // ── Coupes Nationales ──
     'FA Cup':                    FM+'32.png',
     'EFL Cup':                   'https://api.sofascore.app/api/v1/unique-tournament/57/image',
@@ -1879,7 +2588,8 @@ window.FavMatchesStore = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=128"></script>
+<script src="basketball_data.js?v=2"></script>
+<script src="app.compiled.js?v=225"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
@@ -2182,6 +2892,191 @@ window.FavMatchesStore = (function() {
   }
 
   patchWhenReady();
+})();
+</script>
+
+<!-- ══ NAV INTERACTIONS ══ -->
+<script>
+(function() {
+  // ── Bookmakers panel ──
+  window.openBookmakers = function() {
+    document.getElementById('bk-overlay').classList.add('show');
+  };
+  window.closeBk = function() {
+    document.getElementById('bk-overlay').classList.remove('show');
+  };
+
+  // ── Money / Creator panel ──
+  window.openMoney = function() {
+    document.getElementById('mn-overlay').classList.add('show');
+  };
+  window.closeMoney = function() {
+    document.getElementById('mn-overlay').classList.remove('show');
+  };
+  window.updateMnCalc = function(v) {
+    var views = parseInt(v);
+    var rate = 0.75;
+    var perVid = (views / 1000) * rate;
+    var perMonth = perVid * 3;
+    var vStr;
+    if (views >= 1000000) vStr = (views / 1000000).toFixed(1).replace('.0', '') + ' M';
+    else if (views >= 1000) vStr = (views / 1000).toFixed(0) + ' 000';
+    else vStr = views.toString();
+    document.getElementById('mn-views-display').textContent = vStr;
+    document.getElementById('mn-per-vid').textContent = perVid.toFixed(2).replace('.', ',') + ' €';
+    document.getElementById('mn-per-month').textContent = '~' + perMonth.toFixed(2).replace('.', ',') + ' €';
+  };
+  window.toggleMnFaq = function(el) {
+    var answer = el.nextElementSibling;
+    var icon = el.querySelector('.mn-faq-icon');
+    var isOpen = answer.classList.contains('open');
+    document.querySelectorAll('.mn-faq-a').forEach(function(a) { a.classList.remove('open'); });
+    document.querySelectorAll('.mn-faq-icon').forEach(function(i) { i.textContent = '+'; });
+    if (!isOpen) { answer.classList.add('open'); icon.textContent = '−'; }
+  };
+
+  // ── Pronostics bottom sheet ──
+  window.openPronoSheet = function() {
+    document.getElementById('prono-sheet-overlay').classList.add('show');
+  };
+  window.closePronoSheet = function() {
+    document.getElementById('prono-sheet-overlay').classList.remove('show');
+  };
+  window.handleSheetOverlayClick = function(e) {
+    if (e.target === document.getElementById('prono-sheet-overlay')) closePronoSheet();
+  };
+
+  // ── Dropdown toggle ──
+  window.toggleDd = function(id) {
+    var btn = document.getElementById('btn-' + id);
+    var menu = document.getElementById('menu-' + id);
+    var isOpen = menu.classList.contains('show');
+    closeAllDd();
+    if (!isOpen) {
+      menu.classList.add('show');
+      btn.classList.add('open');
+    }
+  };
+  function closeAllDd() {
+    document.querySelectorAll('.nav-dropdown').forEach(function(m) { m.classList.remove('show'); });
+    document.querySelectorAll('.nav-dd-btn').forEach(function(b) { b.classList.remove('open'); });
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dd')) closeAllDd();
+  });
+
+  // ── Pricing modal ──
+  window.openPricing = function(e) {
+    if (e) e.preventDefault();
+    closeAllDd();
+    document.getElementById('pricing-modal').classList.add('show');
+  };
+  window.closePricing = function(e) {
+    if (e && e.target !== document.getElementById('pricing-modal')) return;
+    document.getElementById('pricing-modal').classList.remove('show');
+  };
+  window.closePricingBtn = function() {
+    document.getElementById('pricing-modal').classList.remove('show');
+  };
+  window.handleSubscribe = function(plan) {
+    alert('🚧 Paiement à venir — plan ' + plan + '\nLa connexion mail/Google/Apple sera ajoutée prochainement.');
+  };
+
+  // ── Mes Pronostics panel ──
+  var pronos = JSON.parse(localStorage.getItem('ns_pronos') || '[]');
+
+  window.openPronoPanel = function(e) {
+    if (e) e.preventDefault();
+    closeAllDd();
+    document.getElementById('prono-panel').classList.add('open');
+    renderSlip();
+  };
+  window.closePronoPanel = function() {
+    document.getElementById('prono-panel').classList.remove('open');
+  };
+
+  function renderSlip() {
+    var slip = document.getElementById('prono-slip');
+    var empty = document.getElementById('prono-empty');
+    var totalEl = document.getElementById('prono-total-odds');
+    var typeEl = document.getElementById('prono-type');
+    var betBtn = document.getElementById('prono-bet-btn');
+    var badge = document.getElementById('prono-count-badge');
+
+    // Clear existing items (keep empty placeholder)
+    slip.querySelectorAll('.prono-slip-item').forEach(function(el) { el.remove(); });
+
+    if (pronos.length === 0) {
+      empty.style.display = 'flex';
+      totalEl.textContent = '—';
+      typeEl.textContent = '—';
+      betBtn.disabled = true;
+      badge.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    badge.style.display = 'inline';
+    badge.textContent = pronos.length;
+
+    var totalOdds = pronos.reduce(function(acc, p) { return acc * p.cote; }, 1);
+
+    pronos.forEach(function(p, i) {
+      var item = document.createElement('div');
+      item.className = 'prono-slip-item';
+      item.innerHTML =
+        '<span class="sport-icon">' + (p.sport || '⚽') + '</span>' +
+        '<div class="info">' +
+          '<div class="match-label">' + (p.match || 'Match') + '</div>' +
+          '<div class="pick">' + p.pick + '</div>' +
+        '</div>' +
+        '<span class="cote">' + p.cote.toFixed(2) + '</span>' +
+        '<button class="remove-btn" onclick="removeProno(' + i + ')">×</button>';
+      slip.insertBefore(item, empty);
+    });
+
+    totalEl.textContent = totalOdds.toFixed(2);
+    typeEl.textContent = pronos.length === 1 ? 'Pari simple' : 'Combiné ' + pronos.length + ' sélections';
+    betBtn.disabled = false;
+  }
+
+  window.removeProno = function(idx) {
+    pronos.splice(idx, 1);
+    localStorage.setItem('ns_pronos', JSON.stringify(pronos));
+    renderSlip();
+  };
+
+  // Exposed globally so the React app can call it
+  window.addProno = function(prono) {
+    // prono = { pick, cote, match, sport }
+    var exists = pronos.some(function(p) { return p.pick === prono.pick && p.match === prono.match; });
+    if (!exists) {
+      pronos.push(prono);
+      localStorage.setItem('ns_pronos', JSON.stringify(pronos));
+    }
+    renderSlip();
+    document.getElementById('prono-panel').classList.add('open');
+  };
+
+  window.betNow = function() {
+    // Affiliate link — à remplacer par le vrai lien affilié Betclic
+    window.open('https://www.betclic.fr', '_blank');
+  };
+
+  // Init badge count on load
+  (function initBadge() {
+    var badge = document.getElementById('prono-count-badge');
+    if (pronos.length > 0) { badge.style.display = 'inline'; badge.textContent = pronos.length; }
+  })();
+
+  // Escape key closes modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closePricingBtn();
+      closePronoPanel();
+      closeAllDd();
+    }
+  });
 })();
 </script>
 </html>
