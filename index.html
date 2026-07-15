@@ -241,44 +241,44 @@
   .mn-overlay.show { display: flex; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); }
   .mn-panel {
     width: 100%; max-width: 430px; max-height: 90vh;
-    background: #0d0520; border-radius: 24px 24px 0 0;
-    border: 1px solid rgba(97,51,224,0.3); border-bottom: none;
+    background: #ffffff; border-radius: 24px 24px 0 0;
+    border: 1px solid rgba(97,51,224,0.2); border-bottom: none;
     transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
     display: flex; flex-direction: column; overflow: hidden;
   }
   .mn-overlay.show .mn-panel { transform: translateY(0); }
-  .mn-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
-  .mn-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
-  .mn-title { font-size: 16px; font-weight: 800; color: #fff; }
-  .mn-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-  .mn-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .mn-handle { width: 36px; height: 4px; background: rgba(0,0,0,0.15); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+  .mn-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 14px; border-bottom: 1px solid rgba(0,0,0,0.07); flex-shrink: 0; }
+  .mn-title { font-size: 16px; font-weight: 800; color: #0d0f1c; }
+  .mn-sub { font-size: 11px; color: rgba(0,0,0,0.45); margin-top: 2px; }
+  .mn-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,0.06); border: none; color: rgba(0,0,0,0.45); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .mn-body { overflow-y: auto; flex: 1; padding: 16px 14px 24px; display: flex; flex-direction: column; gap: 20px; }
-  .mn-section-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .mn-section-title { font-size: 15px; font-weight: 800; color: #0d0f1c; margin-bottom: 12px; }
   .mn-steps { display: flex; flex-direction: column; gap: 0; }
   .mn-step { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 18px; position: relative; }
-  .mn-step:not(:last-child)::after { content:''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: rgba(97,51,224,0.3); }
+  .mn-step:not(:last-child)::after { content:''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: rgba(97,51,224,0.25); }
   .mn-step-num { width: 34px; height: 34px; border-radius: 50%; background: #6133E0; color: #fff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .mn-step-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-  .mn-step-sub { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.4; }
-  .mn-calc-box { background: #141726; border-radius: 16px; border: 1px solid rgba(97,51,224,0.2); padding: 16px; }
-  .mn-calc-views { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 2px; }
-  .mn-calc-views-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+  .mn-step-title { font-size: 13px; font-weight: 700; color: #0d0f1c; margin-bottom: 2px; }
+  .mn-step-sub { font-size: 12px; color: rgba(0,0,0,0.5); line-height: 1.4; }
+  .mn-calc-box { background: #f6f5fc; border-radius: 16px; border: 1px solid rgba(97,51,224,0.18); padding: 16px; }
+  .mn-calc-views { font-size: 28px; font-weight: 900; color: #0d0f1c; margin-bottom: 2px; }
+  .mn-calc-views-label { font-size: 12px; color: rgba(0,0,0,0.45); margin-bottom: 14px; }
   .mn-slider { width: 100%; -webkit-appearance: none; height: 4px; background: rgba(97,51,224,0.25); border-radius: 2px; outline: none; margin-bottom: 8px; cursor: pointer; }
-  .mn-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #6133E0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-  .mn-slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 14px; }
-  .mn-calc-divider { height: 1px; background: rgba(255,255,255,0.07); margin-bottom: 14px; }
+  .mn-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #6133E0; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .mn-slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: rgba(0,0,0,0.4); margin-bottom: 14px; }
+  .mn-calc-divider { height: 1px; background: rgba(0,0,0,0.08); margin-bottom: 14px; }
   .mn-calc-results { display: flex; }
   .mn-calc-result { flex: 1; text-align: center; }
-  .mn-calc-result:first-child { border-right: 1px solid rgba(255,255,255,0.07); }
-  .mn-calc-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
-  .mn-calc-val { font-size: 22px; font-weight: 900; color: #22c55e; }
+  .mn-calc-result:first-child { border-right: 1px solid rgba(0,0,0,0.08); }
+  .mn-calc-label { font-size: 11px; color: rgba(0,0,0,0.45); margin-bottom: 4px; }
+  .mn-calc-val { font-size: 22px; font-weight: 900; color: #16a34a; }
   .mn-faq { display: flex; flex-direction: column; }
-  .mn-faq-item { border-bottom: 1px solid rgba(255,255,255,0.07); }
-  .mn-faq-q { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; font-size: 13px; color: rgba(255,255,255,0.8); cursor: pointer; gap: 10px; }
-  .mn-faq-icon { color: rgba(97,51,224,0.8); font-size: 20px; font-weight: 300; flex-shrink: 0; transition: transform 0.2s; line-height: 1; }
-  .mn-faq-a { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6; padding-bottom: 12px; display: none; }
+  .mn-faq-item { border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .mn-faq-q { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; font-size: 13px; color: rgba(0,0,0,0.8); cursor: pointer; gap: 10px; }
+  .mn-faq-icon { color: rgba(97,51,224,0.85); font-size: 20px; font-weight: 300; flex-shrink: 0; transition: transform 0.2s; line-height: 1; }
+  .mn-faq-a { font-size: 12px; color: rgba(0,0,0,0.55); line-height: 1.6; padding-bottom: 12px; display: none; }
   .mn-faq-a.open { display: block; }
-  .mn-cta-wrap { padding: 12px 14px 16px; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.07); }
+  .mn-cta-wrap { padding: 12px 14px 16px; flex-shrink: 0; border-top: 1px solid rgba(0,0,0,0.08); }
   .mn-cta { display: block; width: 100%; background: linear-gradient(135deg, #6133E0, #8b5cf6); border: none; border-radius: 14px; padding: 15px; color: #fff; font-weight: 800; font-size: 15px; letter-spacing: 0.3px; cursor: pointer; font-family: inherit; text-align: center; transition: opacity 0.15s; }
   .mn-cta:hover { opacity: 0.9; }
 
@@ -549,7 +549,7 @@
             <div class="mn-step-num">1</div>
             <div>
               <div class="mn-step-title">Crée du contenu</div>
-              <div class="mn-step-sub">Poste sur TikTok, Instagram Reels ou YouTube Shorts avec #NinjaScores</div>
+              <div class="mn-step-sub">Poste sur tous les réseaux sociaux (TikTok, Instagram, YouTube, X...)</div>
             </div>
           </div>
           <div class="mn-step">
@@ -562,15 +562,15 @@
           <div class="mn-step">
             <div class="mn-step-num">3</div>
             <div>
-              <div class="mn-step-title">On vérifie sous 48h</div>
+              <div class="mn-step-title">On vérifie sous 24h</div>
               <div class="mn-step-sub">Un humain revoit ta vidéo pour garantir l'authenticité</div>
             </div>
           </div>
           <div class="mn-step">
             <div class="mn-step-num">4</div>
             <div>
-              <div class="mn-step-title">Gagne tes récompenses</div>
-              <div class="mn-step-sub">Crédités sur ton compte. Atteins 1M de vues = bonus 500 €</div>
+              <div class="mn-step-title">Gagne des récompenses</div>
+              <div class="mn-step-sub">Sois payé via virement bancaire ou crypto sous 24h</div>
             </div>
           </div>
         </div>
@@ -609,7 +609,7 @@
               <span>Comment sont calculées mes récompenses ?</span>
               <span class="mn-faq-icon">+</span>
             </div>
-            <div class="mn-faq-a">Tes récompenses sont basées sur les vues vérifiées de tes vidéos à hauteur de 0,75 € pour 1 000 vues. Les vues sont contrôlées sous 48h.</div>
+            <div class="mn-faq-a">Tes récompenses sont basées sur les vues vérifiées de tes vidéos à hauteur de 0,75 € pour 1 000 vues. Les vues sont contrôlées sous 24h.</div>
           </div>
           <div class="mn-faq-item">
             <div class="mn-faq-q" onclick="toggleMnFaq(this)">
@@ -623,14 +623,7 @@
               <span>Comment recevoir mes gains ?</span>
               <span class="mn-faq-icon">+</span>
             </div>
-            <div class="mn-faq-a">Par virement bancaire ou crédit NinjaPro. Minimum de retrait : 20 €. Paiement sous 7 jours ouvrés après validation.</div>
-          </div>
-          <div class="mn-faq-item">
-            <div class="mn-faq-q" onclick="toggleMnFaq(this)">
-              <span>Y a-t-il un bonus pour 1M de vues ?</span>
-              <span class="mn-faq-icon">+</span>
-            </div>
-            <div class="mn-faq-a">Oui ! Chaque vidéo atteignant 1 million de vues génère un bonus exceptionnel de 500 € en plus des récompenses standard.</div>
+            <div class="mn-faq-a">Par virement bancaire ou crypto. Minimum de retrait : 20 €. Paiement sous 24h après validation.</div>
           </div>
         </div>
       </div>
