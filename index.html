@@ -2647,10 +2647,11 @@ window.NINJA_AB = (function() {
     if (window.NINJA_AB.status() === 'upcoming') return;           // pas encore commencé
     try { if (localStorage.getItem(FLAG)) return; } catch(e) {}    // déjà auto-ajouté une fois
     var fav = {
-      id: 'wc2026-eng-arg',
-      competition: 'Coupe du Monde 2026 · Demi-finale',
+      id: 'wc2026-eng-arg', sport: 'football',
+      competition: 'Coupe du Monde 2026 · Demi-finale', badge: '🏆',
       homeTeam: 'Angleterre', awayTeam: 'Argentine',
       homeColor: '#CF081F', awayColor: '#74ACDF',
+      homePct: 35, drawPct: 25, awayPct: 40,
       startDate: '2026-07-15T19:00:00Z'
     };
     if (!window.FavMatchesStore.has(fav)) window.FavMatchesStore.toggle(fav);
@@ -2662,7 +2663,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=354"></script>
+<script src="app.compiled.js?v=355"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
