@@ -402,16 +402,7 @@
         <span class="prono-sheet-arrow">›</span>
       </button>
 
-      <div class="prono-sheet-sep"></div>
 
-      <button class="prono-sheet-item premium" onclick="closePronoSheet();openPricing();">
-        <div class="prono-sheet-icon" style="background:rgba(97,51,224,0.25)">👑</div>
-        <div class="prono-sheet-text">
-          <span class="prono-sheet-label" style="color:#a78bfa">NinjaPro Premium</span>
-          <span class="prono-sheet-desc">Débloque toutes les analyses IA · dès 7,99€</span>
-        </div>
-        <span class="prono-sheet-arrow" style="color:#6133E0">›</span>
-      </button>
 
       <button class="prono-sheet-item" onclick="closePronoSheet();openPronoPanel();" style="margin-top:2px">
         <div class="prono-sheet-icon" style="background:rgba(255,255,255,0.06)">🔖</div>
@@ -635,73 +626,7 @@
   </div>
 </div>
 
-<!-- ══ PRICING MODAL ══ -->
-<div class="ns-modal-overlay" id="pricing-modal" onclick="closePricing(event)">
-  <div class="ns-modal" style="position:relative">
-    <button class="ns-modal-close" onclick="closePricingBtn()">✕</button>
-    <div class="ns-modal-header">
-      <h2>Choisissez votre plan</h2>
-      <p>Accédez aux analyses NinjaPro et maximisez vos pronostics</p>
-    </div>
-    <div class="pricing-grid">
-      <!-- FREE -->
-      <div class="pricing-card">
-        <div class="pricing-name">Gratuit</div>
-        <div class="pricing-price"><span class="amount">0€</span><span class="period">/mois</span></div>
-        <div class="pricing-features">
-          <div class="pricing-feature"><span class="check">✓</span>Scores en direct</div>
-          <div class="pricing-feature"><span class="check">✓</span>Calendrier des matchs</div>
-          <div class="pricing-feature"><span class="check">✓</span>Stats de base</div>
-          <div class="pricing-feature"><span class="check">✓</span>Classements</div>
-          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Top du jour</span></div>
-          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Value Bets</span></div>
-          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Combinés premium</span></div>
-          <div class="pricing-feature"><span class="cross">✗</span><span style="opacity:.4">Analyses IA</span></div>
-        </div>
-        <button class="pricing-btn free">Offre actuelle</button>
-      </div>
-      <!-- MENSUEL -->
-      <div class="pricing-card popular">
-        <div class="pricing-popular-badge">⚡ LE PLUS POPULAIRE</div>
-        <div class="pricing-name">NinjaPro Mensuel</div>
-        <div class="pricing-price">
-          <span class="amount">9,99€</span><span class="period">/mois</span>
-        </div>
-        <div class="pricing-features">
-          <div class="pricing-feature"><span class="check">✓</span>Tout le plan Gratuit</div>
-          <div class="pricing-feature"><span class="check">✓</span><strong>Top du jour</strong></div>
-          <div class="pricing-feature"><span class="check">✓</span><strong>Value Bets</strong></div>
-          <div class="pricing-feature"><span class="check">✓</span><strong>Combinés premium</strong></div>
-          <div class="pricing-feature"><span class="check">✓</span><strong>Analyses NinjoPro IA</strong></div>
-          <div class="pricing-feature"><span class="check">✓</span>Alertes personnalisées</div>
-          <div class="pricing-feature"><span class="check">✓</span>Historique complet</div>
-          <div class="pricing-feature"><span class="check">✓</span>Support prioritaire</div>
-        </div>
-        <button class="pricing-btn paid" onclick="handleSubscribe('mensuel')">Commencer — 9,99€/mois</button>
-      </div>
-      <!-- ANNUEL -->
-      <div class="pricing-card">
-        <div class="pricing-name">NinjaPro Annuel</div>
-        <div class="pricing-price" style="flex-direction:column;align-items:flex-start;gap:2px">
-          <div style="display:flex;align-items:baseline;gap:4px">
-            <span class="amount">7,99€</span><span class="period">/mois</span>
-          </div>
-          <span class="annual-note">✦ Soit 95,88€/an — économisez 24%</span>
-        </div>
-        <div class="pricing-features">
-          <div class="pricing-feature"><span class="check">✓</span>Tout le plan Mensuel</div>
-          <div class="pricing-feature"><span class="check">✓</span><strong>Accès prioritaire</strong> aux nouveautés</div>
-          <div class="pricing-feature"><span class="check">✓</span>Badge <em style="color:#a78bfa">NinjaPro ✦</em> exclusif</div>
-          <div class="pricing-feature"><span class="check">✓</span>Économie de 24%</div>
-          <div class="pricing-feature"><span class="check">✓</span>Sans engagement mensuel</div>
-          <div class="pricing-feature" style="opacity:.5"><span class="check">✓</span>Facturation annuelle</div>
-        </div>
-        <button class="pricing-btn paid" onclick="handleSubscribe('annuel')">Commencer — 95,88€/an</button>
-      </div>
-    </div>
-    <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.2);margin-top:20px">Paiement sécurisé · Résiliation à tout moment · Sans engagement pour le plan mensuel</p>
-  </div>
-</div>
+<!-- Abonnement NinjaPro retiré (monétisation affiliation + AdSense) -->
 
 <!-- ══ MES PRONOSTICS PANEL ══ -->
 <div class="prono-panel" id="prono-panel">
@@ -2672,7 +2597,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=362"></script>
+<script src="app.compiled.js?v=363"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
@@ -3048,22 +2973,11 @@ window.NINJA_AB = (function() {
     if (!e.target.closest('.nav-dd')) closeAllDd();
   });
 
-  // ── Pricing modal ──
-  window.openPricing = function(e) {
-    if (e) e.preventDefault();
-    closeAllDd();
-    document.getElementById('pricing-modal').classList.add('show');
-  };
-  window.closePricing = function(e) {
-    if (e && e.target !== document.getElementById('pricing-modal')) return;
-    document.getElementById('pricing-modal').classList.remove('show');
-  };
-  window.closePricingBtn = function() {
-    document.getElementById('pricing-modal').classList.remove('show');
-  };
-  window.handleSubscribe = function(plan) {
-    alert('🚧 Paiement à venir — plan ' + plan + '\nLa connexion mail/Google/Apple sera ajoutée prochainement.');
-  };
+  // ── Pricing modal retiré (abonnement supprimé) — no-op pour compat ──
+  window.openPricing = function() {};
+  window.closePricing = function() {};
+  window.closePricingBtn = function() {};
+  window.handleSubscribe = function() {};
 
   // ── Mes Pronostics panel ──
   var pronos = JSON.parse(localStorage.getItem('ns_pronos') || '[]');
