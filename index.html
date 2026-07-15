@@ -2631,8 +2631,24 @@ window.NINJA_AB = (function() {
     if (el >= 130) return { status: 'finished', minute: 90 };
     return { status: 'live', minute: Math.min(90, Math.floor(el) + 1) };
   }
+  // Déroulé du match (0-0 réaliste) — home = Angleterre, away = Argentine. Filtré par la minute en cours côté détail.
+  var EVENTS = [
+    { minute: 6,  team: 'away', type: 'yellow', player: 'Otamendi' },
+    { minute: 14, team: 'home', type: 'yellow', player: 'Rice' },
+    { minute: 23, team: 'away', type: 'yellow', player: 'De Paul' },
+    { minute: 37, team: 'home', type: 'yellow', player: 'Stones' },
+    { minute: 46, team: 'home', type: 'sub',    player: 'Palmer' },
+    { minute: 54, team: 'away', type: 'yellow', player: 'Mac Allister' },
+    { minute: 61, team: 'away', type: 'sub',    player: 'J. Álvarez' },
+    { minute: 66, team: 'home', type: 'sub',    player: 'Foden' },
+    { minute: 72, team: 'home', type: 'yellow', player: 'Walker' },
+    { minute: 78, team: 'away', type: 'sub',    player: 'L. Martínez' },
+    { minute: 85, team: 'away', type: 'yellow', player: 'E. Fernández' },
+    { minute: 89, team: 'home', type: 'sub',    player: 'Rashford' }
+  ];
   return {
     KICKOFF: KICKOFF, DURATION: DURATION, time: '21:00', matchId: 'wc2026-eng-arg',
+    events: EVENTS,
     status: function() { return phase().status; },
     minute: function() { return phase().minute; },
     score:  function() { return phase().status === 'upcoming' ? null : 0; } // 0-0 dès le coup d'envoi
@@ -2663,7 +2679,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=359"></script>
+<script src="app.compiled.js?v=360"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
