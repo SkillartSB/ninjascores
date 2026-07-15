@@ -2623,14 +2623,20 @@ window.FavMatchesStore = (function() {
 window.NINJA_AB = (function() {
   // Coup d'envoi réel : 15 juillet 2026, 21:00 heure de Paris (CEST = UTC+2) → 19:00 UTC
   var KICKOFF  = Date.UTC(2026, 6, 15, 19, 0, 0);
-  var DURATION = 130 * 60 * 1000; // 2h10 (90' + mi-temps + arrêts) avant de passer "terminé"
-  function status() {
-    var n = Date.now();
-    if (n < KICKOFF)            return 'upcoming';
-    if (n < KICKOFF + DURATION) return 'live';
-    return 'finished';
+  var DURATION = 130 * 60 * 1000; // 2h10 avant de passer "terminé"
+  // Phase de jeu calculée à partir du temps réel écoulé depuis le coup d'envoi
+  function phase() {
+    var el = (Date.now() - KICKOFF) / 60000; // minutes écoulées
+    if (el < 0)    return { status: 'upcoming', minute: 0 };
+    if (el >= 130) return { status: 'finished', minute: 90 };
+    return { status: 'live', minute: Math.min(90, Math.floor(el) + 1) };
   }
-  return { KICKOFF: KICKOFF, DURATION: DURATION, status: status, time: '21:00', matchId: 'wc2026-eng-arg' };
+  return {
+    KICKOFF: KICKOFF, DURATION: DURATION, time: '21:00', matchId: 'wc2026-eng-arg',
+    status: function() { return phase().status; },
+    minute: function() { return phase().minute; },
+    score:  function() { return phase().status === 'upcoming' ? null : 0; } // 0-0 dès le coup d'envoi
+  };
 })();
 
 // Au coup d'envoi : ajoute automatiquement le match aux favoris (une seule fois, respecte un retrait manuel ensuite)
@@ -2656,7 +2662,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=353"></script>
+<script src="app.compiled.js?v=354"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
