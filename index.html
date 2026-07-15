@@ -2618,7 +2618,45 @@ window.FavMatchesStore = (function() {
 })();
 </script>
 <script src="basketball_data.js?v=2"></script>
-<script src="app.compiled.js?v=352"></script>
+<!-- ── A/B test Angleterre-Argentine : statut dynamique + auto-favori au coup d'envoi ── -->
+<script>
+window.NINJA_AB = (function() {
+  // Coup d'envoi réel : 15 juillet 2026, 21:00 heure de Paris (CEST = UTC+2) → 19:00 UTC
+  var KICKOFF  = Date.UTC(2026, 6, 15, 19, 0, 0);
+  var DURATION = 130 * 60 * 1000; // 2h10 (90' + mi-temps + arrêts) avant de passer "terminé"
+  function status() {
+    var n = Date.now();
+    if (n < KICKOFF)            return 'upcoming';
+    if (n < KICKOFF + DURATION) return 'live';
+    return 'finished';
+  }
+  return { KICKOFF: KICKOFF, DURATION: DURATION, status: status, time: '21:00', matchId: 'wc2026-eng-arg' };
+})();
+
+// Au coup d'envoi : ajoute automatiquement le match aux favoris (une seule fois, respecte un retrait manuel ensuite)
+(function() {
+  var FLAG = 'nf_ab_autofav_engarg';
+  function ensureFav() {
+    if (!window.NINJA_AB || !window.FavMatchesStore) return;
+    if (window.NINJA_AB.status() === 'upcoming') return;           // pas encore commencé
+    try { if (localStorage.getItem(FLAG)) return; } catch(e) {}    // déjà auto-ajouté une fois
+    var fav = {
+      id: 'wc2026-eng-arg',
+      competition: 'Coupe du Monde 2026 · Demi-finale',
+      homeTeam: 'Angleterre', awayTeam: 'Argentine',
+      homeColor: '#CF081F', awayColor: '#74ACDF',
+      startDate: '2026-07-15T19:00:00Z'
+    };
+    if (!window.FavMatchesStore.has(fav)) window.FavMatchesStore.toggle(fav);
+    try { localStorage.setItem(FLAG, '1'); } catch(e) {}
+  }
+  ensureFav();
+  // Si la page reste ouverte avant 21:00, on ré-évalue au coup d'envoi
+  var ms = window.NINJA_AB.KICKOFF - Date.now();
+  if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
+})();
+</script>
+<script src="app.compiled.js?v=353"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
