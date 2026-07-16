@@ -3227,7 +3227,7 @@ return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexD
     )
   ),
   /*#__PURE__*/React.createElement('div',{style:{flex:1,paddingBottom:24}},
-    SectionLabel({label:'AFFICHAGE'}),
+    SectionLabel({label:'COMPTE'}),/*AUTH-ROWS*/React.createElement('div',{style:{margin:'0 16px',borderRadius:14,overflow:'hidden',boxShadow:t.shadowCard,border:`1px solid ${t.border}`}},Row({icon:'👤',label:'Se connecter',border:true,onPress:()=>window.openAuth&&window.openAuth('login'),right:React.createElement('span',{style:{fontSize:17,color:t.textTer}},'›')}),Row({icon:'✨',label:'Créer un compte',border:false,onPress:()=>window.openAuth&&window.openAuth('signup'),right:React.createElement('span',{style:{fontSize:17,color:t.textTer}},'›')})),SectionLabel({label:'AFFICHAGE'}),
     /*#__PURE__*/React.createElement('div',{style:{margin:'0 16px',borderRadius:14,overflow:'hidden',boxShadow:t.shadowCard,border:`1px solid ${t.border}`}},
       Row({icon:'🌙',label:'Mode sombre',border:false,
         right:/*#__PURE__*/React.createElement(Toggle,{value:isDark,onChange:onToggleDark})
