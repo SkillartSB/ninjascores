@@ -3197,7 +3197,7 @@ const Toggle=({value,onChange})=>/*#__PURE__*/React.createElement('button',{
 }}));
 const SectionLabel=({label})=>/*#__PURE__*/React.createElement('div',{
   style:{fontSize:10,fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',
-  color:t.textTer,padding:'20px 16px 8px'}
+  color:accent,padding:'20px 16px 8px'}
 },label);
 const Row=({icon,label,right,onPress,border=true})=>/*#__PURE__*/React.createElement('div',{
   onClick:onPress,
@@ -3210,8 +3210,8 @@ const Row=({icon,label,right,onPress,border=true})=>/*#__PURE__*/React.createEle
   right
 );
 return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexDirection:'column',overflowY:'auto'},className:'screen-enter'},
-  /*#__PURE__*/React.createElement('div',{style:{background:`linear-gradient(135deg, ${accent} 0%, #5B3FE8 100%)`,padding:'20px 16px 24px',position:'relative',overflow:'hidden'}},
-    /*#__PURE__*/React.createElement('div',{style:{position:'absolute',top:-20,right:-20,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.06)'}}),
+  /*#__PURE__*/React.createElement('div',{style:{background:`linear-gradient(135deg, #0D1B6E 0%, ${accent} 60%, #5B3FE8 100%)`,padding:'20px 16px 24px',position:'relative',overflow:'hidden'}},
+    /*#__PURE__*/React.createElement('div',{style:{position:'absolute',top:-20,right:-20,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.06)'}}),/*NINJA-WM*/React.createElement('div',{style:{position:'absolute',right:16,bottom:-20,fontSize:88,fontWeight:900,color:'rgba(255,255,255,0.08)',lineHeight:1,pointerEvents:'none',userSelect:'none'}},'忍'),
     /*#__PURE__*/React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,position:'relative',zIndex:1}},
       /*#__PURE__*/React.createElement('h1',{style:{fontSize:18,fontWeight:800,color:'white'}},'Paramètres'),
       /*#__PURE__*/React.createElement('button',{onClick:onBack,style:{width:32,height:32,borderRadius:'50%',background:'rgba(255,255,255,0.2)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}},
