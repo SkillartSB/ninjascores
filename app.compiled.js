@@ -2273,10 +2273,53 @@ return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexD
 );};// ── SEARCH UTILITIES ──────────────────────────────────────────────────────────
 const searchByCategory=(query,category='tous')=>{if(!query.trim())return{players:[],teams:[],leagues:[]};const q=query.toLowerCase();const limit=20;const results={players:category==='tous'||category==='joueurs'?SEARCH_DATA.players.filter(p=>p.name.toLowerCase().includes(q)).slice(0,limit):[],teams:category==='tous'||category==='equipes'?SEARCH_DATA.teams.filter(tm=>tm.name.toLowerCase().includes(q)).slice(0,limit):[],leagues:category==='tous'||category==='competitions'?SEARCH_DATA.leagues.filter(lg=>lg.name.toLowerCase().includes(q)).slice(0,limit):[]};return results;};// ── SEARCH MODAL ──────────────────────────────────────────────────────────────
 const SearchModal=({onClose,onPlayerSelect,onTeamSelect,onLeagueSelect,accent,t,isDark})=>{const[query,setQuery]=React.useState('');const[category,setCategory]=React.useState('tous');const getFilteredResults=()=>{const q=query.trim().toLowerCase();if(!q)return{players:[],teams:[],leagues:[]};let results={players:[],teams:[],leagues:[]};if(category==='tous'||category==='joueurs'){results.players=SEARCH_DATA.players.filter(p=>p.name.toLowerCase().includes(q)).slice(0,20);}if(category==='tous'||category==='equipes'){results.teams=SEARCH_DATA.teams.filter(tm=>tm.name.toLowerCase().includes(q)).slice(0,20);}if(category==='tous'||category==='competitions'){results.leagues=SEARCH_DATA.leagues.filter(lg=>lg.name.toLowerCase().includes(q)).slice(0,20);}return results;};const results=getFilteredResults();return/*#__PURE__*/React.createElement("div",{style:{position:'absolute',top:0,left:0,right:0,bottom:0,background:t.bg,zIndex:10,display:'flex',flexDirection:'column'}},/*#__PURE__*/React.createElement("div",{style:{display:'flex',alignItems:'center',gap:12,padding:'16px',borderBottom:`1px solid ${t.border}`,flexShrink:0}},/*#__PURE__*/React.createElement("button",{onClick:onClose,style:{background:'none',border:'none',fontSize:20,cursor:'pointer',color:accent}},"\u2190"),/*#__PURE__*/React.createElement("input",{autoFocus:true,type:"text",placeholder:"Rechercher joueurs, \xE9quipes, ligues...",value:query,onChange:e=>setQuery(e.target.value),style:{flex:1,border:'none',background:t.card,padding:'10px 12px',borderRadius:8,fontSize:14,color:t.text,outline:'none',fontFamily:'inherit'}})),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:8,padding:'12px 16px',borderBottom:`1px solid ${t.border}`,flexShrink:0,overflowX:'auto'}},['tous','equipes','joueurs','competitions'].map(cat=>/*#__PURE__*/React.createElement("button",{key:cat,onClick:()=>setCategory(cat),style:{padding:'6px 14px',borderRadius:20,border:'none',background:category===cat?accent:t.card,color:category===cat?'#fff':t.textSec,fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}},cat.charAt(0).toUpperCase()+cat.slice(1)))),/*#__PURE__*/React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'12px 16px',display:'flex',flexDirection:'column',gap:8}},query.trim()===''?/*#__PURE__*/React.createElement("div",{style:{textAlign:'center',color:t.textSec,paddingTop:40}},/*#__PURE__*/React.createElement("p",{style:{fontSize:14,fontWeight:500}},"Tapez pour rechercher")):results.players.length===0&&results.teams.length===0&&results.leagues.length===0?/*#__PURE__*/React.createElement("div",{style:{textAlign:'center',color:t.textSec,paddingTop:40}},/*#__PURE__*/React.createElement("p",{style:{fontSize:14}},"Aucun r\xE9sultat")):/*#__PURE__*/React.createElement(React.Fragment,null,results.leagues.map(lg=>/*#__PURE__*/React.createElement("div",{key:`lg-${lg.name}`,onClick:()=>onLeagueSelect(lg),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text,display:'flex',alignItems:'center',gap:6}},window.LeagueLogo&&React.createElement(window.LeagueLogo,{name:lg.name,size:16}),lg.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},lg.teamCount," \xE9quipes \u2022 ",lg.playerCount," joueurs"))),results.teams.map(tm=>/*#__PURE__*/React.createElement("div",{key:`tm-${tm.name}`,onClick:()=>onTeamSelect(tm),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{display:'flex',alignItems:'center',gap:8}},/*#__PURE__*/React.createElement(TeamLogo,{name:tm.name,color:accent,letter:tm.name[0],size:28}),/*#__PURE__*/React.createElement("div",null,/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text}},tm.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},tm.league))))),results.players.map(p=>/*#__PURE__*/React.createElement("div",{key:`p-${p.id}`,onClick:()=>onPlayerSelect(p),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text}},p.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},TRPOS(p.position)," \u2022 ",TRCLUB(p.team)," (",p.league,")"))))));};// ── PLAYER DETAIL SCREEN ──────────────────────────────────────────────────────
+
+const MV_HISTORY={'737066':{
+cur:138.8,high:200,highLabel:'mars 2025',
+clubs:[
+{name:'Molde',color:'#1B4FA0',from:2018.0,to:2019.0},
+{name:'RB Salzburg',color:'#D4021D',from:2019.0,to:2020.0},
+{name:'Borussia Dortmund',color:'#F5C400',from:2020.0,to:2022.5},
+{name:'Manchester City',color:'#6CABDD',from:2022.5,to:2026.55}],
+pts:[[2018.0,0.5],[2018.5,2],[2019.0,5],[2019.5,12],[2019.8,25],[2020.0,45],[2020.5,60],[2021.0,90],[2021.5,120],[2022.0,150],[2022.5,150],[2023.0,170],[2023.5,180],[2024.0,180],[2024.5,200],[2025.25,200],[2025.6,180],[2026.1,150],[2026.55,138.8]],
+transfers:[
+{x:2019.0,club:'RB Salzburg',fee:'8,2 M€'},
+{x:2020.0,club:'Borussia Dortmund',fee:'20 M€'},
+{x:2022.5,club:'Manchester City',fee:'60 M€'}]}};
+
+const MVChart=({d,accent,t,isDark})=>{
+var W=340,H=196,PL=34,PR=8,PT=12,PB=30,VMAX=210;
+var x0=d.pts[0][0],x1=d.pts[d.pts.length-1][0];
+var X=function(x){return PL+(x-x0)/(x1-x0)*(W-PL-PR);};
+var Y=function(v){return PT+(1-v/VMAX)*(H-PT-PB);};
+var val=function(x){var p=d.pts;for(var i=0;i<p.length-1;i++){if(x>=p[i][0]&&x<=p[i+1][0]){var r=(x-p[i][0])/((p[i+1][0]-p[i][0])||1);return p[i][1]+r*(p[i+1][1]-p[i][1]);}}return p[p.length-1][1];};
+var seg=function(c){
+var ps=[[c.from,val(c.from)]];
+d.pts.forEach(function(p){if(p[0]>c.from&&p[0]<c.to)ps.push(p);});
+ps.push([c.to,val(c.to)]);
+var line=ps.map(function(p,i){return (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1);}).join(' ');
+var area=line+' L'+X(c.to).toFixed(1)+' '+Y(0).toFixed(1)+' L'+X(c.from).toFixed(1)+' '+Y(0).toFixed(1)+' Z';
+return {line:line,area:area};};
+var grid=[0,50,100,150,200];
+var years=[2018,2019,2020,2021,2022,2023,2024,2025,2026];
+return React.createElement('div',{style:{position:'relative'}},
+React.createElement('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',display:'block'}},
+grid.map(function(g){return React.createElement('g',{key:'g'+g},
+React.createElement('line',{x1:PL,y1:Y(g),x2:W-PR,y2:Y(g),stroke:t.divider,strokeWidth:0.6,strokeDasharray:'3 3'}),
+React.createElement('text',{x:PL-5,y:Y(g)+3,textAnchor:'end',fontSize:7.5,fill:t.textTer},g?g+'M':'0'));}),
+d.clubs.map(function(c,i){var sg=seg(c);return React.createElement('g',{key:'c'+i},
+React.createElement('path',{d:sg.area,fill:c.color,opacity:0.22}),
+React.createElement('path',{d:sg.line,fill:'none',stroke:c.color,strokeWidth:2,strokeLinejoin:'round',strokeLinecap:'round'}));}),
+d.transfers.map(function(tr,i){return React.createElement('line',{key:'t'+i,x1:X(tr.x),y1:PT,x2:X(tr.x),y2:Y(0),stroke:t.textTer,strokeWidth:0.6,strokeDasharray:'2 3',opacity:0.5});}),
+years.map(function(y){return React.createElement('text',{key:'y'+y,x:X(y),y:H-12,textAnchor:'middle',fontSize:7.5,fill:t.textTer},y);})),
+d.transfers.map(function(tr,i){return React.createElement('div',{key:'lg'+i,title:tr.club+' · '+tr.fee,
+style:{position:'absolute',left:(X(tr.x)/W*100)+'%',top:(Y(val(tr.x))/H*100)+'%',transform:'translate(-50%,-50%)',width:26,height:26,borderRadius:'50%',background:t.card,border:'2px solid '+t.border,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}},
+React.createElement(TeamLogo,{name:tr.club,color:accent,size:18}));}));};
 const PlayerDetailScreen=({player,onBack,accent,t,isDark})=>{
 const[pTab,setPTab]=useState('infos');
 var _mv=parseInt(player.marketValue||0)||0;
 var _mvF=_mv>=1000000?((_mv/1000000).toFixed(1).replace('.',',')+' M€'):(_mv>=1000?(Math.round(_mv/1000)+' K€'):(_mv+' €'));
+var _mvh=(typeof MV_HISTORY!=='undefined'&&MV_HISTORY[player.id])||null;
 var _rows=[['🎯','Poste',TRPOS(player.position)],[player.team?React.createElement(TeamLogo,{name:player.team,color:accent,size:22}):'⚽','Club',player.team?TRCLUB(player.team):'—'],[(player.league&&window.LeagueLogo)?React.createElement(window.LeagueLogo,{name:player.league,size:22}):'🏆','Ligue',player.league||'—'],[player.nationality?TRFLAG(player.nationality):'🌍','Nationalité',player.nationality?TRPAYS(player.nationality):'—'],['🎂','Âge',(player.age?player.age+' ans':'—')]];
 var _tr=(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).filter(function(x){return x.player===player.name;});
 var _card=function(icon,title,body){return React.createElement('div',{style:{background:t.card,borderRadius:16,overflow:'hidden',border:'1px solid '+t.border,boxShadow:t.shadowCard,marginBottom:12}},
@@ -2304,7 +2347,7 @@ React.createElement("div",{style:{display:'flex',gap:6,padding:'10px 12px',borde
 return React.createElement('button',{key:x[0],onClick:function(){setPTab(x[0]);},style:{flexShrink:0,padding:'7px 14px',borderRadius:20,background:pTab===x[0]?accent:t.cardAlt,border:'1px solid '+(pTab===x[0]?accent:t.border),color:pTab===x[0]?'#fff':t.textSec,fontSize:12,fontWeight:pTab===x[0]?700:500,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},x[1]);})),
 React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'14px 16px 24px'}},
 pTab==='infos'&&React.createElement('div',null,
-_card('💰','Valeur marchande',React.createElement('div',{style:{padding:'14px'}},React.createElement('div',{style:{fontSize:27,fontWeight:900,color:accent,lineHeight:1}},_mvF))),
+_card('💰','Valeur marchande',React.createElement('div',{style:{padding:'14px'}},React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:10,flexWrap:'wrap',marginBottom:_mvh?10:0}},React.createElement('div',{style:{fontSize:27,fontWeight:900,color:accent,lineHeight:1}},_mvF),_mvh?React.createElement('div',{style:{fontSize:11,color:t.textSec,fontWeight:600}},'Plus haut : '+String(_mvh.high).replace('.',',')+' M€ ('+_mvh.highLabel+')'):null),_mvh?React.createElement(MVChart,{d:_mvh,accent:accent,t:t,isDark:isDark}):null,_mvh?React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px 12px',marginTop:10}},_mvh.clubs.map(function(cl){return React.createElement('div',{key:cl.name,style:{display:'flex',alignItems:'center',gap:5}},React.createElement('span',{style:{width:8,height:8,borderRadius:2,background:cl.color,display:'inline-block'}}),React.createElement('span',{style:{fontSize:10.5,color:t.textSec,fontWeight:600}},TRCLUB(cl.name)));})):null)),
 _card('ℹ️','Informations',React.createElement('div',null,_rows.map(function(r,idx){return React.createElement("div",{key:r[1],style:{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderBottom:idx<_rows.length-1?'1px solid '+t.divider:'none'}},
 React.createElement("span",{style:{fontSize:15,width:24,minWidth:24,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},r[0]),
 React.createElement("span",{style:{flex:1,fontSize:13,color:t.textSec,fontWeight:600}},r[1]),
