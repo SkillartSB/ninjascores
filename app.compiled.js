@@ -3212,7 +3212,7 @@ return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexD
   /*#__PURE__*/React.createElement('div',{style:{background:`linear-gradient(135deg, #0D1B6E 0%, ${accent} 60%, #5B3FE8 100%)`,padding:'20px 16px 24px',position:'relative',overflow:'hidden'}},
     /*#__PURE__*/React.createElement('div',{style:{position:'absolute',top:-20,right:-20,width:120,height:120,borderRadius:'50%',background:'rgba(255,255,255,0.06)'}}),/*NINJA-WM*/React.createElement('div',{style:{position:'absolute',right:16,bottom:-20,fontSize:88,fontWeight:900,color:'rgba(255,255,255,0.08)',lineHeight:1,pointerEvents:'none',userSelect:'none'}},'忍'),
     /*#__PURE__*/React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,position:'relative',zIndex:1}},
-      /*BRAND*/React.createElement('div',null,React.createElement('div',{style:{fontSize:9,fontWeight:800,color:'rgba(255,255,255,0.6)',letterSpacing:'0.14em'}},'✦ NINJASCORES'),React.createElement('h1',{style:{fontSize:18,fontWeight:800,color:'white',marginTop:2}},'Paramètres')),
+      /*BRAND*/React.createElement('div',null,React.createElement(NinjaLogo,{accent:'#fff',size:15}),React.createElement('h1',{style:{fontSize:18,fontWeight:800,color:'white',marginTop:7}},'Paramètres')),
       /*#__PURE__*/React.createElement('button',{onClick:onBack,style:{width:32,height:32,borderRadius:'50%',background:'rgba(255,255,255,0.2)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}},
         /*#__PURE__*/React.createElement('svg',{width:'16',height:'16',viewBox:'0 0 24 24',fill:'none',stroke:'white',strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round'},
           /*#__PURE__*/React.createElement('polyline',{points:'15 18 9 12 15 6'})))
@@ -3220,7 +3220,6 @@ return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexD
     /*#__PURE__*/React.createElement('div',{style:{display:'flex',alignItems:'center',gap:14,position:'relative',zIndex:1}},
       /*#__PURE__*/React.createElement('div',{style:{width:56,height:56,borderRadius:'50%',background:'rgba(255,255,255,0.2)',border:'2px solid rgba(255,255,255,0.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,fontWeight:900,color:'white'}},'忍'),
       /*#__PURE__*/React.createElement('div',{style:{flex:1,minWidth:0}},
-        /*#__PURE__*/React.createElement('div',{style:{fontSize:16,fontWeight:800,color:'white'}},'Invité'),
         /*#__PURE__*/React.createElement('div',{style:{fontSize:11,color:'rgba(255,255,255,0.75)',lineHeight:1.4}},'Connecte-toi pour retrouver tes favoris et tes pronos partout')
       ),
       /*AUTH-CTA*/React.createElement('button',{onClick:()=>window.openAuth&&window.openAuth('login'),style:{flexShrink:0,background:'#fff',border:'none',borderRadius:20,padding:'9px 15px',color:accent,fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}},'Se connecter')
