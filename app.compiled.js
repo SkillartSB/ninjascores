@@ -419,11 +419,11 @@ return React.createElement('header',{className:'ns-head',style:{height:72,flexSh
 borderBottom:'1px solid '+t.navBorder,display:'flex',alignItems:'center',gap:16,padding:'0 20px',zIndex:20}},
 React.createElement('button',{onClick:function(){onNav('home');},title:'Accueil',style:{flexShrink:0,display:'flex',alignItems:'center',marginRight:4,border:'none',background:'none',cursor:'pointer',padding:0,fontFamily:'inherit'}},(typeof NinjaLogo!=='undefined')?React.createElement(NinjaLogo,{accent:accent,size:30}):null),
 React.createElement('button',{onClick:onSearch,
-style:{width:360,flexShrink:1,height:42,borderRadius:21,border:'1px solid '+t.border,background:t.cardAlt,
-display:'flex',alignItems:'center',gap:9,padding:'0 14px',cursor:'text',fontFamily:'inherit',
-color:t.textTer,fontSize:13.5,textAlign:'left'}},
-React.createElement('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:t.textTer,strokeWidth:2,strokeLinecap:'round',style:{flexShrink:0}},
-React.createElement('circle',{cx:11,cy:11,r:8}),React.createElement('line',{x1:21,y1:21,x2:16.65,y2:16.65})),
+style:{width:380,flexShrink:1,height:44,borderRadius:14,border:'1.5px solid '+t.border,background:t.cardAlt,
+display:'flex',alignItems:'center',gap:10,padding:'0 15px',cursor:'text',fontFamily:'inherit',
+color:t.textTer,fontSize:14,fontWeight:500,textAlign:'left',transition:'border-color 0.15s ease, box-shadow 0.15s ease'},onMouseEnter:function(e){e.currentTarget.style.borderColor=accent;e.currentTarget.style.boxShadow='0 0 0 3px '+accent+'1f';var i=e.currentTarget.querySelector('svg');if(i)i.style.stroke=accent;},onMouseLeave:function(e){e.currentTarget.style.borderColor=t.border;e.currentTarget.style.boxShadow='none';var i=e.currentTarget.querySelector('svg');if(i)i.style.stroke=t.textTer;}},
+React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:t.textTer,strokeWidth:2.2,strokeLinecap:'round',style:{flexShrink:0,transition:'stroke 0.15s'}},
+React.createElement('circle',{cx:11,cy:11,r:7.5}),React.createElement('line',{x1:21,y1:21,x2:16.8,y2:16.8})),
 React.createElement('span',null,'Rechercher une équipe, un joueur, une compétition…')),
 React.createElement('nav',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:2}},[{id:'pronostics',label:'Pronostics'},{id:'transfers',label:'Transferts'},{id:'news',label:'Actualités'},{id:'favorites',label:'Favoris'}].map(function(m){var on=active===m.id;return React.createElement('button',{key:m.id,onClick:function(){onNav(m.id);},style:{border:'none',background:'none',cursor:'pointer',fontFamily:'inherit',padding:'10px 15px',borderRadius:10,fontSize:16,fontWeight:on?800:700,letterSpacing:0.1,color:on?t.text:t.textSec,transition:'color 0.15s'},onMouseEnter:function(e){e.currentTarget.style.color=t.text;},onMouseLeave:function(e){e.currentTarget.style.color=on?t.text:t.textSec;}},m.label);})),React.createElement('div',{title:'Bientôt disponible',style:{display:'flex',flexDirection:'column',alignItems:'center',gap:3,marginLeft:14,paddingLeft:14,borderLeft:'1px solid '+t.border,cursor:'default',userSelect:'none',opacity:0.9}},React.createElement('div',{style:{display:'flex',gap:6,pointerEvents:'none'}},React.createElement('span',{style:{width:36,height:36,borderRadius:10,background:accent,boxShadow:'0 2px 8px rgba(97,51,224,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}},React.createElement('svg',{width:17,height:17,viewBox:'0 0 24 24',fill:'#fff'},React.createElement('path',{d:'M17.05 12.53c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.71-3.18-1.73-1.35-.14-2.64.79-3.33.79-.69 0-1.75-.77-2.87-.75-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.24 2.74 2.2 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.87.69 1.18-.02 1.93-1.07 2.65-2.13.83-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.32-3.5zM14.9 5.6c.6-.74 1.01-1.75.9-2.77-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.69-.92 2.68.97.08 1.97-.49 2.58-1.22z'}))),React.createElement('span',{style:{width:36,height:36,borderRadius:10,background:accent,boxShadow:'0 2px 8px rgba(97,51,224,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}},React.createElement('svg',{width:16,height:16,viewBox:'0 0 24 24'},React.createElement('path',{d:'M3.6 1.8a1 1 0 0 0-.5.9v18.6a1 1 0 0 0 .5.9l10-10.2-10-10.2z',fill:'#34A853'}),React.createElement('path',{d:'M17.3 8.5 5.6 1.9l8 8.1 3.7-1.5z',fill:'#EA4335'}),React.createElement('path',{d:'M17.3 15.5 13.6 14l-8 8.1 11.7-6.6z',fill:'#FBBC04'}),React.createElement('path',{d:'M20.7 10.9 17.3 9l-3.7 3 3.7 3 3.4-1.9a1.2 1.2 0 0 0 0-2.2z',fill:'#4285F4'})))),React.createElement('span',{style:{fontSize:12,fontWeight:900,color:accent,whiteSpace:'nowrap',letterSpacing:0.15}},'Télécharge maintenant !')),React.createElement('div',{style:{display:'flex',alignItems:'center',gap:9,marginLeft:14,paddingLeft:14,borderLeft:'1px solid '+t.border}},
 
@@ -2455,10 +2455,26 @@ showModal&&React.createElement("div",{style:{position:'fixed',inset:0,zIndex:100
     React.createElement("span",{style:{fontSize:18,fontWeight:800,color:t.text}},"Ajouter un favori"),
     React.createElement("button",{onClick:()=>setShowModal(false),style:{width:32,height:32,borderRadius:'50%',background:t.cardAlt,border:'none',cursor:'pointer',fontSize:20,color:t.textSec,display:'flex',alignItems:'center',justifyContent:'center'}},"×")
   ),
-  React.createElement("div",{style:{padding:'12px 16px 8px'}},
-    React.createElement("div",{style:{display:'flex',alignItems:'center',gap:10,background:t.cardAlt,borderRadius:12,padding:'10px 14px',border:`1px solid ${t.border}`}},
-      React.createElement("span",{style:{color:t.textSec,fontSize:16}},"🔍"),
-      React.createElement("input",{type:'text',placeholder:'Club, championnat, joueur...',value:search,onChange:e=>setSearch(e.target.value),style:{border:'none',background:'transparent',outline:'none',flex:1,fontSize:14,color:t.text,fontFamily:'inherit'}})
+  React.createElement("div",{style:{padding:wide?'14px 20px 10px':'12px 16px 8px'}},
+    React.createElement("div",{style:{display:'flex',alignItems:'center',gap:11,background:t.cardAlt,
+      borderRadius:14,padding:wide?'13px 16px':'11px 14px',border:'1.5px solid '+t.border,
+      transition:'border-color 0.15s ease, box-shadow 0.15s ease'}},
+      React.createElement("svg",{width:wide?19:17,height:wide?19:17,viewBox:'0 0 24 24',fill:'none',
+        stroke:t.textTer,strokeWidth:2.2,strokeLinecap:'round',style:{flexShrink:0,transition:'stroke 0.15s'}},
+        React.createElement('circle',{cx:11,cy:11,r:7.5}),
+        React.createElement('line',{x1:21,y1:21,x2:16.8,y2:16.8})),
+      React.createElement("input",{type:'text',placeholder:'Rechercher un club, un championnat, un joueur…',
+        value:search,onChange:e=>setSearch(e.target.value),
+        onFocus:e=>{var p=e.currentTarget.parentElement;p.style.borderColor=accent;
+          p.style.boxShadow='0 0 0 3px '+accent+'26';var i=p.querySelector('svg');if(i)i.style.stroke=accent;},
+        onBlur:e=>{var p=e.currentTarget.parentElement;p.style.borderColor=t.border;
+          p.style.boxShadow='none';var i=p.querySelector('svg');if(i)i.style.stroke=t.textTer;},
+        style:{border:'none',background:'transparent',outline:'none',flex:1,minWidth:0,
+          fontSize:wide?15:14,fontWeight:500,color:t.text,fontFamily:'inherit'}}),
+      search?React.createElement("button",{onClick:()=>setSearch(''),title:'Effacer',
+        style:{flexShrink:0,width:22,height:22,borderRadius:'50%',border:'none',cursor:'pointer',
+          background:t.border,color:t.textSec,fontSize:14,lineHeight:1,display:'flex',
+          alignItems:'center',justifyContent:'center',fontFamily:'inherit',padding:0}},'\u00d7'):null
     )
   ),
   React.createElement("div",{style:{padding:wide?'0 20px 14px':'0 16px 10px',display:'flex',gap:wide?10:8,overflowX:wide?'visible':'auto',overflowY:'visible',scrollbarWidth:'none',flexShrink:0}},
