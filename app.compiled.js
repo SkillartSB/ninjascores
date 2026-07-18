@@ -168,14 +168,20 @@ try{var lk=(typeof STANDINGS_DATA!=='undefined'&&STANDINGS_DATA.lookup)||{};
 // on regroupe par nom francais, on garde la cle dont le drapeau se resout,
 // et on fusionne les championnats des deux cles.
 var par={};
+// cle de regroupement insensible aux accents : STANDINGS_DATA contient
+// 'Vietnam' et 'Viêt Nam', 'Nigeria' et 'Nigéria' pour un meme pays.
+var cle=function(x){return (x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');};
+var accents=function(x){var d=(x||'').normalize('NFD');return d.length-d.replace(/[\u0300-\u036f]/g,'').length;};
 Object.keys(lk).forEach(function(co){
 var lgs=Object.keys(lk[co]||{}); if(!lgs.length)return;
 var fr=(typeof TRPAYS!=='undefined'?TRPAYS(co):co);
 var dr=(typeof TRFLAG!=='undefined'?TRFLAG(co):'\ud83c\udf0d');
-var cur=par[fr];
-if(!cur){par[fr]={co:co,fr:fr,dr:dr,lgs:lgs.slice()};}
+var k=cle(fr); var cur=par[k];
+if(!cur){par[k]={co:co,fr:fr,dr:dr,lgs:lgs.slice()};}
 else{lgs.forEach(function(l){if(cur.lgs.indexOf(l)<0)cur.lgs.push(l);});
-if(cur.dr==='\ud83c\udf0d'&&dr!=='\ud83c\udf0d'){cur.co=co;cur.dr=dr;}}});
+// on garde la cle qui resout le drapeau, mais on affiche le libelle accentue
+if(cur.dr==='\ud83c\udf0d'&&dr!=='\ud83c\udf0d'){cur.co=co;cur.dr=dr;}
+if(accents(fr)>accents(cur.fr)){cur.fr=fr;}}});
 PAYS=Object.keys(par).map(function(k){return par[k];})
 .sort(function(x,y){return x.fr.localeCompare(y.fr,'fr');});}catch(e){}
 var carte=function(titre,contenu){
@@ -230,7 +236,7 @@ React.createElement('span',{style:{flex:1,fontSize:11,fontWeight:800,letterSpaci
 action?React.createElement('button',{onClick:action,style:{border:'none',background:'none',cursor:'pointer',fontFamily:'inherit',fontSize:11,fontWeight:700,color:t.textSec}},'Voir tout'):null),
 children);};
 return React.createElement('aside',{className:'ns-side',style:{width:324,flexShrink:0,height:'100%',overflowY:'auto',padding:'16px 14px',borderLeft:'1px solid '+t.border,background:t.bg}},
-card('Top du jour',function(){onNav('pronostics');},
+card('Pronostics du jour',function(){onNav('pronostics');},
 React.createElement('div',null, picks.length?picks.map(function(x,i){
 return React.createElement('button',{key:i,onClick:function(){onNav('pronostics');},
 style:{display:'flex',alignItems:'center',gap:9,width:'100%',padding:'9px 13px',border:'none',
@@ -240,7 +246,7 @@ React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,ove
 React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.pk.pick)),
 React.createElement('span',{style:{fontSize:12,fontWeight:800,color:'#F59E0B',background:'rgba(245,158,11,0.13)',borderRadius:6,padding:'3px 7px',flexShrink:0}},(x.pk.odds||0).toFixed(2)));})
 :React.createElement('div',{style:{padding:'16px 13px',fontSize:12,color:t.textSec}},'Aucun pronostic disponible.'))),
-card('Derniers transferts',null,React.createElement('div',null,(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).filter(function(x){return !x.hist;}).slice(0,4).map(function(x,i){return React.createElement('div',{key:x.id,style:{display:'flex',alignItems:'center',gap:9,padding:'9px 13px',borderTop:i?'1px solid '+t.divider:'none'}},React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.player),React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(x.from)+' → '+TRCLUB(x.to))),React.createElement('span',{style:{fontSize:11.5,fontWeight:800,color:accent,flexShrink:0}},x.value));}))),card('Bonus du moment',function(){if(typeof window.openBookmakers==='function')window.openBookmakers();},
+card('Derniers transferts',function(){onNav('transfers');},React.createElement('div',null,(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).filter(function(x){return !x.hist;}).slice(0,4).map(function(x,i){return React.createElement('div',{key:x.id,style:{display:'flex',alignItems:'center',gap:9,padding:'9px 13px',borderTop:i?'1px solid '+t.divider:'none'}},React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.player),React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(x.from)+' → '+TRCLUB(x.to))),React.createElement('span',{style:{fontSize:11.5,fontWeight:800,color:accent,flexShrink:0}},x.value));}))),card('Bonus du moment',function(){if(typeof window.openBookmakers==='function')window.openBookmakers();},
 React.createElement('div',null,((window.NS_BOOKMAKERS)||[]).map(function(b,i){
 return React.createElement('div',{key:b.slug,style:{padding:'11px 13px',borderTop:i?'1px solid '+t.divider:'none'}},
 React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:7}},
@@ -299,7 +305,7 @@ var enTete=function(){
 return React.createElement('div',{style:{display:'grid',gridTemplateColumns:GRILLE,gap:16,alignItems:'center',
 padding:'0 14px 10px',fontSize:10.5,fontWeight:800,letterSpacing:0.9,textTransform:'uppercase',color:t.textTer}},
 React.createElement('span',null,'De \u2192 vers'),
-React.createElement('span',null,'Indemnité'),
+React.createElement('span',null,'Montant'),
 React.createElement('span',{style:{textAlign:'right'}},'Date'));};
 var ligne=function(x,i){
 return React.createElement('div',{key:x.id,style:{borderTop:i?'1px solid '+t.divider:'none',
