@@ -220,6 +220,8 @@ React.createElement('div',{style:{fontSize:10,color:t.textTer,lineHeight:1.45,pa
 'Jouer comporte des risques : endettement, isolement, dépendance. Réservé aux personnes majeures.'));};
 
 
+const NS_MAIL_CONTACT='contact@ninjascores.com';
+const NS_MAIL_PUB='publicite@ninjascores.com';
 const NS_FOOT_PAYS=['France','Angleterre','Espagne','Italie','Allemagne','Portugal','Pays-Bas','Belgique','Brésil','Argentine'];
 
 const NSFooter=({t,accent,isDark,onNav,onLeague})=>{
@@ -261,14 +263,12 @@ return {label:lg.name,go:function(){onLeague(lg.country2||null,lg.name);}};})),
 colonne('Pays',NS_FOOT_PAYS.slice(0,7).map(function(pa){
 return {label:pa,go:function(){onNav('standings');}};})),
 
-colonne('NinjaScores',[
-{label:'Calendrier',go:function(){onNav('home');}},
-{label:'Pronostics du jour',go:function(){onNav('pronostics');}},
-{label:'Classements',go:function(){onNav('standings');}},
-{label:'Mes favoris',go:function(){onNav('favorites');}},
-{label:'Bonus & bookmakers',go:function(){if(typeof window.openBookmakers==='function')window.openBookmakers();}},
-{label:'Gagne avec NinjaScores',go:function(){if(typeof window.openMoney==='function')window.openMoney();}},
-{label:'Paramètres',go:function(){onNav('profile');}}]),
+colonne('Informations',[
+{label:'Nous contacter',go:function(){window.location.href='mailto:'+NS_MAIL_CONTACT+'?subject=Contact%20NinjaScores';}},
+{label:'Faire de la publicité avec nous',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Publicit%C3%A9%20sur%20NinjaScores';}},
+{label:'Partenariats & affiliation',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Partenariat%20NinjaScores';}},
+{label:'Signaler une erreur',go:function(){window.location.href='mailto:'+NS_MAIL_CONTACT+'?subject=Signalement%20d%27une%20erreur';}},
+{label:'Gagne avec NinjaScores',go:function(){if(typeof window.openMoney==='function')window.openMoney();}}]),
 
 colonne('Jeu responsable',[
 {label:'joueurs-info-service.fr',go:function(){window.open('https://www.joueurs-info-service.fr','_blank','noopener,noreferrer');}},
