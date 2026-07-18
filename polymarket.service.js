@@ -365,13 +365,26 @@
         active: 'true', closed: 'false', series_id: seriesId, limit: 100,
       });
       const events = Array.isArray(raw) ? raw : (raw.events || []);
-      const prefix = `${homeTeam} vs. ${awayTeam} - `;
       const SHOW = ['More Markets', 'Exact Score', 'Halftime'];
-      return events
-        .filter(e => {
-          const t = e.title || '';
-          return t.startsWith(prefix) && SHOW.some(p => t.includes(p));
-        })
+      // Correspondance tolerante : les libelles affiches ("Man. City", accents)
+      // ne correspondent pas toujours au titre Polymarket ("Manchester City").
+      // Un startsWith strict renvoyait [] et vidait la liste des marches.
+      const norm = x => (x || '').toLowerCase().normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ')
+        .replace(/\s+/g, ' ').trim();
+      const tok = n => norm(n).split(' ').filter(w => w.length > 3)
+        .sort((x, y) => y.length - x.length)[0] || norm(n);
+      const hT = tok(homeTeam), aT = tok(awayTeam);
+      const hasMarket = e => SHOW.some(p => norm(e.title || '').includes(norm(p)));
+      const byTeam = events.filter(e => {
+        if (!hasMarket(e)) return false;
+        const t = norm(e.title || '');
+        return (hT && t.includes(hT)) || (aT && t.includes(aT));
+      });
+      // series_id scope deja la requete a ce match : si aucun titre ne matche
+      // les noms d'equipe, on garde les evenements du bon type plutot que rien.
+      const picked = byTeam.length ? byTeam : events.filter(hasMarket);
+      return picked
         .map(e => ({
           title: e.title,
           markets: (e.markets || []).map(m => {
