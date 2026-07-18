@@ -202,7 +202,17 @@
 
 
   /* ══ MODE WEB : defilement naturel de la page (desktop) ══ */
+  /* html DOIT etre libere aussi : sinon la molette et la barre restent bloquees */
+  html.ns-web { height: auto !important; overflow-y: scroll !important; overflow-x: hidden !important; }
+  html.ns-web body { height: auto !important; overflow: visible !important; }
   body.ns-web { height: auto !important; overflow: visible !important; }
+  /* barre de defilement toujours visible, facon FotMob */
+  html.ns-web { scrollbar-width: auto; scrollbar-color: rgba(120,120,140,0.55) transparent; }
+  html.ns-web::-webkit-scrollbar { width: 14px; }
+  html.ns-web::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); }
+  html.ns-web::-webkit-scrollbar-thumb { background: rgba(120,120,140,0.55); border-radius: 7px;
+    border: 3px solid transparent; background-clip: content-box; }
+  html.ns-web::-webkit-scrollbar-thumb:hover { background: rgba(120,120,140,0.8); background-clip: content-box; }
   body.ns-web #root { height: auto !important; min-height: 100vh; display: block !important; overflow: visible !important; }
   /* le conteneur applicatif cesse d'etre une fenetre figee */
   body.ns-web #root > div { height: auto !important; min-height: 100vh; overflow: visible !important; }
@@ -2699,7 +2709,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=425"></script>
+<script src="app.compiled.js?v=426"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
