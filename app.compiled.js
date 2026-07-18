@@ -2275,6 +2275,27 @@ const searchByCategory=(query,category='tous')=>{if(!query.trim())return{players
 const SearchModal=({onClose,onPlayerSelect,onTeamSelect,onLeagueSelect,accent,t,isDark})=>{const[query,setQuery]=React.useState('');const[category,setCategory]=React.useState('tous');const getFilteredResults=()=>{const q=query.trim().toLowerCase();if(!q)return{players:[],teams:[],leagues:[]};let results={players:[],teams:[],leagues:[]};if(category==='tous'||category==='joueurs'){results.players=SEARCH_DATA.players.filter(p=>p.name.toLowerCase().includes(q)).slice(0,20);}if(category==='tous'||category==='equipes'){results.teams=SEARCH_DATA.teams.filter(tm=>tm.name.toLowerCase().includes(q)).slice(0,20);}if(category==='tous'||category==='competitions'){results.leagues=SEARCH_DATA.leagues.filter(lg=>lg.name.toLowerCase().includes(q)).slice(0,20);}return results;};const results=getFilteredResults();return/*#__PURE__*/React.createElement("div",{style:{position:'absolute',top:0,left:0,right:0,bottom:0,background:t.bg,zIndex:10,display:'flex',flexDirection:'column'}},/*#__PURE__*/React.createElement("div",{style:{display:'flex',alignItems:'center',gap:12,padding:'16px',borderBottom:`1px solid ${t.border}`,flexShrink:0}},/*#__PURE__*/React.createElement("button",{onClick:onClose,style:{background:'none',border:'none',fontSize:20,cursor:'pointer',color:accent}},"\u2190"),/*#__PURE__*/React.createElement("input",{autoFocus:true,type:"text",placeholder:"Rechercher joueurs, \xE9quipes, ligues...",value:query,onChange:e=>setQuery(e.target.value),style:{flex:1,border:'none',background:t.card,padding:'10px 12px',borderRadius:8,fontSize:14,color:t.text,outline:'none',fontFamily:'inherit'}})),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:8,padding:'12px 16px',borderBottom:`1px solid ${t.border}`,flexShrink:0,overflowX:'auto'}},['tous','equipes','joueurs','competitions'].map(cat=>/*#__PURE__*/React.createElement("button",{key:cat,onClick:()=>setCategory(cat),style:{padding:'6px 14px',borderRadius:20,border:'none',background:category===cat?accent:t.card,color:category===cat?'#fff':t.textSec,fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}},cat.charAt(0).toUpperCase()+cat.slice(1)))),/*#__PURE__*/React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'12px 16px',display:'flex',flexDirection:'column',gap:8}},query.trim()===''?/*#__PURE__*/React.createElement("div",{style:{textAlign:'center',color:t.textSec,paddingTop:40}},/*#__PURE__*/React.createElement("p",{style:{fontSize:14,fontWeight:500}},"Tapez pour rechercher")):results.players.length===0&&results.teams.length===0&&results.leagues.length===0?/*#__PURE__*/React.createElement("div",{style:{textAlign:'center',color:t.textSec,paddingTop:40}},/*#__PURE__*/React.createElement("p",{style:{fontSize:14}},"Aucun r\xE9sultat")):/*#__PURE__*/React.createElement(React.Fragment,null,results.leagues.map(lg=>/*#__PURE__*/React.createElement("div",{key:`lg-${lg.name}`,onClick:()=>onLeagueSelect(lg),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text,display:'flex',alignItems:'center',gap:6}},window.LeagueLogo&&React.createElement(window.LeagueLogo,{name:lg.name,size:16}),lg.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},lg.teamCount," \xE9quipes \u2022 ",lg.playerCount," joueurs"))),results.teams.map(tm=>/*#__PURE__*/React.createElement("div",{key:`tm-${tm.name}`,onClick:()=>onTeamSelect(tm),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{display:'flex',alignItems:'center',gap:8}},/*#__PURE__*/React.createElement(TeamLogo,{name:tm.name,color:accent,letter:tm.name[0],size:28}),/*#__PURE__*/React.createElement("div",null,/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text}},tm.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},tm.league))))),results.players.map(p=>/*#__PURE__*/React.createElement("div",{key:`p-${p.id}`,onClick:()=>onPlayerSelect(p),style:{padding:'12px',borderRadius:12,background:t.card,cursor:'pointer',transition:'all 0.15s ease'},onMouseEnter:e=>e.currentTarget.style.background=`${accent}20`,onMouseLeave:e=>e.currentTarget.style.background=t.card},/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text}},p.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},TRPOS(p.position)," \u2022 ",TRCLUB(p.team)," (",p.league,")"))))));};// ── PLAYER DETAIL SCREEN ──────────────────────────────────────────────────────
 
 
+
+const NS_MATCHES={'737066':[
+{d:'12 juil. 2026',c:'club',comp:'Premier League',opp:'Arsenal',logo:'Arsenal',ha:'D',sc:'2-1',res:'V',min:90,g:2,a:0,note:8.9},
+{d:'5 juil. 2026',c:'selection',comp:'Coupe du monde',opp:'Italie',logo:'Italy',ha:'N',sc:'1-1',res:'N',min:90,g:1,a:0,note:7.6},
+{d:'28 juin 2026',c:'selection',comp:'Coupe du monde',opp:'Ghana',logo:'Ghana',ha:'N',sc:'3-0',res:'V',min:76,g:2,a:1,note:9.1},
+{d:'21 juin 2026',c:'selection',comp:'Coupe du monde',opp:'Uruguay',logo:'Uruguay',ha:'N',sc:'2-2',res:'N',min:90,g:1,a:1,note:8.0},
+{d:'17 mai 2026',c:'club',comp:'Premier League',opp:'Tottenham',logo:'Tottenham Hotspur',ha:'E',sc:'4-0',res:'V',min:68,g:3,a:0,note:9.4},
+{d:'10 mai 2026',c:'club',comp:'Premier League',opp:'Liverpool',logo:'Liverpool',ha:'D',sc:'0-2',res:'D',min:90,g:0,a:0,note:6.1},
+{d:'3 mai 2026',c:'club',comp:'Champions League',opp:'Real Madrid',logo:'Real Madrid',ha:'E',sc:'2-1',res:'V',min:90,g:1,a:1,note:8.5},
+{d:'26 avr. 2026',c:'club',comp:'Premier League',opp:'Chelsea',logo:'Chelsea',ha:'E',sc:'3-1',res:'V',min:82,g:1,a:0,note:7.8},
+{d:'19 avr. 2026',c:'club',comp:'Champions League',opp:'Bayern Munich',logo:'Bayern München',ha:'D',sc:'1-1',res:'N',min:90,g:1,a:0,note:7.4},
+{d:'29 mars 2026',c:'selection',comp:'Éliminatoires',opp:'Estonie',logo:'Estonia',ha:'E',sc:'5-0',res:'V',min:61,g:2,a:2,note:9.0}]};
+
+const NS_CAREER={'737066':{
+clubs:[
+{club:'Manchester City',logo:'Manchester City',per:'2022 — auj.',m:171,g:158,a:32},
+{club:'Borussia Dortmund',logo:'Borussia Dortmund',per:'2020 — 2022',m:89,g:86,a:23},
+{club:'Salzburg',logo:'Salzburg',per:'2019 — 2020',m:27,g:29,a:7},
+{club:'Molde',logo:'Molde',per:'2017 — 2019',m:50,g:20,a:6}],
+nat:{club:'Norvège',logo:'Norway',per:'2019 — auj.',m:48,g:45,a:9}}};
+
 const MV_HISTORY={'737066':{
 cur:138.8,high:200,highLabel:'mars 2025',
 clubs:[
@@ -2340,7 +2361,7 @@ React.createElement('div',{style:{fontSize:10.5,fontWeight:800,color:'#fff',line
 React.createElement('div',{style:{fontSize:9,color:'rgba(255,255,255,0.6)'}},dlab(hx))),
 React.createElement('div',{style:{fontSize:11,fontWeight:900,color:hc?hc.color:accent,background:'rgba(255,255,255,0.12)',borderRadius:8,padding:'3px 7px'}},fmt(hv))):null);};
 const PlayerDetailScreen=({player,onBack,accent,t,isDark})=>{
-const[pTab,setPTab]=useState('infos');
+const[pTab,setPTab]=useState('infos');const[mFil,setMFil]=useState('tous');
 var _mv=parseInt(player.marketValue||0)||0;
 var _mvF=_mv>=1000000?((_mv/1000000).toFixed(1).replace('.',',')+' M€'):(_mv>=1000?(Math.round(_mv/1000)+' K€'):(_mv+' €'));
 var _mvh=(typeof MV_HISTORY!=='undefined'&&MV_HISTORY[player.id])||null;
@@ -2367,7 +2388,7 @@ React.createElement("div",{style:{display:'flex',alignItems:'center',gap:7,margi
 React.createElement(TeamLogo,{name:player.team,color:'#ffffff',size:18}),
 React.createElement("span",{style:{fontSize:12,color:'rgba(255,255,255,0.82)',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},player.team?TRCLUB(player.team):''))))),
 React.createElement("div",{style:{display:'flex',gap:6,padding:'10px 12px',borderBottom:'1px solid '+t.border,background:t.navBg,flexShrink:0,overflowX:'auto',scrollbarWidth:'none'}},
-[['infos','Infos'],['matchs','Matchs'],['transferts','Transferts'],['actus','Actualités']].map(function(x){
+[['infos','Infos'],['matchs','Matchs'],['carriere','Carrière'],['transferts','Transferts'],['actus','Actualités']].map(function(x){
 return React.createElement('button',{key:x[0],onClick:function(){setPTab(x[0]);},style:{flexShrink:0,padding:'7px 14px',borderRadius:20,background:pTab===x[0]?accent:t.cardAlt,border:'1px solid '+(pTab===x[0]?accent:t.border),color:pTab===x[0]?'#fff':t.textSec,fontSize:12,fontWeight:pTab===x[0]?700:500,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},x[1]);})),
 React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'14px 16px 24px'}},
 pTab==='infos'&&React.createElement('div',null,
@@ -2376,7 +2397,59 @@ _card('ℹ️','Informations',React.createElement('div',null,_rows.map(function(
 React.createElement("span",{style:{fontSize:15,width:24,minWidth:24,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},r[0]),
 React.createElement("span",{style:{flex:1,fontSize:13,color:t.textSec,fontWeight:600}},r[1]),
 React.createElement("span",{style:{fontSize:13,fontWeight:700,color:t.text,textAlign:'right',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'55%'}},r[2]));})))),
-pTab==='matchs'&&_card('⚽','Derniers matchs',_empty('📅','Aucune donnée de match','Les matchs joués, buts et passes décisives ne sont pas encore disponibles. Ils apparaîtront ici dès qu\'une source de statistiques sera connectée.')),
+pTab==='matchs'&&(function(){
+var all=(typeof NS_MATCHES!=='undefined'&&NS_MATCHES[player.id])||null;
+if(!all)return _card('\u26bd','Derniers matchs',_empty('\ud83d\udcc5','Aucune donn\u00e9e de match','Les matchs jou\u00e9s, buts et passes d\u00e9cisives ne sont pas encore disponibles. Ils appara\u00eetront ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
+var L=[['tous','Tous',all.length],['club','En club',all.filter(function(m){return m.c==='club';}).length],['selection','S\u00e9lection',all.filter(function(m){return m.c==='selection';}).length]];
+var li=mFil==='tous'?all:all.filter(function(m){return m.c===mFil;});
+var sg=li.reduce(function(n,m){return n+m.g;},0),sa=li.reduce(function(n,m){return n+m.a;},0);
+var rc={'V':'#16A34A','N':'#A1A1AA','D':'#DC2626'};
+return _card('\u26bd','Derniers matchs',React.createElement('div',null,
+React.createElement('div',{style:{display:'flex',gap:6,padding:'10px 12px 8px',overflowX:'auto',scrollbarWidth:'none'}},
+L.map(function(x){var on=mFil===x[0];
+return React.createElement('button',{key:x[0],onClick:function(){setMFil(x[0]);},
+style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?accent:t.border),background:on?accent:t.cardAlt,color:on?'#fff':t.textSec,fontSize:11.5,fontWeight:700,cursor:'pointer'}},
+x[1]+' \u00b7 '+x[2]);})),
+React.createElement('div',{style:{display:'flex',gap:8,padding:'0 12px 10px'}},
+[[li.length,'matchs'],[sg,'buts'],[sa,'passes d\u00e9c.']].map(function(k,z){
+return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'8px 6px',textAlign:'center'}},
+React.createElement('div',{style:{fontSize:16,fontWeight:900,color:accent}},k[0]),
+React.createElement('div',{style:{fontSize:9,color:t.textSec,fontWeight:600}},k[1]));})),
+li.map(function(m,z){
+return React.createElement('div',{key:z,style:{display:'flex',alignItems:'center',gap:9,padding:'10px 12px',borderTop:'1px solid '+t.divider}},
+React.createElement('div',{style:{width:3,height:30,borderRadius:2,background:rc[m.res],flexShrink:0}}),
+m.c==='selection'?React.createElement('div',{style:{width:24,height:24,borderRadius:'50%',background:t.cardAlt,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}},TRFLAG(m.logo)):React.createElement(TeamLogo,{name:m.logo,color:accent,size:24}),
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},m.c==='selection'?m.opp:TRCLUB(m.opp)),
+React.createElement('div',{style:{fontSize:9.5,color:t.textTer,fontWeight:600}},m.comp+' \u00b7 '+m.d)),
+React.createElement('div',{style:{textAlign:'right',flexShrink:0}},
+React.createElement('div',{style:{fontSize:13,fontWeight:900,color:rc[m.res]}},m.sc),
+React.createElement('div',{style:{fontSize:9.5,color:t.textSec,fontWeight:700}},(m.g?'\u26bd'+m.g+' ':'')+(m.a?'\ud83c\udfaf'+m.a+' ':'')+m.min+"'")),
+React.createElement('div',{style:{flexShrink:0,minWidth:30,textAlign:'center',background:m.note>=8?'#16A34A':m.note>=7?accent:'#71717A',color:'#fff',borderRadius:7,padding:'3px 5px',fontSize:11,fontWeight:900}},m.note.toFixed(1).replace('.',',')));}),
+li.length?null:React.createElement('div',{style:{padding:'22px 12px',textAlign:'center',fontSize:12,color:t.textSec}},'Aucun match sur ce filtre.')));})(),
+pTab==='carriere'&&(function(){
+var cv=(typeof NS_CAREER!=='undefined'&&NS_CAREER[player.id])||null;
+if(!cv)return _card('\ud83c\udfc6','Carri\u00e8re',_empty('\ud83c\udfc6','Aucune donn\u00e9e de carri\u00e8re','Le bilan par club et en s\u00e9lection appara\u00eetra ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
+var tm=cv.clubs.reduce(function(n,c){return n+c.m;},0),tg=cv.clubs.reduce(function(n,c){return n+c.g;},0),ta=cv.clubs.reduce(function(n,c){return n+c.a;},0);
+var row=function(c,k,hl){
+return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',borderTop:'1px solid '+t.divider,background:hl?(isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)'):'transparent'}},
+React.createElement(TeamLogo,{name:c.logo,color:accent,size:26}),
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('div',{style:{fontSize:12.5,fontWeight:800,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(c.club)),
+React.createElement('div',{style:{fontSize:9.5,color:t.textTer,fontWeight:600}},c.per)),
+[[c.m,''],[c.g,'\u26bd'],[c.a,'\ud83c\udfaf']].map(function(x,z){
+return React.createElement('div',{key:z,style:{minWidth:32,textAlign:'center'}},
+React.createElement('div',{style:{fontSize:13,fontWeight:900,color:z===1?accent:t.text}},x[0]),
+React.createElement('div',{style:{fontSize:8.5,color:t.textTer}},z===0?'M':z===1?'B':'PD'));}));};
+return React.createElement('div',null,
+_card('\ud83c\udfc6','Bilan en club',React.createElement('div',null,
+React.createElement('div',{style:{display:'flex',gap:8,padding:'10px 12px'}},
+[[tm,'matchs'],[tg,'buts'],[ta,'passes d\u00e9c.']].map(function(k,z){
+return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 6px',textAlign:'center'}},
+React.createElement('div',{style:{fontSize:17,fontWeight:900,color:accent}},k[0]),
+React.createElement('div',{style:{fontSize:9,color:t.textSec,fontWeight:600}},k[1]));})),
+cv.clubs.map(function(c,k){return row(c,k,false);}))),
+cv.nat?_card('\ud83c\udff3\ufe0f','S\u00e9lection nationale',row(cv.nat,'nat',true)):null);})(),
 pTab==='transferts'&&_card('🔄','Transferts',_tr.length?React.createElement('div',null,_tr.map(function(x,idx){
 return React.createElement('div',{key:x.id,style:{padding:'12px 14px',borderBottom:idx<_tr.length-1?'1px solid '+t.divider:'none'}},
 React.createElement('div',{style:{fontSize:10,color:t.textSec,fontWeight:600,marginBottom:6}},x.date),
