@@ -2314,14 +2314,14 @@ var res=function(m){return m.gf>m.ga?'V':m.gf<m.ga?'D':'N';};
 var rec=function(L){return {v:c(L,function(m){return m.gf>m.ga;}),n:c(L,function(m){return m.gf===m.ga;}),d:c(L,function(m){return m.gf<m.ga;}),
 bm:(L.reduce(function(a,m){return a+m.gf;},0)/L.length).toFixed(1).replace('.',','),
 be:(L.reduce(function(a,m){return a+m.ga;},0)/L.length).toFixed(1).replace('.',',')};};
-var MK=[['Plus de 1,5 buts',function(m){return tot(m)>1.5;}],
+var MK=[['Gagne la rencontre',function(m){return m.gf>m.ga;}],
+['Plus de 1,5 buts',function(m){return tot(m)>1.5;}],
 ['Plus de 2,5 buts',function(m){return tot(m)>2.5;}],
 ['Les deux équipes marquent',function(m){return m.gf>0&&m.ga>0;}],
-['Plus de 0,5 but en 1re mi-temps',function(m){return htt(m)>0.5;}],
-['Plus de 0,5 but en 2e mi-temps',function(m){return tot(m)-htt(m)>0.5;}],
 ['Marque au moins 1 but',function(m){return m.gf>0;}],
 ['Garde sa cage inviolée',function(m){return m.ga===0;}],
-['Gagne la rencontre',function(m){return m.gf>m.ga;}]];
+['Plus de 0,5 but en 1re mi-temps',function(m){return htt(m)>0.5;}],
+['Plus de 0,5 but en 2e mi-temps',function(m){return tot(m)-htt(m)>0.5;}]];
 var RC={'V':'#16A34A','N':'#D97706','D':'#DC2626'};var RL={'V':'Victoire','N':'Nul','D':'Défaite'};
 var pill=function(k,L,col){return React.createElement('div',{style:{width:50,flexShrink:0,textAlign:'center',background:col,borderRadius:7,padding:'3px 0',lineHeight:1.05}},
 React.createElement('div',{style:{fontSize:12,fontWeight:900,color:'#fff'}},pc(k,L)+'%'),
