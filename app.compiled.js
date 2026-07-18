@@ -264,6 +264,7 @@ colonne('Pays',NS_FOOT_PAYS.slice(0,7).map(function(pa){
 return {label:pa,go:function(){onNav('standings');}};})),
 
 colonne('Informations',[
+{label:'Bonus de paris sportifs',go:function(){if(typeof window.openBookmakers==='function')window.openBookmakers();}},
 {label:'Nous contacter',go:function(){window.location.href='mailto:'+NS_MAIL_CONTACT+'?subject=Contact%20NinjaScores';}},
 {label:'Faire de la publicité avec nous',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Publicit%C3%A9%20sur%20NinjaScores';}},
 {label:'Partenariats & affiliation',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Partenariat%20NinjaScores';}},
