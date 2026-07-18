@@ -219,9 +219,12 @@
   /* en-tete collante */
   body.ns-web .ns-head { position: sticky; top: 0; z-index: 50; }
   /* colonnes laterales collantes, defilement propre si trop longues */
-  body.ns-web .ns-row { align-items: flex-start; min-height: 0 !important; }
-  body.ns-web .ns-side { position: sticky; top: 72px; height: auto !important;
-    max-height: calc(100vh - 72px); overflow-y: auto; overscroll-behavior: contain; }
+  /* la rangee occupe au moins un ecran : le footer ne peut plus remonter
+     au milieu et tronquer les colonnes laterales */
+  body.ns-web .ns-row { align-items: stretch; min-height: calc(100vh - 72px) !important; }
+  body.ns-web .ns-side { position: sticky; top: 72px; align-self: flex-start;
+    height: calc(100vh - 72px) !important; max-height: calc(100vh - 72px);
+    overflow-y: auto; overscroll-behavior: contain; }
   /* la colonne centrale grandit avec son contenu au lieu de scroller en interne */
   body.ns-web .ns-center { height: auto !important; overflow: visible !important; }
   body.ns-web .ns-center [style*="overflow-y: auto"],
@@ -2669,7 +2672,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=427"></script>
+<script src="app.compiled.js?v=428"></script>
 <script>window.NS_renderBookmakers&&window.NS_renderBookmakers();</script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
