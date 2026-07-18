@@ -2409,7 +2409,7 @@ React.createElement("span",{style:{fontSize:13,fontWeight:700,color:t.text,textA
 pTab==='matchs'&&(function(){
 var all=(typeof NS_MATCHES!=='undefined'&&NS_MATCHES[player.id])||null;
 if(!all)return _card('\u26bd','Derniers matchs',_empty('\ud83d\udcc5','Aucune donn\u00e9e de match','Les matchs jou\u00e9s, buts et passes d\u00e9cisives ne sont pas encore disponibles. Ils appara\u00eetront ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
-var L=[['tous','Tous',all.length],['club','En club',all.filter(function(m){return m.c==='club';}).length],['selection','S\u00e9lection',all.filter(function(m){return m.c==='selection';}).length]];
+var L=[['tous','Tous'],['club','En club'],['selection','S\u00e9lection']];
 var li=mFil==='tous'?all:all.filter(function(m){return m.c===mFil;});
 var pl=li.filter(function(m){return m.st==='ok';});
 var sg=pl.reduce(function(n,m){return n+m.g;},0),sa=pl.reduce(function(n,m){return n+m.as_;},0);
@@ -2433,12 +2433,15 @@ React.createElement('div',{style:{display:'flex',gap:6,padding:'10px 12px 8px',o
 L.map(function(x){var on=mFil===x[0];
 return React.createElement('button',{key:x[0],onClick:function(){setMFil(x[0]);},
 style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?accent:t.border),background:on?accent:t.cardAlt,color:on?'#fff':t.textSec,fontSize:11.5,fontWeight:700,cursor:'pointer'}},
-x[1]+' \u00b7 '+x[2]);})),
+x[1]);})),
+React.createElement('div',{style:{padding:'0 12px 8px',fontSize:11.5,color:t.textSec,lineHeight:1.35}},
+React.createElement('span',{style:{fontWeight:800,color:t.text}},player.name.split(' ').slice(-1)[0]),
+' sur ses '+pl.length+' derniers matchs'+(mFil==='club'?' en club':mFil==='selection'?' en s\u00e9lection':'')+' \u2014 c\'est :'),
 React.createElement('div',{style:{display:'flex',gap:6,padding:'0 12px 10px'}},
-[[pl.length,'jou\u00e9s'],[sg,'buts'],[sa,'passes'],[av?av.toFixed(1).replace('.',','):'\u2013','note moy.']].map(function(k,z){
-return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'8px 4px',textAlign:'center'}},
-React.createElement('div',{style:{fontSize:15,fontWeight:900,color:z===3?nc(av):accent}},k[0]),
-React.createElement('div',{style:{fontSize:8.5,color:t.textSec,fontWeight:600}},k[1]));})),
+[[sg,'Buts',accent],[sa,'Passes d\u00e9cisives',accent],[av?av.toFixed(1).replace('.',','):'\u2013','Note moyenne',nc(av)]].map(function(k,z){
+return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 4px',textAlign:'center'}},
+React.createElement('div',{style:{fontSize:18,fontWeight:900,color:k[2],lineHeight:1.1}},k[0]),
+React.createElement('div',{style:{fontSize:8.5,color:t.textSec,fontWeight:700,marginTop:2,lineHeight:1.15}},k[1]));})),
 li.map(function(m,z){
 return React.createElement('div',{key:z,style:{borderTop:'1px solid '+t.divider}},
 React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,padding:'8px 12px 4px'}},
