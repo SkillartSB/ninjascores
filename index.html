@@ -202,18 +202,23 @@
 
 
 
-  /* ══ Traceur de souris (desktop, souris fine uniquement) ══ */
-  #ns-cursor, #ns-cursor-dot { position: fixed; top: 0; left: 0; pointer-events: none;
-    z-index: 9998; opacity: 0; transition: opacity .25s ease; will-change: transform; }
-  #ns-cursor { width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(97,51,224,0.16) 0%, rgba(97,51,224,0.07) 38%, transparent 68%); }
-  #ns-cursor-dot { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
-    background: #6133E0; box-shadow: 0 0 10px rgba(97,51,224,0.75); z-index: 9999; }
-  html.ns-web.ns-cursor-on #ns-cursor, html.ns-web.ns-cursor-on #ns-cursor-dot { opacity: 1; }
-  /* jamais sur ecran tactile, ni si l'utilisateur limite les animations */
-  @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-    #ns-cursor, #ns-cursor-dot { display: none !important; }
-  }
+  /* ══ Onde violette au clic sur le menu principal ══ */
+  .ns-pulse { position: fixed; pointer-events: none; z-index: 9999;
+    border-radius: 50%; transform: translate(-50%,-50%) scale(0);
+    background: radial-gradient(circle, rgba(97,51,224,0.34) 0%, rgba(97,51,224,0.16) 45%, transparent 70%);
+    animation: ns-pulse-out 620ms cubic-bezier(0.22,0.61,0.36,1) forwards; }
+  .ns-pulse-ring { position: fixed; pointer-events: none; z-index: 9999;
+    border-radius: 50%; border: 2px solid rgba(97,51,224,0.55);
+    transform: translate(-50%,-50%) scale(0);
+    animation: ns-pulse-ring 620ms cubic-bezier(0.22,0.61,0.36,1) forwards; }
+  @keyframes ns-pulse-out {
+    0%   { transform: translate(-50%,-50%) scale(0);   opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; } }
+  @keyframes ns-pulse-ring {
+    0%   { transform: translate(-50%,-50%) scale(0.15); opacity: 0.9; }
+    100% { transform: translate(-50%,-50%) scale(1);    opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .ns-pulse, .ns-pulse-ring { display: none !important; } }
+
   /* ══ MODE WEB : defilement naturel de la page (desktop) ══ */
   /* html DOIT etre libere aussi : sinon la molette et la barre restent bloquees */
   html.ns-web { height: auto !important; overflow-y: scroll !important; overflow-x: hidden !important; }
@@ -2696,37 +2701,24 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=457"></script>
+<script src="app.compiled.js?v=458"></script>
 <script>
-/* Traceur de souris : halo doux + point, avec inertie.
-   Actif uniquement en mode web, sur pointeur fin, et si les animations
-   ne sont pas reduites par l'utilisateur. */
-(function(){
-  var fin = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  var calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!fin || calme) return;
-  var halo=document.createElement('div'); halo.id='ns-cursor';
-  var pt=document.createElement('div');   pt.id='ns-cursor-dot';
-  document.body.appendChild(halo); document.body.appendChild(pt);
-  var cx=0, cy=0, hx=0, hy=0, actif=false, raf=null;
-  function boucle(){
-    hx += (cx-hx)*0.12; hy += (cy-hy)*0.12;
-    halo.style.transform='translate3d('+hx+'px,'+hy+'px,0)';
-    pt.style.transform='translate3d('+cx+'px,'+cy+'px,0)';
-    raf=requestAnimationFrame(boucle);
-  }
-  document.addEventListener('mousemove', function(e){
-    cx=e.clientX; cy=e.clientY;
-    if(!actif){ actif=true; document.documentElement.classList.add('ns-cursor-on');
-      hx=cx; hy=cy; if(!raf) raf=requestAnimationFrame(boucle); }
-  }, {passive:true});
-  document.addEventListener('mouseleave', function(){
-    document.documentElement.classList.remove('ns-cursor-on');
-  });
-  document.addEventListener('mouseenter', function(){
-    if(actif) document.documentElement.classList.add('ns-cursor-on');
-  });
-})();
+/* Onde violette declenchee au clic sur une entree du menu principal.
+   Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
+window.NS_pulse = function(x, y){
+  try{
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var T = 300; // diametre max
+    var halo = document.createElement('div');
+    halo.className = 'ns-pulse';
+    halo.style.cssText = 'left:'+x+'px;top:'+y+'px;width:'+T+'px;height:'+T+'px;';
+    var ring = document.createElement('div');
+    ring.className = 'ns-pulse-ring';
+    ring.style.cssText = 'left:'+x+'px;top:'+y+'px;width:'+(T*0.55)+'px;height:'+(T*0.55)+'px;';
+    document.body.appendChild(halo); document.body.appendChild(ring);
+    setTimeout(function(){ halo.remove(); ring.remove(); }, 700);
+  }catch(e){}
+};
 </script>
 <script>window.NS_renderBookmakers&&window.NS_renderBookmakers();</script>
 
