@@ -2280,6 +2280,7 @@ const SearchModal=({onClose,onPlayerSelect,onTeamSelect,onLeagueSelect,accent,t,
 
 
 
+const NS_PIED={'737066':'Gaucher'};
 const NS_MATCHES={'737066':[
 {d:'11.07.26',c:'selection',cp:'CDM',ext:'Après prol.',h:'Norvège',a:'Angleterre',hf:'Norway',af:'England',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:6.2,min:105,g:0,as_:0,y:0,r:0,res:'D'},
 {d:'05.07.26',c:'selection',cp:'CDM',h:'Brésil',a:'Norvège',hf:'Brazil',af:'Norway',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:8.6,min:90,g:2,as_:0,y:0,r:0,res:'V'},
@@ -2372,6 +2373,8 @@ var _mv=parseInt(player.marketValue||0)||0;
 var _mvF=_mv>=1000000?((_mv/1000000).toFixed(1).replace('.',',')+' M€'):(_mv>=1000?(Math.round(_mv/1000)+' K€'):(_mv+' €'));
 var _mvh=(typeof MV_HISTORY!=='undefined'&&MV_HISTORY[player.id])||null;
 var _rows=[['🎯','Poste',TRPOS(player.position)],[player.team?React.createElement(TeamLogo,{name:player.team,color:accent,size:22}):'⚽','Club',player.team?TRCLUB(player.team):'—'],[(player.league&&window.LeagueLogo)?React.createElement(window.LeagueLogo,{name:player.league,size:22}):'🏆','Ligue',player.league||'—'],[player.nationality?TRFLAG(player.nationality):'🌍','Nationalité',player.nationality?TRPAYS(player.nationality):'—'],['🎂','Âge',(player.age?player.age+' ans':'—')]];
+var _pf=(typeof NS_PIED!=='undefined'&&NS_PIED[player.id])||null;
+if(_pf)_rows.push(['\ud83d\udc5f','Pied fort',_pf]);
 var _tr=(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).filter(function(x){return x.player===player.name;});
 var _card=function(icon,title,body){return React.createElement('div',{style:{background:t.card,borderRadius:16,overflow:'hidden',border:'1px solid '+t.border,boxShadow:t.shadowCard,marginBottom:12}},
 React.createElement('div',{style:{background:accent+'14',padding:'9px 14px',borderBottom:'1px solid '+t.border}},
@@ -2463,10 +2466,14 @@ React.createElement(TeamLogo,{name:c.logo,color:accent,size:26}),
 React.createElement('div',{style:{flex:1,minWidth:0}},
 React.createElement('div',{style:{fontSize:12.5,fontWeight:800,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(c.club)),
 React.createElement('div',{style:{fontSize:9.5,color:t.textTer,fontWeight:600}},c.per)),
-[[c.m,''],[c.g,'\u26bd'],[c.a,'\ud83c\udfaf']].map(function(x,z){
-return React.createElement('div',{key:z,style:{minWidth:32,textAlign:'center'}},
-React.createElement('div',{style:{fontSize:13,fontWeight:900,color:z===1?accent:t.text}},x[0]),
-React.createElement('div',{style:{fontSize:8.5,color:t.textTer}},z===0?'M':z===1?'B':'PD'));}));};
+[c.m,c.g,c.a].map(function(x,z){
+return React.createElement('div',{key:z,style:{width:46,textAlign:'center',flexShrink:0}},
+React.createElement('div',{style:{fontSize:14,fontWeight:900,color:z===1?accent:t.text}},x));}));};
+var head=function(){return React.createElement('div',{style:{display:'flex',alignItems:'flex-end',gap:10,padding:'0 12px 6px'}},
+React.createElement('div',{style:{width:26,flexShrink:0}}),
+React.createElement('div',{style:{flex:1,minWidth:0}}),
+['Matchs','Buts','Passes d\u00e9cisives'].map(function(lb,z){
+return React.createElement('div',{key:z,style:{width:46,flexShrink:0,textAlign:'center',fontSize:8,fontWeight:800,color:t.textTer,lineHeight:1.15,letterSpacing:0.2,textTransform:'uppercase'}},lb);}));};
 return React.createElement('div',null,
 _card('\ud83c\udfc6','Bilan en club',React.createElement('div',null,
 React.createElement('div',{style:{display:'flex',gap:8,padding:'10px 12px'}},
@@ -2474,8 +2481,8 @@ React.createElement('div',{style:{display:'flex',gap:8,padding:'10px 12px'}},
 return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 6px',textAlign:'center'}},
 React.createElement('div',{style:{fontSize:17,fontWeight:900,color:accent}},k[0]),
 React.createElement('div',{style:{fontSize:9,color:t.textSec,fontWeight:600}},k[1]));})),
-cv.clubs.map(function(c,k){return row(c,k,false);}))),
-cv.nat?_card('\ud83c\udff3\ufe0f','S\u00e9lection nationale',row(cv.nat,'nat',true)):null);})(),
+head(),cv.clubs.map(function(c,k){return row(c,k,false);}))),
+cv.nat?_card('\ud83c\udff3\ufe0f','S\u00e9lection nationale',React.createElement('div',null,React.createElement('div',{style:{height:8}}),head(),row(cv.nat,'nat',true))):null);})(),
 pTab==='transferts'&&_card('🔄','Transferts',_tr.length?React.createElement('div',null,_tr.map(function(x,idx){
 return React.createElement('div',{key:x.id,style:{padding:'12px 14px',borderBottom:idx<_tr.length-1?'1px solid '+t.divider:'none'}},
 React.createElement('div',{style:{display:'flex',alignItems:'center',marginBottom:6}},React.createElement('span',{style:{fontSize:10,color:t.textSec,fontWeight:600}},x.date),React.createElement('span',{style:{marginLeft:'auto',fontSize:12,fontWeight:800,whiteSpace:'nowrap',color:x.value==='Libre'?t.textSec:accent}},x.value)),
