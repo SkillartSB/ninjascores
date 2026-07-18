@@ -27,3 +27,4 @@ standings_data_v2.js
 node_modules/
 .env
 .env.local
+.vercel
