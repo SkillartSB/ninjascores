@@ -201,13 +201,21 @@ React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,ove
 React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.pk.pick)),
 React.createElement('span',{style:{fontSize:12,fontWeight:800,color:'#F59E0B',background:'rgba(245,158,11,0.13)',borderRadius:6,padding:'3px 7px',flexShrink:0}},(x.pk.odds||0).toFixed(2)));})
 :React.createElement('div',{style:{padding:'16px 13px',fontSize:12,color:t.textSec}},'Aucun pronostic disponible.'))),
-card('Derniers transferts',null,React.createElement('div',null,(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).slice(0,4).map(function(x,i){return React.createElement('div',{key:x.id,style:{display:'flex',alignItems:'center',gap:9,padding:'9px 13px',borderTop:i?'1px solid '+t.divider:'none'}},React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.player),React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(x.from)+' → '+TRCLUB(x.to))),React.createElement('span',{style:{fontSize:11.5,fontWeight:800,color:accent,flexShrink:0}},x.value));}))),card('Bonus du moment',null,
-React.createElement('div',{style:{padding:'13px'}},
-React.createElement('div',{style:{fontSize:12.5,color:t.textSec,lineHeight:1.5,marginBottom:11}},
-'Compare les offres de bienvenue des bookmakers partenaires.'),
-React.createElement('button',{onClick:function(){if(typeof window.openBookmakers==='function')window.openBookmakers();},
-style:{width:'100%',padding:'11px',borderRadius:10,border:'none',background:accent,color:'#fff',
-fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}},'Voir les bonus →'))),
+card('Derniers transferts',null,React.createElement('div',null,(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).slice(0,4).map(function(x,i){return React.createElement('div',{key:x.id,style:{display:'flex',alignItems:'center',gap:9,padding:'9px 13px',borderTop:i?'1px solid '+t.divider:'none'}},React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.player),React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(x.from)+' → '+TRCLUB(x.to))),React.createElement('span',{style:{fontSize:11.5,fontWeight:800,color:accent,flexShrink:0}},x.value));}))),card('Bonus du moment',function(){if(typeof window.openBookmakers==='function')window.openBookmakers();},
+React.createElement('div',null,((window.NS_BOOKMAKERS)||[]).map(function(b,i){
+return React.createElement('div',{key:b.slug,style:{padding:'11px 13px',borderTop:i?'1px solid '+t.divider:'none'}},
+React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:7}},
+React.createElement('span',{style:{fontSize:12.5,fontWeight:800,color:b.couleur==='#12173C'&&isDark?'#8FA0FF':b.couleur}},b.nom),
+React.createElement('span',{style:{fontSize:10,fontWeight:700,color:t.textSec,background:t.cardAlt,borderRadius:5,padding:'2px 6px'}},'\u2b50 '+b.note)),
+React.createElement('div',{style:{fontSize:12,color:t.text,lineHeight:1.45,fontWeight:600,marginBottom:9}},b.offre),
+React.createElement('div',{style:{display:'flex',gap:6}},
+React.createElement('button',{onClick:function(){window.open(b.url,'_blank','noopener,noreferrer');},
+style:{flex:1,padding:'8px 6px',borderRadius:8,border:'none',background:b.couleur,color:'#fff',
+fontSize:11.5,fontWeight:800,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},"Je m'inscris \u2192"),
+React.createElement('button',{onClick:function(){window.open(b.url,'_blank','noopener,noreferrer');},
+style:{flex:1,padding:'8px 6px',borderRadius:8,border:'1px solid '+t.border,background:'none',color:t.textSec,
+fontSize:11.5,fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},'Le bonus \u2192')),
+React.createElement('div',{style:{fontSize:9,color:t.textTer,marginTop:6,lineHeight:1.35}},b.mention));}))),
 React.createElement('div',{style:{fontSize:10,color:t.textTer,lineHeight:1.45,padding:'0 2px'}},
 'Jouer comporte des risques : endettement, isolement, dépendance. Réservé aux personnes majeures.'));};
 
