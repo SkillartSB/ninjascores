@@ -2289,11 +2289,21 @@ const NS_MATCHES={'737066':[
 {d:'23.06.26',c:'selection',cp:'CDM',h:'Norvège',a:'Sénégal',hf:'Norway',af:'Senegal',hn:1,an:1,hs:3,as:2,st:'ok',note:9.1,min:90,g:2,as_:0,y:0,r:0,res:'V'},
 {d:'17.06.26',c:'selection',cp:'CDM',h:'Irak',a:'Norvège',hf:'Iraq',af:'Norway',hn:1,an:1,hs:1,as:4,st:'ok',note:8.9,min:90,g:2,as_:0,y:0,r:0,res:'V'},
 {d:'07.06.26',c:'selection',cp:'AMI',h:'Maroc',a:'Norvège',hf:'Morocco',af:'Norway',hn:1,an:1,hs:1,as:1,st:'ok',note:5.7,min:72,g:0,as_:0,y:0,r:0,res:'N'},
-{d:'24.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Aston Villa',hf:'Manchester City',af:'Aston Villa',hs:1,as:2,st:'out',res:'D'},
-{d:'19.05.26',c:'club',cp:'PL',h:'Bournemouth',a:'Manchester City',hf:'Bournemouth',af:'Manchester City',hs:1,as:1,st:'ok',note:7.7,min:90,g:1,as_:0,y:0,r:0,res:'N'},
-{d:'10.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Liverpool',hf:'Manchester City',af:'Liverpool',hs:0,as:2,st:'ok',note:6.1,min:90,g:0,as_:0,y:1,r:0,res:'D'},
-{d:'03.05.26',c:'club',cp:'LDC',h:'Manchester City',a:'Real Madrid',hf:'Manchester City',af:'Real Madrid',hs:2,as:1,st:'ok',note:8.5,min:90,g:1,as_:1,y:0,r:0,res:'V'},
-{d:'26.04.26',c:'club',cp:'PL',h:'Chelsea',a:'Manchester City',hf:'Chelsea',af:'Manchester City',hs:1,as:3,st:'ok',note:7.8,min:82,g:1,as_:0,y:0,r:0,res:'V'}]};
+{d:'24.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Aston Villa',hs:1,as:2,st:'out',res:'D'},
+{d:'19.05.26',c:'club',cp:'PL',h:'Bournemouth',a:'Manchester City',hs:1,as:1,st:'ok',note:7.7,min:90,g:1,as_:0,y:0,r:0,res:'N'},
+{d:'10.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Liverpool',hs:0,as:2,st:'ok',note:6.1,min:90,g:0,as_:0,y:1,r:0,res:'D'},
+{d:'03.05.26',c:'club',cp:'LDC',h:'Manchester City',a:'Real Madrid',hs:2,as:1,st:'ok',note:8.5,min:90,g:1,as_:1,y:0,r:0,res:'V'},
+{d:'26.04.26',c:'club',cp:'PL',h:'Chelsea',a:'Manchester City',hs:1,as:3,st:'ok',note:7.8,min:82,g:1,as_:0,y:0,r:0,res:'V'},
+{d:'22.04.26',c:'club',cp:'LDC',h:'Manchester City',a:'Bayern München',hs:3,as:1,st:'ok',note:8.8,min:90,g:2,as_:0,y:0,r:0,res:'V'},
+{d:'18.04.26',c:'club',cp:'PL',h:'Newcastle United',a:'Manchester City',hs:1,as:1,st:'ok',note:6.9,min:90,g:0,as_:1,y:1,r:0,res:'N'},
+{d:'11.04.26',c:'club',cp:'PL',h:'Manchester City',a:'Everton',hs:4,as:0,st:'ok',note:9.2,min:72,g:3,as_:0,y:0,r:0,res:'V'},
+{d:'04.04.26',c:'club',cp:'PL',h:'Brighton & Hove Albion',a:'Manchester City',hs:2,as:1,st:'ok',note:6.4,min:90,g:1,as_:0,y:0,r:0,res:'D'},
+{d:'21.03.26',c:'selection',cp:'ELIM',h:'Norvège',a:'Israël',hf:'Norway',af:'Israel',hn:1,an:1,hs:4,as:0,st:'ok',note:8.7,min:90,g:2,as_:1,y:0,r:0,res:'V'},
+{d:'17.03.26',c:'selection',cp:'ELIM',h:'Estonie',a:'Norvège',hf:'Estonia',af:'Norway',hn:1,an:1,hs:0,as:3,st:'ok',note:8.1,min:65,g:1,as_:1,y:0,r:0,res:'V'},
+{d:'14.03.26',c:'club',cp:'PL',h:'Manchester City',a:'Tottenham Hotspur',hs:2,as:2,st:'ok',note:7.2,min:90,g:1,as_:0,y:0,r:0,res:'N'},
+{d:'07.03.26',c:'club',cp:'PL',h:'Fulham',a:'Manchester City',hs:0,as:2,st:'ok',note:7.9,min:90,g:1,as_:1,y:0,r:0,res:'V'},
+{d:'15.11.25',c:'selection',cp:'ELIM',h:'Norvège',a:'Moldavie',hf:'Norway',af:'Moldova',hn:1,an:1,hs:5,as:0,st:'ok',note:9.0,min:80,g:3,as_:0,y:0,r:0,res:'V'},
+{d:'11.11.25',c:'selection',cp:'ELIM',h:'Italie',a:'Norvège',hf:'Italy',af:'Norway',hn:1,an:1,hs:1,as:2,st:'ok',note:8.3,min:90,g:1,as_:0,y:0,r:0,res:'V'}]};
 
 const NS_CAREER={'737066':{
 clubs:[
@@ -2410,13 +2420,13 @@ pTab==='matchs'&&(function(){
 var all=(typeof NS_MATCHES!=='undefined'&&NS_MATCHES[player.id])||null;
 if(!all)return _card('\u26bd','Derniers matchs',_empty('\ud83d\udcc5','Aucune donn\u00e9e de match','Les matchs jou\u00e9s, buts et passes d\u00e9cisives ne sont pas encore disponibles. Ils appara\u00eetront ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
 var L=[['tous','Tous'],['club','En club'],['selection','S\u00e9lection']];
-var li=mFil==='tous'?all:all.filter(function(m){return m.c===mFil;});
+var li=(mFil==='tous'?all:all.filter(function(m){return m.c===mFil;})).slice(0,10);
 var pl=li.filter(function(m){return m.st==='ok';});
 var sg=pl.reduce(function(n,m){return n+m.g;},0),sa=pl.reduce(function(n,m){return n+m.as_;},0);
 var av=pl.length?(pl.reduce(function(n,m){return n+m.note;},0)/pl.length):0;
 var rc={'V':'#16A34A','N':'#D97706','D':'#DC2626'};
 var nc=function(v){return v>=8.5?accent:v>=7?'#16A34A':v>=6?'#D97706':'#DC2626';};
-var cpc={'CDM':'#0D1B6E','LDC':'#1B1F8A','PL':'#3D195B','AMI':'#71717A'};
+var cpc={'CDM':'#0D1B6E','LDC':'#1B1F8A','PL':'#3D195B','AMI':'#71717A','ELIM':'#0F766E'};
 var side=function(m,side_){
 var nat=side_==='h'?m.hn:m.an,nm=side_==='h'?m.h:m.a,sc=side_==='h'?m.hs:m.as;
 var win=(m.hs>m.as&&side_==='h')||(m.as>m.hs&&side_==='a');
@@ -2436,7 +2446,7 @@ style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?a
 x[1]);})),
 React.createElement('div',{style:{padding:'0 12px 8px',fontSize:11.5,color:t.textSec,lineHeight:1.35}},
 React.createElement('span',{style:{fontWeight:800,color:t.text}},player.name.split(' ').slice(-1)[0]),
-' sur ses '+pl.length+' derniers matchs'+(mFil==='club'?' en club':mFil==='selection'?' en s\u00e9lection':'')+' \u2014 c\'est :'),
+' sur ses '+li.length+' derniers matchs'+(mFil==='club'?' en club':mFil==='selection'?' en s\u00e9lection':'')+' c\'est :'),
 React.createElement('div',{style:{display:'flex',gap:6,padding:'0 12px 10px'}},
 [[sg,'Buts',accent],[sa,'Passes d\u00e9cisives',accent],[av?av.toFixed(1).replace('.',','):'\u2013','Note moyenne',nc(av)]].map(function(k,z){
 return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 4px',textAlign:'center'}},
