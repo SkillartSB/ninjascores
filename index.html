@@ -200,6 +200,23 @@
   }
   .bk-overlay.show { display: flex; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
 
+
+  /* ══ MODE WEB : defilement naturel de la page (desktop) ══ */
+  body.ns-web { height: auto !important; overflow: visible !important; }
+  body.ns-web #root { height: auto !important; min-height: 100vh; display: block !important; overflow: visible !important; }
+  /* le conteneur applicatif cesse d'etre une fenetre figee */
+  body.ns-web #root > div { height: auto !important; min-height: 100vh; overflow: visible !important; }
+  /* en-tete collante */
+  body.ns-web .ns-head { position: sticky; top: 0; z-index: 50; }
+  /* colonnes laterales collantes, defilement propre si trop longues */
+  body.ns-web .ns-row { align-items: flex-start; min-height: 0 !important; }
+  body.ns-web .ns-side { position: sticky; top: 72px; height: auto !important;
+    max-height: calc(100vh - 72px); overflow-y: auto; overscroll-behavior: contain; }
+  /* la colonne centrale grandit avec son contenu au lieu de scroller en interne */
+  body.ns-web .ns-center { height: auto !important; overflow: visible !important; }
+  body.ns-web .ns-center [style*="overflow-y: auto"],
+  body.ns-web .ns-center [style*="overflow-y:auto"] {
+    overflow-y: visible !important; height: auto !important; max-height: none !important; }
   /* ── Bandeau legal jeu responsable (ANJ) ── */
   .anj-banner { background:#FFE24D; padding:8px 10px; display:flex; align-items:center; gap:9px; flex-shrink:0; }
   .anj-banner p { flex:1 1 0; min-width:0; overflow-wrap:anywhere; margin:0; font-size:7.6px; line-height:1.38; font-weight:800;
@@ -2682,7 +2699,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=424"></script>
+<script src="app.compiled.js?v=425"></script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
 <script>
