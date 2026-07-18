@@ -2281,16 +2281,18 @@ const SearchModal=({onClose,onPlayerSelect,onTeamSelect,onLeagueSelect,accent,t,
 
 
 const NS_MATCHES={'737066':[
-{d:'12 juil. 2026',c:'club',comp:'Premier League',opp:'Arsenal',logo:'Arsenal',ha:'D',sc:'2-1',res:'V',min:90,g:2,a:0,note:8.9},
-{d:'5 juil. 2026',c:'selection',comp:'Coupe du monde',opp:'Italie',logo:'Italy',ha:'N',sc:'1-1',res:'N',min:90,g:1,a:0,note:7.6},
-{d:'28 juin 2026',c:'selection',comp:'Coupe du monde',opp:'Ghana',logo:'Ghana',ha:'N',sc:'3-0',res:'V',min:76,g:2,a:1,note:9.1},
-{d:'21 juin 2026',c:'selection',comp:'Coupe du monde',opp:'Uruguay',logo:'Uruguay',ha:'N',sc:'2-2',res:'N',min:90,g:1,a:1,note:8.0},
-{d:'17 mai 2026',c:'club',comp:'Premier League',opp:'Tottenham',logo:'Tottenham Hotspur',ha:'E',sc:'4-0',res:'V',min:68,g:3,a:0,note:9.4},
-{d:'10 mai 2026',c:'club',comp:'Premier League',opp:'Liverpool',logo:'Liverpool',ha:'D',sc:'0-2',res:'D',min:90,g:0,a:0,note:6.1},
-{d:'3 mai 2026',c:'club',comp:'Champions League',opp:'Real Madrid',logo:'Real Madrid',ha:'E',sc:'2-1',res:'V',min:90,g:1,a:1,note:8.5},
-{d:'26 avr. 2026',c:'club',comp:'Premier League',opp:'Chelsea',logo:'Chelsea',ha:'E',sc:'3-1',res:'V',min:82,g:1,a:0,note:7.8},
-{d:'19 avr. 2026',c:'club',comp:'Champions League',opp:'Bayern Munich',logo:'Bayern München',ha:'D',sc:'1-1',res:'N',min:90,g:1,a:0,note:7.4},
-{d:'29 mars 2026',c:'selection',comp:'Éliminatoires',opp:'Estonie',logo:'Estonia',ha:'E',sc:'5-0',res:'V',min:61,g:2,a:2,note:9.0}]};
+{d:'11.07.26',c:'selection',cp:'CDM',ext:'Après prol.',h:'Norvège',a:'Angleterre',hf:'Norway',af:'England',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:6.2,min:105,g:0,as_:0,y:0,r:0,res:'D'},
+{d:'05.07.26',c:'selection',cp:'CDM',h:'Brésil',a:'Norvège',hf:'Brazil',af:'Norway',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:8.6,min:90,g:2,as_:0,y:0,r:0,res:'V'},
+{d:'30.06.26',c:'selection',cp:'CDM',h:'Côte d\'Ivoire',a:'Norvège',hf:'Ivory Coast',af:'Norway',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:7.9,min:90,g:1,as_:0,y:0,r:0,res:'V'},
+{d:'26.06.26',c:'selection',cp:'CDM',h:'Norvège',a:'France',hf:'Norway',af:'France',hn:1,an:1,hs:1,as:4,st:'bench',res:'D'},
+{d:'23.06.26',c:'selection',cp:'CDM',h:'Norvège',a:'Sénégal',hf:'Norway',af:'Senegal',hn:1,an:1,hs:3,as:2,st:'ok',note:9.1,min:90,g:2,as_:0,y:0,r:0,res:'V'},
+{d:'17.06.26',c:'selection',cp:'CDM',h:'Irak',a:'Norvège',hf:'Iraq',af:'Norway',hn:1,an:1,hs:1,as:4,st:'ok',note:8.9,min:90,g:2,as_:0,y:0,r:0,res:'V'},
+{d:'07.06.26',c:'selection',cp:'AMI',h:'Maroc',a:'Norvège',hf:'Morocco',af:'Norway',hn:1,an:1,hs:1,as:1,st:'ok',note:5.7,min:72,g:0,as_:0,y:0,r:0,res:'N'},
+{d:'24.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Aston Villa',hf:'Manchester City',af:'Aston Villa',hs:1,as:2,st:'out',res:'D'},
+{d:'19.05.26',c:'club',cp:'PL',h:'Bournemouth',a:'Manchester City',hf:'Bournemouth',af:'Manchester City',hs:1,as:1,st:'ok',note:7.7,min:90,g:1,as_:0,y:0,r:0,res:'N'},
+{d:'10.05.26',c:'club',cp:'PL',h:'Manchester City',a:'Liverpool',hf:'Manchester City',af:'Liverpool',hs:0,as:2,st:'ok',note:6.1,min:90,g:0,as_:0,y:1,r:0,res:'D'},
+{d:'03.05.26',c:'club',cp:'LDC',h:'Manchester City',a:'Real Madrid',hf:'Manchester City',af:'Real Madrid',hs:2,as:1,st:'ok',note:8.5,min:90,g:1,as_:1,y:0,r:0,res:'V'},
+{d:'26.04.26',c:'club',cp:'PL',h:'Chelsea',a:'Manchester City',hf:'Chelsea',af:'Manchester City',hs:1,as:3,st:'ok',note:7.8,min:82,g:1,as_:0,y:0,r:0,res:'V'}]};
 
 const NS_CAREER={'737066':{
 clubs:[
@@ -2406,30 +2408,50 @@ var all=(typeof NS_MATCHES!=='undefined'&&NS_MATCHES[player.id])||null;
 if(!all)return _card('\u26bd','Derniers matchs',_empty('\ud83d\udcc5','Aucune donn\u00e9e de match','Les matchs jou\u00e9s, buts et passes d\u00e9cisives ne sont pas encore disponibles. Ils appara\u00eetront ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
 var L=[['tous','Tous',all.length],['club','En club',all.filter(function(m){return m.c==='club';}).length],['selection','S\u00e9lection',all.filter(function(m){return m.c==='selection';}).length]];
 var li=mFil==='tous'?all:all.filter(function(m){return m.c===mFil;});
-var sg=li.reduce(function(n,m){return n+m.g;},0),sa=li.reduce(function(n,m){return n+m.a;},0);
-var rc={'V':'#16A34A','N':'#A1A1AA','D':'#DC2626'};
+var pl=li.filter(function(m){return m.st==='ok';});
+var sg=pl.reduce(function(n,m){return n+m.g;},0),sa=pl.reduce(function(n,m){return n+m.as_;},0);
+var av=pl.length?(pl.reduce(function(n,m){return n+m.note;},0)/pl.length):0;
+var rc={'V':'#16A34A','N':'#D97706','D':'#DC2626'};
+var nc=function(v){return v>=8.5?accent:v>=7?'#16A34A':v>=6?'#D97706':'#DC2626';};
+var cpc={'CDM':'#0D1B6E','LDC':'#1B1F8A','PL':'#3D195B','AMI':'#71717A'};
+var side=function(m,side_){
+var nat=side_==='h'?m.hn:m.an,nm=side_==='h'?m.h:m.a,sc=side_==='h'?m.hs:m.as;
+var win=(m.hs>m.as&&side_==='h')||(m.as>m.hs&&side_==='a');
+return React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,padding:'2px 0'}},
+nat?React.createElement('span',{style:{fontSize:14,width:20,textAlign:'center',flexShrink:0}},TRFLAG(side_==='h'?m.hf:m.af))
+:React.createElement(TeamLogo,{name:nm,color:accent,size:20}),
+React.createElement('span',{style:{flex:1,minWidth:0,fontSize:12.5,fontWeight:win?800:600,color:win?t.text:t.textSec,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},nat?nm:TRCLUB(nm)),
+m.sub===side_?React.createElement('span',{style:{fontSize:8,color:'#16A34A',border:'1px solid #16A34A',borderRadius:3,padding:'0 2px',flexShrink:0,fontWeight:800}},'\u2191'):null,
+React.createElement('span',{style:{fontSize:13,fontWeight:win?900:700,color:win?t.text:t.textSec,minWidth:14,textAlign:'right',flexShrink:0}},sc));};
+var stat=function(ic,v,col){
+return React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:2,fontSize:10.5,fontWeight:700,color:col||t.textSec}},ic,v);};
 return _card('\u26bd','Derniers matchs',React.createElement('div',null,
 React.createElement('div',{style:{display:'flex',gap:6,padding:'10px 12px 8px',overflowX:'auto',scrollbarWidth:'none'}},
 L.map(function(x){var on=mFil===x[0];
 return React.createElement('button',{key:x[0],onClick:function(){setMFil(x[0]);},
 style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?accent:t.border),background:on?accent:t.cardAlt,color:on?'#fff':t.textSec,fontSize:11.5,fontWeight:700,cursor:'pointer'}},
 x[1]+' \u00b7 '+x[2]);})),
-React.createElement('div',{style:{display:'flex',gap:8,padding:'0 12px 10px'}},
-[[li.length,'matchs'],[sg,'buts'],[sa,'passes d\u00e9c.']].map(function(k,z){
-return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'8px 6px',textAlign:'center'}},
-React.createElement('div',{style:{fontSize:16,fontWeight:900,color:accent}},k[0]),
-React.createElement('div',{style:{fontSize:9,color:t.textSec,fontWeight:600}},k[1]));})),
+React.createElement('div',{style:{display:'flex',gap:6,padding:'0 12px 10px'}},
+[[pl.length,'jou\u00e9s'],[sg,'buts'],[sa,'passes'],[av?av.toFixed(1).replace('.',','):'\u2013','note moy.']].map(function(k,z){
+return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'8px 4px',textAlign:'center'}},
+React.createElement('div',{style:{fontSize:15,fontWeight:900,color:z===3?nc(av):accent}},k[0]),
+React.createElement('div',{style:{fontSize:8.5,color:t.textSec,fontWeight:600}},k[1]));})),
 li.map(function(m,z){
-return React.createElement('div',{key:z,style:{display:'flex',alignItems:'center',gap:9,padding:'10px 12px',borderTop:'1px solid '+t.divider}},
-React.createElement('div',{style:{width:3,height:30,borderRadius:2,background:rc[m.res],flexShrink:0}}),
-m.c==='selection'?React.createElement('div',{style:{width:24,height:24,borderRadius:'50%',background:t.cardAlt,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}},TRFLAG(m.logo)):React.createElement(TeamLogo,{name:m.logo,color:accent,size:24}),
-React.createElement('div',{style:{flex:1,minWidth:0}},
-React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},m.c==='selection'?m.opp:TRCLUB(m.opp)),
-React.createElement('div',{style:{fontSize:9.5,color:t.textTer,fontWeight:600}},m.comp+' \u00b7 '+m.d)),
-React.createElement('div',{style:{textAlign:'right',flexShrink:0}},
-React.createElement('div',{style:{fontSize:13,fontWeight:900,color:rc[m.res]}},m.sc),
-React.createElement('div',{style:{fontSize:9.5,color:t.textSec,fontWeight:700}},(m.g?'\u26bd'+m.g+' ':'')+(m.a?'\ud83c\udfaf'+m.a+' ':'')+m.min+"'")),
-React.createElement('div',{style:{flexShrink:0,minWidth:30,textAlign:'center',background:m.note>=8?'#16A34A':m.note>=7?accent:'#71717A',color:'#fff',borderRadius:7,padding:'3px 5px',fontSize:11,fontWeight:900}},m.note.toFixed(1).replace('.',',')));}),
+return React.createElement('div',{key:z,style:{borderTop:'1px solid '+t.divider}},
+React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,padding:'8px 12px 4px'}},
+React.createElement('span',{style:{fontSize:9.5,color:t.textTer,fontWeight:700,flexShrink:0}},m.d),
+React.createElement('span',{style:{fontSize:8.5,fontWeight:900,color:'#fff',background:cpc[m.cp]||t.textTer,borderRadius:4,padding:'2px 5px',flexShrink:0,letterSpacing:0.3}},m.cp),
+m.ext?React.createElement('span',{style:{fontSize:8.5,color:t.textTer,fontWeight:600,fontStyle:'italic'}},m.ext):null,
+React.createElement('span',{style:{marginLeft:'auto',fontSize:10,fontWeight:900,color:'#fff',background:rc[m.res],borderRadius:5,width:17,height:17,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},m.res)),
+React.createElement('div',{style:{padding:'0 12px 6px'}},side(m,'h'),side(m,'a')),
+m.st==='ok'?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:9,margin:'0 12px 9px',padding:'5px 8px',background:t.cardAlt,borderRadius:8}},
+React.createElement('span',{style:{fontSize:11,fontWeight:900,color:'#fff',background:nc(m.note),borderRadius:5,padding:'2px 5px',flexShrink:0}},m.note.toFixed(1).replace('.',',')),
+stat('',m.min+"'"),
+stat('\u26bd',m.g,m.g?t.text:t.textTer),
+stat(React.createElement('span',{style:{fontSize:8.5,fontWeight:900,color:t.textTer}},'PD'),m.as_,m.as_?t.text:t.textTer),
+m.y?React.createElement('span',{style:{width:7,height:10,borderRadius:1.5,background:'#EAB308',marginLeft:'auto'}}):null,
+m.r?React.createElement('span',{style:{width:7,height:10,borderRadius:1.5,background:'#DC2626',marginLeft:m.y?0:'auto'}}):null)
+:React.createElement('div',{style:{margin:'0 12px 9px',padding:'6px 8px',background:t.cardAlt,borderRadius:8,textAlign:'center',fontSize:9.5,fontWeight:800,letterSpacing:0.5,color:t.textTer}},m.st==='bench'?'SUR LE BANC':'PAS DANS L\'\u00c9QUIPE'));}),
 li.length?null:React.createElement('div',{style:{padding:'22px 12px',textAlign:'center',fontSize:12,color:t.textSec}},'Aucun match sur ce filtre.')));})(),
 pTab==='carriere'&&(function(){
 var cv=(typeof NS_CAREER!=='undefined'&&NS_CAREER[player.id])||null;
