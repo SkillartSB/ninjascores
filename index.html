@@ -245,6 +245,8 @@
   body.ns-web .ns-side { position: static !important; height: auto !important;
     max-height: none !important; overflow: visible !important; }
   /* la colonne centrale grandit avec son contenu au lieu de scroller en interne */
+  /* overflow:hidden sur un ancetre neutralise position:sticky des enfants */
+  body.ns-web .ns-frame { overflow: visible !important; }
   body.ns-web .ns-center { height: auto !important; overflow: visible !important; }
   body.ns-web .ns-center [style*="overflow-y: auto"],
   body.ns-web .ns-center [style*="overflow-y:auto"] {
@@ -2701,7 +2703,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=460"></script>
+<script src="app.compiled.js?v=463"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
