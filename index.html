@@ -221,10 +221,11 @@
   /* colonnes laterales collantes, defilement propre si trop longues */
   /* la rangee occupe au moins un ecran : le footer ne peut plus remonter
      au milieu et tronquer les colonnes laterales */
-  body.ns-web .ns-row { align-items: stretch; min-height: calc(100vh - 72px) !important; }
-  body.ns-web .ns-side { position: sticky; top: 72px; align-self: flex-start;
-    height: calc(100vh - 72px) !important; max-height: calc(100vh - 72px);
-    overflow-y: auto; overscroll-behavior: contain; }
+  body.ns-web .ns-row { align-items: stretch; min-height: calc(100vh - 72px) !important; height: auto !important; }
+  /* les colonnes laterales restent dans le flux : c'est la barre de defilement
+     principale qui fait tout descendre, pas une barre interne par colonne */
+  body.ns-web .ns-side { position: static !important; height: auto !important;
+    max-height: none !important; overflow: visible !important; }
   /* la colonne centrale grandit avec son contenu au lieu de scroller en interne */
   body.ns-web .ns-center { height: auto !important; overflow: visible !important; }
   body.ns-web .ns-center [style*="overflow-y: auto"],
@@ -2672,7 +2673,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=428"></script>
+<script src="app.compiled.js?v=429"></script>
 <script>window.NS_renderBookmakers&&window.NS_renderBookmakers();</script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
