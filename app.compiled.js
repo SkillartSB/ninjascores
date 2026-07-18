@@ -154,6 +154,10 @@ return exact||partiel||null;
 };
 
 
+const NS_ALIAS_CLUB=function(n){
+var d={'Atl. Madrid':'Atletico Madrid','Man Utd':'Manchester United','Man. United':'Manchester United',
+'Man City':'Manchester City','Man. City':'Manchester City','Inter Milan':'Inter','Napoli':'Napoli'};
+return d[n]||n;};
 const NS_TOP_LEAGUES=[{name:'Coupe du Monde',country:'Monde'},{name:'Ligue 1',country:'France',country2:'France'},
 {name:'Premier League',country:'Angleterre'},{name:'Champions League',country:'Europe'},
 {name:'La Liga',country:'Espagne'},{name:'Serie A',country:'Italie'},
@@ -238,11 +242,15 @@ children);};
 return React.createElement('aside',{className:'ns-side',style:{width:324,flexShrink:0,height:'100%',overflowY:'auto',padding:'16px 14px',borderLeft:'1px solid '+t.border,background:t.bg}},
 card('Pronostics du jour',function(){onNav('pronostics');},
 React.createElement('div',null, picks.length?picks.map(function(x,i){
+var eq=String(x.pk.match||'').split(/\s+[-\u2013]\s+/);
+var e1=(eq[0]||'').trim(), e2=(eq[1]||'').trim();
 return React.createElement('button',{key:i,onClick:function(){onNav('pronostics');},
-style:{display:'flex',alignItems:'center',gap:9,width:'100%',padding:'9px 13px',border:'none',
+style:{display:'flex',alignItems:'center',gap:10,width:'100%',padding:'10px 13px',border:'none',
 borderTop:i?'1px solid '+t.divider:'none',background:'none',cursor:'pointer',fontFamily:'inherit',textAlign:'left'}},
+React.createElement('div',{style:{position:'relative',width:34,height:26,flexShrink:0}},
+React.createElement('span',{style:{position:'absolute',left:0,top:2}},React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(e1),color:accent,size:20})),
+React.createElement('span',{style:{position:'absolute',left:14,top:2,padding:1,background:t.card,borderRadius:'50%',display:'flex'}},React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(e2),color:accent,size:20}))),
 React.createElement('div',{style:{flex:1,minWidth:0}},
-React.createElement('div',{style:{fontSize:10,color:t.textTer,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.pk.match),
 React.createElement('div',{style:{fontSize:12.5,fontWeight:700,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},x.pk.pick)),
 React.createElement('span',{style:{fontSize:12,fontWeight:800,color:accent,background:isDark?'rgba(255,255,255,0.08)':'rgba(97,51,224,0.11)',borderRadius:6,padding:'3px 7px',flexShrink:0}},(x.pk.odds||0).toFixed(2)));})
 :React.createElement('div',{style:{padding:'16px 13px',fontSize:12,color:t.textSec}},'Aucun pronostic disponible.'))),
