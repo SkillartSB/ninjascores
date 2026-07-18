@@ -269,8 +269,7 @@ React.createElement('button',{onClick:function(){window.open(b.url,'_blank','noo
 style:{flex:1,padding:'8px 6px',borderRadius:8,border:'1px solid '+t.border,background:'none',color:t.textSec,
 fontSize:11.5,fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},'Le bonus \u2192')),
 React.createElement('div',{style:{fontSize:9,color:t.textTer,marginTop:6,lineHeight:1.35}},b.mention));}))),
-React.createElement('div',{style:{fontSize:10,color:t.textTer,lineHeight:1.45,padding:'0 2px'}},
-'Jouer comporte des risques : endettement, isolement, dépendance. Réservé aux personnes majeures.'));};
+React.createElement(NSJeuResp,null));};
 
 
 const NS_MAIL_CONTACT='contact@ninjascores.com';
