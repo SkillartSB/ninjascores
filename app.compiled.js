@@ -386,23 +386,15 @@ React.createElement('div',{style:{fontSize:11,color:t.textTer,lineHeight:1.55,ma
 colonne('Compétitions',NS_TOP_LEAGUES.slice(0,7).map(function(lg){
 return {label:lg.name,go:function(){onLeague(NS_RESOLVE_LEAGUE(lg.name));}};})),
 
-colonne('Pays',NS_FOOT_PAYS.slice(0,7).map(function(pa){
-return {label:pa,go:function(){onNav('standings');}};})),
-
 colonne('Informations',[
 {label:'Bonus de paris sportifs',go:function(){if(typeof window.openBookmakers==='function')window.openBookmakers();}},
 {label:'Nous contacter',go:function(){window.location.href='mailto:'+NS_MAIL_CONTACT+'?subject=Contact%20NinjaScores';}},
 {label:'Faire de la publicité avec nous',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Publicit%C3%A9%20sur%20NinjaScores';}},
 {label:'Partenariats & affiliation',go:function(){window.location.href='mailto:'+NS_MAIL_PUB+'?subject=Partenariat%20NinjaScores';}},
 {label:'Signaler une erreur',go:function(){window.location.href='mailto:'+NS_MAIL_CONTACT+'?subject=Signalement%20d%27une%20erreur';}},
-{label:'Gagne avec NinjaScores',go:function(){if(typeof window.openMoney==='function')window.openMoney();}}]),
+{label:'Gagne avec NinjaScores',go:function(){if(typeof window.openMoney==='function')window.openMoney();}}])),
 
-colonne('Jeu responsable',[
-{label:'joueurs-info-service.fr',go:function(){window.open('https://www.joueurs-info-service.fr','_blank','noopener,noreferrer');}},
-{label:'09 74 75 13 13 (non surtaxé)'},
-{label:'Interdit aux moins de 18 ans'},
-{label:'Auto-exclusion : anj.fr',go:function(){window.open('https://anj.fr','_blank','noopener,noreferrer');}}])),
-
+React.createElement('div',{style:{marginBottom:18}},React.createElement(NSJeuResp,null)),
 React.createElement('div',{style:{borderTop:'1px solid '+t.divider,paddingTop:18,
 display:'flex',flexWrap:'wrap',gap:16,alignItems:'center'}},
 React.createElement('span',{style:{fontSize:11.5,color:t.textTer,fontWeight:600}},'© 2026 NinjaScores'),
@@ -412,7 +404,7 @@ reseau('Instagram','M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.
 reseau('TikTok','M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'),
 reseau('Telegram','M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z','https://t.me/')),
 React.createElement('div',{style:{width:'100%',fontSize:11,color:t.textTer,lineHeight:1.55,marginTop:4}},
-'Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé). NinjaScores est un service éditorial indépendant et n\'est pas un opérateur de jeux. Certains liens vers les bookmakers sont des liens affiliés.'))));};
+'NinjaScores est un service éditorial indépendant et n\'est pas un opérateur de jeux. Certains liens vers les bookmakers sont des liens affiliés.'))));};
 
 const NSTopBar=({t,accent,isDark,onSearch,onProfile,active,onNav})=>{
 var ico=function(children,onClick,title){
