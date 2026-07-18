@@ -2310,7 +2310,7 @@ var AWAY='#F59E0B';
 var c=function(L,f){return L.filter(f).length;};
 var pc=function(k,L){return Math.round(k/L.length*100);};
 var tot=function(m){return m.gf+m.ga;},htt=function(m){return m.hf+m.ha;};
-var res=function(m){return m.gf>m.ga?'V':m.gf<m.ga?'N':'D';};
+var res=function(m){return m.gf>m.ga?'V':m.gf<m.ga?'D':'N';};
 var rec=function(L){return {v:c(L,function(m){return m.gf>m.ga;}),n:c(L,function(m){return m.gf===m.ga;}),d:c(L,function(m){return m.gf<m.ga;}),
 bm:(L.reduce(function(a,m){return a+m.gf;},0)/L.length).toFixed(1).replace('.',','),
 be:(L.reduce(function(a,m){return a+m.ga;},0)/L.length).toFixed(1).replace('.',',')};};
@@ -2322,7 +2322,7 @@ var MK=[['Plus de 1,5 buts',function(m){return tot(m)>1.5;}],
 ['Marque au moins 1 but',function(m){return m.gf>0;}],
 ['Garde sa cage inviolée',function(m){return m.ga===0;}],
 ['Gagne la rencontre',function(m){return m.gf>m.ga;}]];
-var RC={'V':'#16A34A','N':'#D97706','D':'#DC2626'};
+var RC={'V':'#16A34A','N':'#D97706','D':'#DC2626'};var RL={'V':'Victoire','N':'Nul','D':'Défaite'};
 var pill=function(k,L,col){return React.createElement('div',{style:{width:50,flexShrink:0,textAlign:'center',background:col,borderRadius:7,padding:'3px 0',lineHeight:1.05}},
 React.createElement('div',{style:{fontSize:12,fontWeight:900,color:'#fff'}},pc(k,L)+'%'),
 React.createElement('div',{style:{fontSize:8,fontWeight:700,color:'rgba(255,255,255,0.75)'}},k+'/'+L.length));};
@@ -2334,7 +2334,7 @@ React.createElement('span',{style:{flex:1,fontSize:11.5,fontWeight:800,color:t.t
 React.createElement('span',{style:{fontSize:9.5,fontWeight:700,color:t.textTer}},r.v+'V '+r.n+'N '+r.d+'D \u00b7 '+r.bm+' bm / '+r.be+' be')),
 React.createElement('div',{style:{display:'flex',gap:2.5}},
 L.slice().reverse().map(function(m,z){var rr=res(m);
-return React.createElement('span',{key:z,title:m.opp+' '+m.gf+'-'+m.ga,style:{flex:1,height:5,borderRadius:2,background:RC[rr]}});})));};
+return React.createElement('span',{key:z,title:m.opp+' '+m.gf+'-'+m.ga+' · '+RL[rr],style:{flex:1,height:15,borderRadius:3,background:RC[rr],color:'#fff',fontSize:8.5,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center'}},rr);})));};
 var row=function(x,i){var ka=c(LA,x[1]),kb=c(LB,x[1]);
 return React.createElement('div',{key:i,style:{padding:'8px 14px',borderTop:'1px solid '+t.divider}},
 React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8}},
@@ -2353,8 +2353,13 @@ React.createElement('div',{style:{fontSize:11,color:t.textSec,marginTop:3,lineHe
 React.createElement('span',{style:{fontWeight:800,color:t.text}},n+' derniers matchs'),' de chaque équipe.'),
 teamHead(A,LA,accent),teamHead(B,LB,AWAY)),
 MK.map(row),
-React.createElement('div',{style:{padding:'9px 14px',borderTop:'1px solid '+t.divider,fontSize:9.5,color:t.textTer,lineHeight:1.4}},
-'bm = buts marqués par match, be = buts encaissés. Une fréquence élevée ne garantit pas le résultat.'));};
+React.createElement('div',{style:{padding:'9px 14px',borderTop:'1px solid '+t.divider}},
+React.createElement('div',{style:{display:'flex',gap:10,marginBottom:5,flexWrap:'wrap'}},
+['V','N','D'].map(function(k){return React.createElement('span',{key:k,style:{display:'inline-flex',alignItems:'center',gap:4}},
+React.createElement('span',{style:{width:12,height:12,borderRadius:3,background:RC[k],color:'#fff',fontSize:8,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center'}},k),
+React.createElement('span',{style:{fontSize:9.5,color:t.textSec,fontWeight:600}},RL[k]));})),
+React.createElement('div',{style:{fontSize:9.5,color:t.textTer,lineHeight:1.4}},
+'bm = buts marqués par match, be = buts encaissés. Une fréquence élevée ne garantit pas le résultat.')));};
 
 const NS_MATCHES={'737066':[
 {d:'11.07.26',c:'selection',cp:'CDM',ext:'Après prol.',h:'Norvège',a:'Angleterre',hf:'Norway',af:'England',hn:1,an:1,hs:1,as:2,sub:'a',st:'ok',note:6.2,min:105,g:0,as_:0,y:0,r:0,res:'D'},
