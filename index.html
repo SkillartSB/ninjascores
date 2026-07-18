@@ -231,6 +231,16 @@
   body.ns-web .ns-center [style*="overflow-y: auto"],
   body.ns-web .ns-center [style*="overflow-y:auto"] {
     overflow-y: visible !important; height: auto !important; max-height: none !important; }
+  /* ══ Listes en colonnes sur desktop ══
+     Les listes de type "une ligne pleine largeur par element" (pays, championnats)
+     gaspillent la largeur en desktop : on les passe en grille. */
+  body.ns-web .ns-center div:has(> button[style*="margin-bottom: 4px"]) {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: 6px;
+    align-items: start; }
+  body.ns-web .ns-center div:has(> button[style*="margin-bottom: 4px"]) > button { margin-bottom: 0 !important; }
+  /* les intitules de section (lettres, titres) gardent toute la largeur */
+  body.ns-web .ns-center div:has(> button[style*="margin-bottom: 4px"]) > *:not(button) { grid-column: 1 / -1; }
+
   /* ── Bandeau legal jeu responsable (ANJ) ── */
   .anj-banner { background:#FFE24D; padding:8px 10px; display:flex; align-items:center; gap:9px; flex-shrink:0; }
   .anj-banner p { flex:1 1 0; min-width:0; overflow-wrap:anywhere; margin:0; font-size:7.6px; line-height:1.38; font-weight:800;
@@ -2673,7 +2683,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=432"></script>
+<script src="app.compiled.js?v=433"></script>
 <script>window.NS_renderBookmakers&&window.NS_renderBookmakers();</script>
 
 <!-- ── Classement patches: French country names + Premier League ─────────── -->
