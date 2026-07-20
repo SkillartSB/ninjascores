@@ -40,6 +40,8 @@ const pays = Object.entries(MAN).sort((a, b) => a[1].nom.localeCompare(b[1].nom,
 
 for (const [cle, info] of pays) {
   const d = JSON.parse(fs.readFileSync(path.join(DIR, info.fichier), 'utf8'));
+  // _logos n'est pas un championnat
+  for (const k of Object.keys(d)) if (k.startsWith('_')) delete d[k];
   const noms = Object.keys(d);
 
   // -- ordre des championnats
