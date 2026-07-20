@@ -44,7 +44,9 @@ const pays = Object.entries(MAN).sort((a, b) => a[1].nom.localeCompare(b[1].nom,
 
 for (const [cle, info] of pays) {
   const d = JSON.parse(fs.readFileSync(path.join(DIR, info.fichier), 'utf8'));
-  // _logos n'est pas un championnat
+  // Les classements consultent les ecussons DU PAYS, pas la table globale :
+  // c'est donc eux qu'il faut controler.
+  const LP = d._logos || {};
   for (const k of Object.keys(d)) if (k.startsWith('_')) delete d[k];
   const noms = Object.keys(d);
 
@@ -65,7 +67,7 @@ for (const [cle, info] of pays) {
         if (!r.team) continue;
         nbEquipes++;
         const n = norm(r.team);
-        if (!LOGOS[r.team] && !LOGN.has(n) && !CLUB.has(r.team) && !CLUBN.has(n)) {
+        if (!LP[r.team]) {
           nbSansLogo++; sansLogo.add(r.team);
         }
       }
