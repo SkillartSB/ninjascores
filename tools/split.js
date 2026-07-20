@@ -20,12 +20,34 @@ for (const [fr, api] of Object.entries(MAP)) VERS_FR[api] = fr;
 fs.mkdirSync(DIR, { recursive: true });
 for (const f of fs.readdirSync(DIR)) fs.unlinkSync(path.join(DIR, f));
 
+const crypto = require('crypto');
+// Le fournisseur renvoie parfois le classement d'une saison a l'identique
+// pour la suivante (Jamaique 2020/21 == 2021/22). On deduplique ICI, a chaque
+// regeneration, plutot qu'en etape separee qu'un retelechargement annulerait.
+function sigClassement(rows) {
+  return crypto.createHash('md5')
+    .update(JSON.stringify(rows.map((r) => [r.rank, r.team, r.pts, r.played])))
+    .digest('hex');
+}
+function dedupPays(ligues) {
+  for (const saisons of Object.values(ligues)) {
+    const vus = {};
+    for (const s of Object.keys(saisons).sort()) {
+      const rows = saisons[s];
+      if (!rows || !rows.length) continue;
+      const g = sigClassement(rows);
+      if (vus[g]) delete saisons[s]; else vus[g] = s;
+    }
+  }
+}
+
 const data = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const logos = {};
 const manifest = { genere: new Date().toISOString().slice(0, 10), pays: {} };
 
 let octets = 0;
 for (const [paysApi, ligues] of Object.entries(data)) {
+  dedupPays(ligues);
   const sortie = {};
   const entree = { fichier: paysApi + '.json', nom: VERS_FR[paysApi] || paysApi, ligues: {} };
 
