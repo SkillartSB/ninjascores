@@ -1652,6 +1652,11 @@ window.NS_renderBookmakers = function(){
     var setLarge = sl[1];
 
     React.useEffect(function() {
+      // props.src doit figurer dans les dependances : les ecussons du pays
+      // arrivent APRES le premier rendu du tableau. Sans lui, l'effet ne
+      // rejouait pas et la ligne restait sur son initiale, au hasard de la
+      // vitesse du reseau.
+      setError(false);
       if (props.src) { setLogo(props.src); return; }
       // strict : le contexte est seul juge. Sans ecusson fourni on affiche
       // l'initiale plutot que de risquer le blason d'un club homonyme.
@@ -1662,7 +1667,7 @@ window.NS_renderBookmakers = function(){
         if (alive) setLogo(url);
       });
       return function() { alive = false; };
-    }, [key]);
+    }, [key, props.src, props.strict]);
 
     if (logoUrl && !imgError) {
       var img = React.createElement('img', {
@@ -2914,7 +2919,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=542"></script>
+<script src="app.compiled.js?v=543"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
