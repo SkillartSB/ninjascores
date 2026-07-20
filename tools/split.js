@@ -41,6 +41,12 @@ function dedupPays(ligues) {
   }
 }
 
+// Images generiques du fournisseur (placeholder "image not available",
+// "official logo soon", boucliers gris...), reperees par tools/placeholders-scan.js
+// : partagees par des clubs de plusieurs pays, donc jamais un vrai ecusson.
+let GENERIQUES = new Set();
+try { GENERIQUES = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, 'placeholder-urls.json'), 'utf8'))); } catch (e) {}
+
 const data = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const logos = {};
 const manifest = { genere: new Date().toISOString().slice(0, 10), pays: {} };
@@ -73,7 +79,7 @@ for (const [paysApi, ligues] of Object.entries(data)) {
   for (const saisons of Object.values(ligues)) {
     for (const lignes of Object.values(saisons)) {
       for (const r of lignes) {
-        if (r.team && r.logo && !logosPays[r.team]) logosPays[r.team] = r.logo;
+        if (r.team && r.logo && !logosPays[r.team] && !GENERIQUES.has(r.logo)) logosPays[r.team] = r.logo;
       }
     }
   }
