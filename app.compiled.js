@@ -3015,45 +3015,45 @@ React.createElement('div',null,
 React.createElement('div',{style:{fontSize:10.5,fontWeight:800,color:'#fff',lineHeight:1.2}},hc?TRCLUB(hc.name):''),
 React.createElement('div',{style:{fontSize:9,color:'rgba(255,255,255,0.6)'}},dlab(hx))),
 React.createElement('div',{style:{fontSize:11,fontWeight:900,color:hc?hc.color:accent,background:'rgba(255,255,255,0.12)',borderRadius:8,padding:'3px 7px'}},fmt(hv))):null);};
-const PlayerDetailScreen=({player,onBack,accent,t,isDark,wide})=>{
+const PlayerDetailScreen=({player,onBack,accent,t,isDark,wide})=>{const _pz=function(n){return wide?(n<=14?Math.round(n*13)/10:Math.round(n*11)/10):n;};const _pzs=function(n){return wide?Math.round(n*1.3):n;};
 const[pTab,setPTab]=useState('infos');const[mFil,setMFil]=useState('tous');
 var _mv=parseInt(player.marketValue||0)||0;
 var _mvF=_mv>=1000000?((_mv/1000000).toFixed(1).replace('.',',')+' M€'):(_mv>=1000?(Math.round(_mv/1000)+' K€'):(_mv+' €'));
 var _mvh=(typeof MV_HISTORY!=='undefined'&&MV_HISTORY[player.id])||null;
-var _rows=[['🎯','Poste',TRPOS(player.position)],[player.team?React.createElement(TeamLogo,{name:player.team,color:accent,size:22}):'⚽','Club',player.team?TRCLUB(player.team):'—'],[(player.league&&window.LeagueLogo)?React.createElement(window.LeagueLogo,{name:player.league,size:22}):'🏆','Ligue',player.league||'—'],[player.nationality?TRFLAG(player.nationality):'🌍','Nationalité',player.nationality?TRPAYS(player.nationality):'—'],['🎂','Âge',(player.age?player.age+' ans':'—')]];
+var _rows=[['🎯','Poste',TRPOS(player.position)],[player.team?React.createElement(TeamLogo,{name:player.team,color:accent,size:_pzs(22)}):'⚽','Club',player.team?TRCLUB(player.team):'—'],[(player.league&&window.LeagueLogo)?React.createElement(window.LeagueLogo,{name:player.league,size:_pzs(22)}):'🏆','Ligue',player.league||'—'],[player.nationality?TRFLAG(player.nationality):'🌍','Nationalité',player.nationality?TRPAYS(player.nationality):'—'],['🎂','Âge',(player.age?player.age+' ans':'—')]];
 var _pf=(typeof NS_PIED!=='undefined'&&NS_PIED[player.id])||null;
 if(_pf)_rows.push(['\ud83d\udc5f','Pied fort',_pf]);
 var _tr=(typeof TRANSFERS!=='undefined'?TRANSFERS:[]).filter(function(x){return x.player===player.name;});
 var _card=function(icon,title,body){return React.createElement('div',{style:{background:t.card,borderRadius:16,overflow:'hidden',border:'1px solid '+t.border,boxShadow:t.shadowCard,marginBottom:12}},
 React.createElement('div',{style:{background:accent+'14',padding:'9px 14px',borderBottom:'1px solid '+t.border}},
-React.createElement('div',{style:{fontSize:10,fontWeight:800,color:accent,letterSpacing:1.2,textTransform:'uppercase'}},icon+'  '+title)),body);};
+React.createElement('div',{style:{fontSize:_pz(10),fontWeight:800,color:accent,letterSpacing:1.2,textTransform:'uppercase'}},icon+'  '+title)),body);};
 var _empty=function(emo,titre,sous){return React.createElement('div',{style:{padding:'28px 18px',textAlign:'center'}},
-React.createElement('div',{style:{fontSize:30,marginBottom:8,opacity:0.5}},emo),
-React.createElement('div',{style:{fontSize:13,fontWeight:700,color:t.text,marginBottom:5}},titre),
-React.createElement('div',{style:{fontSize:11.5,color:t.textSec,lineHeight:1.5,maxWidth:260,margin:'0 auto'}},sous));};
+React.createElement('div',{style:{fontSize:_pz(30),marginBottom:8,opacity:0.5}},emo),
+React.createElement('div',{style:{fontSize:_pz(13),fontWeight:700,color:t.text,marginBottom:5}},titre),
+React.createElement('div',{style:{fontSize:_pz(11.5),color:t.textSec,lineHeight:1.5,maxWidth:260,margin:'0 auto'}},sous));};
 return React.createElement("div",{style:{display:'flex',flexDirection:'column',height:'100%',background:t.bg}},
 React.createElement("div",{style:{background:`linear-gradient(135deg, #0D1B6E 0%, ${accent} 60%, #5B3FE8 100%)`,padding:'14px 16px 20px',position:'relative',overflow:'hidden',flexShrink:0}},
-React.createElement("div",{style:{position:'absolute',right:-12,bottom:-28,fontSize:118,fontWeight:900,color:'rgba(255,255,255,0.07)',lineHeight:1,pointerEvents:'none',userSelect:'none'}},'忍'),
-React.createElement("button",{onClick:onBack,style:{background:'rgba(255,255,255,0.2)',border:'none',width:32,height:32,borderRadius:'50%',color:'#fff',fontSize:16,cursor:'pointer',position:'relative',zIndex:1,fontFamily:'inherit'}},'←'),
+React.createElement("div",{style:{position:'absolute',right:-12,bottom:-28,fontSize:_pz(118),fontWeight:900,color:'rgba(255,255,255,0.07)',lineHeight:1,pointerEvents:'none',userSelect:'none'}},'忍'),
+React.createElement("button",{onClick:onBack,style:{background:'rgba(255,255,255,0.2)',border:'none',width:32,height:32,borderRadius:'50%',color:'#fff',fontSize:_pz(16),cursor:'pointer',position:'relative',zIndex:1,fontFamily:'inherit'}},'←'),
 React.createElement("div",{style:{display:'flex',alignItems:'center',gap:14,marginTop:14,position:'relative',zIndex:1}},
 React.createElement("div",{style:{width:78,height:78,borderRadius:18,background:'rgba(255,255,255,0.12)',border:'2px solid rgba(255,255,255,0.32)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
-React.createElement(NinjaLogo,{accent:'#fff',size:13})),
+React.createElement(NinjaLogo,{accent:'#fff',size:_pzs(13)})),
 React.createElement("div",{style:{flex:1,minWidth:0}},
-React.createElement("div",{style:{fontSize:21,fontWeight:900,color:'#fff',lineHeight:1.15}},player.name),
-React.createElement("div",{style:{fontSize:11.5,fontWeight:800,color:'rgba(255,255,255,0.85)',marginTop:5,textTransform:'uppercase',letterSpacing:0.8}},TRPOS(player.position)),
+React.createElement("div",{style:{fontSize:_pz(21),fontWeight:900,color:'#fff',lineHeight:1.15}},player.name),
+React.createElement("div",{style:{fontSize:_pz(11.5),fontWeight:800,color:'rgba(255,255,255,0.85)',marginTop:5,textTransform:'uppercase',letterSpacing:0.8}},TRPOS(player.position)),
 React.createElement("div",{style:{display:'flex',alignItems:'center',gap:7,marginTop:8}},
-React.createElement(TeamLogo,{name:player.team,color:'#ffffff',size:18}),
-React.createElement("span",{style:{fontSize:12,color:'rgba(255,255,255,0.82)',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},player.team?TRCLUB(player.team):''))))),
+React.createElement(TeamLogo,{name:player.team,color:'#ffffff',size:_pzs(18)}),
+React.createElement("span",{style:{fontSize:_pz(12),color:'rgba(255,255,255,0.82)',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},player.team?TRCLUB(player.team):''))))),
 React.createElement("div",{style:{display:'flex',gap:wide?10:6,padding:wide?'12px 16px':'10px 12px',borderBottom:'1px solid '+t.border,background:t.navBg,flexShrink:0,overflowX:wide?'visible':'auto',scrollbarWidth:'none'}},
 [['infos','Infos'],['matchs','Matchs'],['carriere','Carrière'],['transferts','Transferts'],['actus','Actualités']].map(function(x){
 return React.createElement('button',{key:x[0],onClick:function(){setPTab(x[0]);},style:{flex:wide?'1 1 0':'0 0 auto',textAlign:'center',padding:wide?'11px 14px':'7px 14px',borderRadius:wide?12:20,background:pTab===x[0]?accent:t.cardAlt,border:'1px solid '+(pTab===x[0]?accent:t.border),color:pTab===x[0]?'#fff':t.textSec,fontSize:wide?14.5:12,fontWeight:pTab===x[0]?700:500,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},x[1]);})),
 React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'14px 16px 24px'}},
 pTab==='infos'&&React.createElement('div',null,
-_card('💰','Valeur marchande',React.createElement('div',{style:{padding:'14px'}},React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:10,flexWrap:'wrap',marginBottom:_mvh?10:0}},React.createElement('div',{style:{fontSize:27,fontWeight:900,color:accent,lineHeight:1}},_mvF),_mvh?React.createElement('div',{style:{fontSize:11,color:t.textSec,fontWeight:600}},'Plus haut : '+String(_mvh.high).replace('.',',')+' M€ ('+_mvh.highLabel+')'):null),_mvh?React.createElement(MVChart,{d:_mvh,accent:accent,t:t,isDark:isDark}):null,_mvh?React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px 12px',marginTop:10}},_mvh.clubs.map(function(cl){return React.createElement('div',{key:cl.name,style:{display:'flex',alignItems:'center',gap:5}},React.createElement('span',{style:{width:8,height:8,borderRadius:2,background:cl.color,display:'inline-block'}}),React.createElement('span',{style:{fontSize:10.5,color:t.textSec,fontWeight:600}},TRCLUB(cl.name)));})):null)),
+_card('💰','Valeur marchande',React.createElement('div',{style:{padding:'14px'}},React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:10,flexWrap:'wrap',marginBottom:_mvh?10:0}},React.createElement('div',{style:{fontSize:_pz(27),fontWeight:900,color:accent,lineHeight:1}},_mvF),_mvh?React.createElement('div',{style:{fontSize:_pz(11),color:t.textSec,fontWeight:600}},'Plus haut : '+String(_mvh.high).replace('.',',')+' M€ ('+_mvh.highLabel+')'):null),_mvh?React.createElement(MVChart,{d:_mvh,accent:accent,t:t,isDark:isDark}):null,_mvh?React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px 12px',marginTop:10}},_mvh.clubs.map(function(cl){return React.createElement('div',{key:cl.name,style:{display:'flex',alignItems:'center',gap:5}},React.createElement('span',{style:{width:8,height:8,borderRadius:2,background:cl.color,display:'inline-block'}}),React.createElement('span',{style:{fontSize:_pz(10.5),color:t.textSec,fontWeight:600}},TRCLUB(cl.name)));})):null)),
 _card('ℹ️','Informations',React.createElement('div',null,_rows.map(function(r,idx){return React.createElement("div",{key:r[1],style:{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',borderBottom:idx<_rows.length-1?'1px solid '+t.divider:'none'}},
-React.createElement("span",{style:{fontSize:15,width:24,minWidth:24,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},r[0]),
-React.createElement("span",{style:{flex:1,fontSize:13,color:t.textSec,fontWeight:600}},r[1]),
-React.createElement("span",{style:{fontSize:13,fontWeight:700,color:t.text,textAlign:'right',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'55%'}},r[2]));})))),
+React.createElement("span",{style:{fontSize:_pz(15),width:24,minWidth:24,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},r[0]),
+React.createElement("span",{style:{flex:1,fontSize:_pz(13),color:t.textSec,fontWeight:600}},r[1]),
+React.createElement("span",{style:{fontSize:_pz(13),fontWeight:700,color:t.text,textAlign:'right',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'55%'}},r[2]));})))),
 pTab==='matchs'&&(function(){
 var all=(typeof NS_MATCHES!=='undefined'&&NS_MATCHES[player.id])||null;
 if(!all)return _card('\u26bd','Derniers matchs',_empty('\ud83d\udcc5','Aucune donn\u00e9e de match','Les matchs jou\u00e9s, buts et passes d\u00e9cisives ne sont pas encore disponibles. Ils appara\u00eetront ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
@@ -3069,80 +3069,80 @@ var side=function(m,side_){
 var nat=side_==='h'?m.hn:m.an,nm=side_==='h'?m.h:m.a,sc=side_==='h'?m.hs:m.as;
 var win=(m.hs>m.as&&side_==='h')||(m.as>m.hs&&side_==='a');
 return React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,padding:'2px 0'}},
-nat?React.createElement('span',{style:{fontSize:14,width:20,textAlign:'center',flexShrink:0}},TRFLAG(side_==='h'?m.hf:m.af))
-:React.createElement(TeamLogo,{name:nm,color:accent,size:20}),
-React.createElement('span',{style:{flex:1,minWidth:0,fontSize:12.5,fontWeight:win?800:600,color:win?t.text:t.textSec,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},nat?nm:TRCLUB(nm)),
-m.sub===side_?React.createElement('span',{style:{fontSize:8,color:'#16A34A',border:'1px solid #16A34A',borderRadius:3,padding:'0 2px',flexShrink:0,fontWeight:800}},'\u2191'):null,
-React.createElement('span',{style:{fontSize:13,fontWeight:win?900:700,color:win?t.text:t.textSec,minWidth:14,textAlign:'right',flexShrink:0}},sc));};
+nat?React.createElement('span',{style:{fontSize:_pz(14),width:20,textAlign:'center',flexShrink:0}},TRFLAG(side_==='h'?m.hf:m.af))
+:React.createElement(TeamLogo,{name:nm,color:accent,size:_pzs(20)}),
+React.createElement('span',{style:{flex:1,minWidth:0,fontSize:_pz(12.5),fontWeight:win?800:600,color:win?t.text:t.textSec,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},nat?nm:TRCLUB(nm)),
+m.sub===side_?React.createElement('span',{style:{fontSize:_pz(8),color:'#16A34A',border:'1px solid #16A34A',borderRadius:3,padding:'0 2px',flexShrink:0,fontWeight:800}},'\u2191'):null,
+React.createElement('span',{style:{fontSize:_pz(13),fontWeight:win?900:700,color:win?t.text:t.textSec,minWidth:14,textAlign:'right',flexShrink:0}},sc));};
 var stat=function(ic,v,col){
-return React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:2,fontSize:10.5,fontWeight:700,color:col||t.textSec}},ic,v);};
+return React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:2,fontSize:_pz(10.5),fontWeight:700,color:col||t.textSec}},ic,v);};
 return _card('\u26bd','Derniers matchs',React.createElement('div',null,
 React.createElement('div',{style:{display:'flex',gap:6,padding:'10px 12px 8px',overflowX:'auto',scrollbarWidth:'none'}},
 L.map(function(x){var on=mFil===x[0];
 return React.createElement('button',{key:x[0],onClick:function(){setMFil(x[0]);},
-style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?accent:t.border),background:on?accent:t.cardAlt,color:on?'#fff':t.textSec,fontSize:11.5,fontWeight:700,cursor:'pointer'}},
+style:{flexShrink:0,padding:'6px 12px',borderRadius:16,border:'1px solid '+(on?accent:t.border),background:on?accent:t.cardAlt,color:on?'#fff':t.textSec,fontSize:_pz(11.5),fontWeight:700,cursor:'pointer'}},
 x[1]);})),
-React.createElement('div',{style:{padding:'0 12px 8px',fontSize:11.5,color:t.textSec,lineHeight:1.35}},
+React.createElement('div',{style:{padding:'0 12px 8px',fontSize:_pz(11.5),color:t.textSec,lineHeight:1.35}},
 React.createElement('span',{style:{fontWeight:800,color:t.text}},player.name.split(' ').slice(-1)[0]),
 ' sur ses '+li.length+' derniers matchs'+(mFil==='club'?' en club':mFil==='selection'?' en s\u00e9lection':'')+' c\'est :'),
 React.createElement('div',{style:{display:'flex',gap:6,padding:'0 12px 10px'}},
 [[sg,'Buts',accent],[sa,'Passes d\u00e9cisives',accent],[av?av.toFixed(1).replace('.',','):'\u2013','Note moyenne',nc(av)]].map(function(k,z){
 return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 4px',textAlign:'center'}},
-React.createElement('div',{style:{fontSize:18,fontWeight:900,color:k[2],lineHeight:1.1}},k[0]),
-React.createElement('div',{style:{fontSize:8.5,color:t.textSec,fontWeight:700,marginTop:2,lineHeight:1.15}},k[1]));})),
+React.createElement('div',{style:{fontSize:_pz(18),fontWeight:900,color:k[2],lineHeight:1.1}},k[0]),
+React.createElement('div',{style:{fontSize:_pz(8.5),color:t.textSec,fontWeight:700,marginTop:2,lineHeight:1.15}},k[1]));})),
 li.map(function(m,z){
 return React.createElement('div',{key:z,style:{borderTop:'1px solid '+t.divider}},
 React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,padding:'8px 12px 4px'}},
-React.createElement('span',{style:{fontSize:9.5,color:t.textTer,fontWeight:700,flexShrink:0}},m.d),
-React.createElement('span',{style:{fontSize:8.5,fontWeight:900,color:'#fff',background:cpc[m.cp]||t.textTer,borderRadius:4,padding:'2px 5px',flexShrink:0,letterSpacing:0.3}},m.cp),
-m.ext?React.createElement('span',{style:{fontSize:8.5,color:t.textTer,fontWeight:600,fontStyle:'italic'}},m.ext):null,
-React.createElement('span',{style:{marginLeft:'auto',fontSize:10,fontWeight:900,color:'#fff',background:rc[m.res],borderRadius:5,width:17,height:17,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},m.res)),
+React.createElement('span',{style:{fontSize:_pz(9.5),color:t.textTer,fontWeight:700,flexShrink:0}},m.d),
+React.createElement('span',{style:{fontSize:_pz(8.5),fontWeight:900,color:'#fff',background:cpc[m.cp]||t.textTer,borderRadius:4,padding:'2px 5px',flexShrink:0,letterSpacing:0.3}},m.cp),
+m.ext?React.createElement('span',{style:{fontSize:_pz(8.5),color:t.textTer,fontWeight:600,fontStyle:'italic'}},m.ext):null,
+React.createElement('span',{style:{marginLeft:'auto',fontSize:_pz(10),fontWeight:900,color:'#fff',background:rc[m.res],borderRadius:5,width:17,height:17,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},m.res)),
 React.createElement('div',{style:{padding:'0 12px 6px'}},side(m,'h'),side(m,'a')),
 m.st==='ok'?React.createElement('div',{style:{display:'flex',alignItems:'center',gap:9,margin:'0 12px 9px',padding:'5px 8px',background:t.cardAlt,borderRadius:8}},
-React.createElement('span',{style:{fontSize:11,fontWeight:900,color:'#fff',background:nc(m.note),borderRadius:5,padding:'2px 5px',flexShrink:0}},m.note.toFixed(1).replace('.',',')),
+React.createElement('span',{style:{fontSize:_pz(11),fontWeight:900,color:'#fff',background:nc(m.note),borderRadius:5,padding:'2px 5px',flexShrink:0}},m.note.toFixed(1).replace('.',',')),
 stat('',m.min+"'"),
 stat('\u26bd',m.g,m.g?t.text:t.textTer),
-stat(React.createElement('span',{style:{fontSize:8.5,fontWeight:900,color:t.textTer}},'PD'),m.as_,m.as_?t.text:t.textTer),
+stat(React.createElement('span',{style:{fontSize:_pz(8.5),fontWeight:900,color:t.textTer}},'PD'),m.as_,m.as_?t.text:t.textTer),
 m.y?React.createElement('span',{style:{width:7,height:10,borderRadius:1.5,background:'#EAB308',marginLeft:'auto'}}):null,
 m.r?React.createElement('span',{style:{width:7,height:10,borderRadius:1.5,background:'#DC2626',marginLeft:m.y?0:'auto'}}):null)
-:React.createElement('div',{style:{margin:'0 12px 9px',padding:'6px 8px',background:t.cardAlt,borderRadius:8,textAlign:'center',fontSize:9.5,fontWeight:800,letterSpacing:0.5,color:t.textTer}},m.st==='bench'?'SUR LE BANC':'PAS DANS L\'\u00c9QUIPE'));}),
-li.length?null:React.createElement('div',{style:{padding:'22px 12px',textAlign:'center',fontSize:12,color:t.textSec}},'Aucun match sur ce filtre.')));})(),
+:React.createElement('div',{style:{margin:'0 12px 9px',padding:'6px 8px',background:t.cardAlt,borderRadius:8,textAlign:'center',fontSize:_pz(9.5),fontWeight:800,letterSpacing:0.5,color:t.textTer}},m.st==='bench'?'SUR LE BANC':'PAS DANS L\'\u00c9QUIPE'));}),
+li.length?null:React.createElement('div',{style:{padding:'22px 12px',textAlign:'center',fontSize:_pz(12),color:t.textSec}},'Aucun match sur ce filtre.')));})(),
 pTab==='carriere'&&(function(){
 var cv=(typeof NS_CAREER!=='undefined'&&NS_CAREER[player.id])||null;
 if(!cv)return _card('\ud83c\udfc6','Carri\u00e8re',_empty('\ud83c\udfc6','Aucune donn\u00e9e de carri\u00e8re','Le bilan par club et en s\u00e9lection appara\u00eetra ici d\u00e8s qu\'une source de statistiques sera connect\u00e9e.'));
 var tm=cv.clubs.reduce(function(n,c){return n+c.m;},0),tg=cv.clubs.reduce(function(n,c){return n+c.g;},0),ta=cv.clubs.reduce(function(n,c){return n+c.a;},0);
 var row=function(c,k,hl){
 return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,padding:'11px 12px',borderTop:'1px solid '+t.divider,background:hl?(isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)'):'transparent'}},
-React.createElement(TeamLogo,{name:c.logo,color:accent,size:26}),
+React.createElement(TeamLogo,{name:c.logo,color:accent,size:_pzs(26)}),
 React.createElement('div',{style:{flex:1,minWidth:0}},
-React.createElement('div',{style:{fontSize:12.5,fontWeight:800,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(c.club)),
-React.createElement('div',{style:{fontSize:9.5,color:t.textTer,fontWeight:600}},c.per)),
+React.createElement('div',{style:{fontSize:_pz(12.5),fontWeight:800,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},TRCLUB(c.club)),
+React.createElement('div',{style:{fontSize:_pz(9.5),color:t.textTer,fontWeight:600}},c.per)),
 [c.m,c.g,c.a].map(function(x,z){
 return React.createElement('div',{key:z,style:{width:46,textAlign:'center',flexShrink:0}},
-React.createElement('div',{style:{fontSize:14,fontWeight:900,color:z===1?accent:t.text}},x));}));};
+React.createElement('div',{style:{fontSize:_pz(14),fontWeight:900,color:z===1?accent:t.text}},x));}));};
 var head=function(){return React.createElement('div',{style:{display:'flex',alignItems:'flex-end',gap:10,padding:'0 12px 6px'}},
 React.createElement('div',{style:{width:26,flexShrink:0}}),
 React.createElement('div',{style:{flex:1,minWidth:0}}),
 ['Matchs','Buts','Passes d\u00e9cisives'].map(function(lb,z){
-return React.createElement('div',{key:z,style:{width:46,flexShrink:0,textAlign:'center',fontSize:8,fontWeight:800,color:t.textTer,lineHeight:1.15,letterSpacing:0.2,textTransform:'uppercase'}},lb);}));};
+return React.createElement('div',{key:z,style:{width:46,flexShrink:0,textAlign:'center',fontSize:_pz(8),fontWeight:800,color:t.textTer,lineHeight:1.15,letterSpacing:0.2,textTransform:'uppercase'}},lb);}));};
 return React.createElement('div',null,
 _card('\ud83c\udfc6','Bilan en club',React.createElement('div',null,
 React.createElement('div',{style:{display:'flex',gap:8,padding:'10px 12px'}},
 [[tm,'matchs'],[tg,'buts'],[ta,'passes d\u00e9c.']].map(function(k,z){
 return React.createElement('div',{key:z,style:{flex:1,background:t.cardAlt,borderRadius:10,padding:'9px 6px',textAlign:'center'}},
-React.createElement('div',{style:{fontSize:17,fontWeight:900,color:accent}},k[0]),
-React.createElement('div',{style:{fontSize:9,color:t.textSec,fontWeight:600}},k[1]));})),
+React.createElement('div',{style:{fontSize:_pz(17),fontWeight:900,color:accent}},k[0]),
+React.createElement('div',{style:{fontSize:_pz(9),color:t.textSec,fontWeight:600}},k[1]));})),
 head(),cv.clubs.map(function(c,k){return row(c,k,false);}))),
 cv.nat?_card('\ud83c\udff3\ufe0f','S\u00e9lection nationale',React.createElement('div',null,React.createElement('div',{style:{height:8}}),head(),row(cv.nat,'nat',true))):null);})(),
 pTab==='transferts'&&_card('🔄','Transferts',_tr.length?React.createElement('div',null,_tr.map(function(x,idx){
 return React.createElement('div',{key:x.id,style:{padding:'12px 14px',borderBottom:idx<_tr.length-1?'1px solid '+t.divider:'none'}},
-React.createElement('div',{style:{display:'flex',alignItems:'center',marginBottom:6}},React.createElement('span',{style:{fontSize:10,color:t.textSec,fontWeight:600}},x.date),React.createElement('span',{style:{marginLeft:'auto',fontSize:12,fontWeight:800,whiteSpace:'nowrap',color:x.value==='Libre'?t.textSec:accent}},x.value)),
+React.createElement('div',{style:{display:'flex',alignItems:'center',marginBottom:6}},React.createElement('span',{style:{fontSize:_pz(10),color:t.textSec,fontWeight:600}},x.date),React.createElement('span',{style:{marginLeft:'auto',fontSize:_pz(12),fontWeight:800,whiteSpace:'nowrap',color:x.value==='Libre'?t.textSec:accent}},x.value)),
 React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8}},
-React.createElement(TeamLogo,{name:x.from,color:x.fromColor,size:20}),
-React.createElement('span',{style:{fontSize:12,fontWeight:600,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},TRCLUB(x.from)),
-React.createElement('span',{style:{fontSize:12,color:t.textTer,margin:'0 2px'}},'→'),
-React.createElement(TeamLogo,{name:x.to,color:x.toColor,size:20}),
-React.createElement('span',{style:{fontSize:12,fontWeight:600,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},TRCLUB(x.to)),
+React.createElement(TeamLogo,{name:x.from,color:x.fromColor,size:_pzs(20)}),
+React.createElement('span',{style:{fontSize:_pz(12),fontWeight:600,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},TRCLUB(x.from)),
+React.createElement('span',{style:{fontSize:_pz(12),color:t.textTer,margin:'0 2px'}},'→'),
+React.createElement(TeamLogo,{name:x.to,color:x.toColor,size:_pzs(20)}),
+React.createElement('span',{style:{fontSize:_pz(12),fontWeight:600,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},TRCLUB(x.to)),
 null));})):
 _empty('🔄','Aucun transfert enregistré','L\'historique des transferts de ce joueur n\'est pas encore disponible.')),
 pTab==='actus'&&_card('📰','Actualités',_empty('📰','Aucune actualité','Les actualités liées à ce joueur apparaîtront ici dès qu\'un flux éditorial sera connecté.'))));
@@ -3237,8 +3237,8 @@ const carte={background:t.card,borderRadius:16,border:'1px solid '+t.border,
 boxShadow:t.shadowCard,overflow:'hidden'};
 const entete=function(txt){return React.createElement('div',{style:{background:accent+'18',
 padding:'10px 14px',borderBottom:'1px solid '+t.border}},
-React.createElement('div',{style:{fontSize:10,fontWeight:800,color:accent,letterSpacing:1.5,
-textTransform:'uppercase'}},txt));};
+React.createElement('div',{style:{fontSize:fs(13.5,10.5),fontWeight:800,color:accent,
+letterSpacing:1.4,textTransform:'uppercase'}},txt));};
 const vide=function(txt){return React.createElement('div',{style:{padding:'22px 16px',
 textAlign:'center',fontSize:fs(14,12.5),color:t.textSec}},txt);};
 
@@ -3255,21 +3255,21 @@ background:isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.03)',borderRadius:12,
 padding:'11px 6px'}},
 React.createElement('div',{style:{fontSize:fs(17,14),fontWeight:800,color:t.text,
 overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},p[0]),
-React.createElement('div',{style:{fontSize:fs(11.5,10),color:t.textSec,marginTop:3}},p[1]));}))));
+React.createElement('div',{style:{fontSize:fs(13,10.5),color:t.textSec,marginTop:3}},p[1]));}))));
 
 // ── une ligne de match ───────────────────────────────────────────────────
 const ligneMatch=function(m,k,futur){
 var gagne=!futur&&((m.dom===nom&&m.sd>m.sa)||(m.ext===nom&&m.sa>m.sd));
 var nul=!futur&&m.sd===m.sa;
-var pastille=futur?null:React.createElement('span',{style:{width:20,height:20,borderRadius:6,
+var pastille=futur?null:React.createElement('span',{style:{width:fs(24,20),height:fs(24,20),borderRadius:6,
 flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
-fontSize:10,fontWeight:800,color:'#fff',
+fontSize:fs(12,10),fontWeight:800,color:'#fff',
 background:gagne?'#16A34A':(nul?'#F59E0B':'#EF4444')}},gagne?'V':(nul?'N':'D'));
 return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,
 padding:'11px 14px',borderTop:k?'1px solid '+t.divider:'none'}},
-React.createElement('div',{style:{width:fs(74,64),flexShrink:0}},
+React.createElement('div',{style:{width:fs(94,64),flexShrink:0}},
 React.createElement('div',{style:{fontSize:fs(12,11),fontWeight:600,color:t.textSec}},m.date),
-React.createElement('div',{style:{fontSize:fs(10.5,9.5),color:t.textTer,marginTop:1}},futur?m.heure:m.comp)),
+React.createElement('div',{style:{fontSize:fs(12.5,10),color:t.textTer,marginTop:1}},futur?m.heure:m.comp)),
 React.createElement('div',{style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:7}},
 React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(m.dom),color:accent,size:fs(24,20)}),
 React.createElement('span',{style:{fontSize:fs(14,12.5),fontWeight:m.dom===nom?800:600,
@@ -3368,7 +3368,7 @@ background:accent+'16'}},
 React.createElement('span',{style:{width:3,height:fs(14,12),borderRadius:2,
 background:accent,flexShrink:0}}),
 React.createElement('span',{style:{flex:1}},pos),
-React.createElement('span',{style:{fontSize:fs(11,10),fontWeight:700,
+React.createElement('span',{style:{fontSize:fs(12.5,10),fontWeight:700,
 color:accent,opacity:0.75}},groupes[pos].length)),
 groupes[pos].map(function(p,k){
 return React.createElement('button',{key:p.id,onClick:function(){if(onPlayerSelect)onPlayerSelect(p);},style:{display:'flex',alignItems:'center',gap:10,width:'100%',textAlign:'left',
@@ -3400,7 +3400,7 @@ const blocActus=React.createElement('div',{style:carte},entete('📰  Actualité
 (actus&&actus.length)?actus.map(function(a,k){
 return React.createElement('div',{key:k,style:{padding:'13px 14px',
 borderTop:k?'1px solid '+t.divider:'none'}},
-React.createElement('div',{style:{fontSize:fs(11.5,10.5),color:t.textTer,fontWeight:600}},a.date),
+React.createElement('div',{style:{fontSize:fs(13,10.5),color:t.textTer,fontWeight:600}},a.date),
 React.createElement('div',{style:{fontSize:fs(14.5,13),fontWeight:700,color:t.text,
 marginTop:3}},a.titre),
 React.createElement('div',{style:{fontSize:fs(13,11.5),color:t.textSec,marginTop:3,
