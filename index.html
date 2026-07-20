@@ -1594,6 +1594,14 @@ window.NS_renderBookmakers = function(){
     var imgError = se[0];
     var setError = se[1];
 
+    // Certains ecussons arrivent sur une toile plus large que haute, avec de
+    // la transparence sur les cotes : Swansea fait 267x150 pour un blason de
+    // 135x134 centre. Avec objectFit:contain on met la toile entiere a
+    // l'echelle, donc le blason tombe a la moitie de la taille demandee.
+    var sl = React.useState(false);
+    var large = sl[0];
+    var setLarge = sl[1];
+
     React.useEffect(function() {
       if (key in CACHE) { setLogo(CACHE[key]); return; }
       var alive = true;
@@ -1604,16 +1612,18 @@ window.NS_renderBookmakers = function(){
     }, [key]);
 
     if (logoUrl && !imgError) {
-      return React.createElement('img', {
+      var img = React.createElement('img', {
         src:     logoUrl,
         alt:     name,
-        width:   size,
-        height:  size,
-        style:   {
-          width: size, height: size,
-          objectFit: 'contain',
-          flexShrink: 0,
-          display: 'block',
+        style:   large
+          ? { height: size, width: 'auto', maxWidth: 'none', display: 'block' }
+          : { width: size, height: size, objectFit: 'contain',
+              flexShrink: 0, display: 'block' },
+        onLoad: function(e) {
+          var im = e.target;
+          // toile nettement plus large que haute : on cale sur la hauteur et
+          // on rogne la transparence laterale
+          if (im.naturalWidth > im.naturalHeight * 1.12 && !large) setLarge(true);
         },
         onError: function() {
           // Une URL peut etre morte (Sofascore bloque le hotlinking, certains
@@ -1632,6 +1642,13 @@ window.NS_renderBookmakers = function(){
           setError(true);
         },
       });
+      if (!large) return img;
+      return React.createElement('span', {
+        style: {
+          width: size, height: size, flexShrink: 0, overflow: 'hidden',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        },
+      }, img);
     }
 
     // Fallback : cercle initiales (même style que TeamCircle)
@@ -2817,7 +2834,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=529"></script>
+<script src="app.compiled.js?v=531"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */

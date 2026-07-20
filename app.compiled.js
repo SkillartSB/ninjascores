@@ -641,7 +641,10 @@ const countries=STANDINGS_DATA?.countries||[];const[stdNonce2,setStdNonce2]=useS
 const seasonsGlobales=STANDINGS_DATA?.metadata?.seasons||[];
 // Les saisons disponibles varient d'un championnat a l'autre : le Zimbabwe
 // commence en 2019, la France en 2010/11. On les lit dans les donnees.
-const seasons=(function(){try{var lg=STANDINGS_DATA?.lookup?.[selectedCountry]?.[selectedLeague];if(lg){var k=Object.keys(lg);if(k.length)return k.sort().reverse();}}catch(e){}return seasonsGlobales;})();// Get alphabet groups (A, B, C...)
+const seasons=(function(){try{var lg=STANDINGS_DATA?.lookup?.[selectedCountry]?.[selectedLeague];if(lg){var k=Object.keys(lg);// Une saison sans aucun match joue produit un tableau alphabetique tout
+// a zero : soit elle vient de demarrer, soit la source est lacunaire.
+// Dans les deux cas elle n'apprend rien, on ne la propose pas.
+var utiles=k.filter(function(s){var r=lg[s]||[];return r.reduce(function(a,x){return a+(x.played||0);},0)>0;});if(utiles.length)return utiles.sort().reverse();if(k.length)return k.sort().reverse();}}catch(e){}return seasonsGlobales;})();// Get alphabet groups (A, B, C...)
 const getAlphabetGroups=()=>{const groups={};countries.forEach(c=>{const letter=c.name[0].normalize('NFD').replace(/[\u0300-\u036f]/g,'')[0].toUpperCase();if(!groups[letter])groups[letter]=[];groups[letter].push(c);});return groups;};const alphabetGroups=getAlphabetGroups();const alphabet=Object.keys(alphabetGroups).sort();// Get leagues for selected country
 const getLeaguesForCountry=country=>{var noms=Object.keys(STANDINGS_DATA?.lookup?.[country]||{}).filter(function(l){return !NS_EST_FEMININ(l);});// Ordre hierarchique fourni par le manifeste : la premiere division
 // d'abord. Le tri alphabetique mettait '1st Division' avant 'Superliga'.
@@ -3191,10 +3194,22 @@ var out=[],cour=null,prec=0;
 for(var i=0;i<lignes.length;i++){
 var r=lignes[i];
 var nom=r.groupe||null;
-var rupture=nom?(!cour||cour.nom!==nom):(!cour||r.rank<=prec);
+// On coupe au changement de nom ET au redemarrage du rang : une meme
+// phase peut contenir plusieurs poules portant le meme libelle
+// (Belgique 'Play-offs II' groupe A et B), auquel cas se fier au seul
+// nom les fusionnerait et les places repartiraient a 1 au milieu.
+var rupture=!cour||(nom?cour.nom!==nom:false)||r.rank<=prec;
 if(rupture){cour={nom:nom,lignes:[]};out.push(cour);}
 cour.lignes.push(r);prec=r.rank;}
-if(out.length>1){out.forEach(function(g,i){if(!g.nom)g.nom='Groupe '+(i+1);});}
+if(out.length>1){
+var vus={};
+out.forEach(function(g,i){
+if(!g.nom){g.nom='Groupe '+(i+1);return;}
+vus[g.nom]=(vus[g.nom]||0)+1;});
+var cpt={};
+out.forEach(function(g){
+if(vus[g.nom]>1){cpt[g.nom]=(cpt[g.nom]||0)+1;
+g.nom=g.nom+' — groupe '+cpt[g.nom];}});}
 return out;};
 const NS_SAISON_DEFAUT=function(ligue){
 if(!ligue)return null;
