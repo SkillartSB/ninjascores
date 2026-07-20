@@ -247,7 +247,12 @@ Object.keys(lk).forEach(function(co){
 var lgs=Object.keys(lk[co]||{}); if(!lgs.length)return;
 var fr=(typeof TRPAYS!=='undefined'?TRPAYS(co):co);
 var dr=(typeof TRFLAG!=='undefined'?TRFLAG(co):'\ud83c\udf0d');
-var k=cle(fr); var cur=par[k];
+// Le manifeste connait tous les libelles d'un meme pays (cle API, nom
+// francais, ancienne cle anglaise). Sans lui, 'Ethiopia' et 'Éthiopie'
+// se retrouvent sur deux lignes distinctes dans la colonne.
+var k=cle(fr);
+try{var _c=window.NS_cleApi&&window.NS_cleApi(co);if(_c)k=cle(_c);}catch(e){}
+var cur=par[k];
 if(!cur){par[k]={co:co,fr:fr,dr:dr,lgs:lgs.slice()};}
 else{lgs.forEach(function(l){if(cur.lgs.indexOf(l)<0)cur.lgs.push(l);});
 // on garde la cle qui resout le drapeau, mais on affiche le libelle accentue
