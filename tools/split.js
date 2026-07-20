@@ -44,6 +44,19 @@ for (const [paysApi, ligues] of Object.entries(data)) {
     entree.ligues[ligue] = Object.keys(sortie[ligue]).sort().reverse();
   }
 
+  // Ecussons propres au pays : deux clubs homonymes de pays differents
+  // (Al Ittihad en Arabie saoudite et a Bahrein) ne peuvent pas etre
+  // distingues par une table globale nom -> logo.
+  const logosPays = {};
+  for (const saisons of Object.values(ligues)) {
+    for (const lignes of Object.values(saisons)) {
+      for (const r of lignes) {
+        if (r.team && r.logo && !logosPays[r.team]) logosPays[r.team] = r.logo;
+      }
+    }
+  }
+  sortie._logos = logosPays;
+
   const txt = JSON.stringify(sortie);
   fs.writeFileSync(path.join(DIR, paysApi + '.json'), txt);
   octets += txt.length;

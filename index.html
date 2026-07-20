@@ -1498,7 +1498,17 @@ window.NS_renderBookmakers = function(){
   // Affichage : cleanTeamName uniquement (sans NAME_MAP, pour garder les noms en français)
   window.displayTeamName = function(n) {
     if (!n) return n;
-    return cleanTeamName(n);
+    var c = cleanTeamName(n);
+    // Retirer le suffixe peut transformer un club en nom de pays :
+    // "Bahrain SC" devenait "Bahrain". On garde alors le nom complet.
+    if (c !== n && window.NS_MANIFEST) {
+      var cn = c.toLowerCase();
+      for (var k in window.NS_MANIFEST.pays) {
+        if (k.replace(/-/g, ' ').toLowerCase() === cn
+            || String(window.NS_MANIFEST.pays[k].nom).toLowerCase() === cn) return n;
+      }
+    }
+    return c;
   };
 
   function fetchLogo(name) {
@@ -1584,7 +1594,8 @@ window.NS_renderBookmakers = function(){
     var letter = props.letter || (displayName[0] || '?');
 
     var key = resolve(name);
-    var initial = (key in CACHE) ? CACHE[key] : undefined;
+    // src impose : le contexte connait le bon ecusson (classement d'un pays)
+    var initial = props.src || ((key in CACHE) ? CACHE[key] : undefined);
 
     var st = React.useState(initial);
     var logoUrl  = st[0];
@@ -1603,6 +1614,7 @@ window.NS_renderBookmakers = function(){
     var setLarge = sl[1];
 
     React.useEffect(function() {
+      if (props.src) { setLogo(props.src); return; }
       if (key in CACHE) { setLogo(CACHE[key]); return; }
       var alive = true;
       fetchLogo(name).then(function(url) {
@@ -2811,6 +2823,29 @@ window.NINJA_AB = (function() {
           var nomFr = window.NS_MANIFEST.pays[cle].nom;
           L[cle] = d;
           if (nomFr) L[nomFr] = d;
+          // Le lookup historique utilise des cles anglaises avec espaces
+          // ("Saudi Arabia") la ou l'API emploie des tirets ("Saudi-Arabia").
+          // La colonne de gauche transmet l'ancienne cle : sans cet alias,
+          // l'ecran ne trouve rien et retombe sur la liste de saisons globale.
+          // ecussons propres a ce pays : ils font autorite sur la table
+          // globale, qui melange les homonymes (Al Ittihad saoudien et
+          // bahreini portent le meme nom).
+          if (d._logos) { window.NS_LOGOS_PAYS = window.NS_LOGOS_PAYS || {};
+            window.NS_LOGOS_PAYS[cle] = d._logos;
+            if (nomFr) window.NS_LOGOS_PAYS[nomFr] = d._logos;
+            window.NS_LOGOS_PAYS[cle.replace(/-/g, ' ')] = d._logos;
+            delete d._logos; }
+          var alias = cle.replace(/-/g, ' ');
+          if (alias !== cle) L[alias] = d;
+          // et toute autre cle existante designant le meme pays
+          var nk = function (s) {
+            return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+              .replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+          };
+          var cibles = [nk(cle), nk(nomFr)];
+          Object.keys(L).forEach(function (k) {
+            if (cibles.indexOf(nk(k)) >= 0) L[k] = d;
+          });
           charges[cle] = true;
           return true;
         })
@@ -2834,7 +2869,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=532"></script>
+<script src="app.compiled.js?v=535"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
