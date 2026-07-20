@@ -2706,7 +2706,88 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=516"></script>
+<!-- ── Classements API-Football : chargement a la demande ──────────────────── -->
+<script>
+(function () {
+  // 36 Ko au demarrage pour le manifeste. Les classements d'un pays (16 a 60 Ko)
+  // ne sont telecharges que lorsqu'on ouvre ce pays, et jamais deux fois.
+  var BASE = 'data/standings/';
+  var enCours = {};          // pays -> Promise, evite les appels concurrents
+  var charges = {};          // pays -> true
+
+  window.NS_MANIFEST = null;
+  window.NS_LOGOS = null;
+
+  window.NS_manifestPret = fetch(BASE + 'manifest.json')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (m) { window.NS_MANIFEST = m; return m; })
+    .catch(function () { return null; });
+
+  // Retrouve la cle API a partir de n'importe quel nom : "Sénégal",
+  // "Senegal" ou "Ivory-Coast" doivent tous tomber sur le bon fichier.
+  function cleApi(nom) {
+    var m = window.NS_MANIFEST;
+    if (!m || !nom) return null;
+    if (m.pays[nom]) return nom;
+    for (var k in m.pays) {
+      if (m.pays[k].nom === nom) return k;
+    }
+    var norm = String(nom).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    for (var k2 in m.pays) {
+      var a = k2.replace(/-/g, ' ').toLowerCase();
+      var b = String(m.pays[k2].nom).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+      if (a === norm || b === norm) return k2;
+    }
+    return null;
+  }
+  window.NS_cleApi = cleApi;
+
+  window.NS_ensureStandings = function (nom) {
+    return window.NS_manifestPret.then(function () {
+      var cle = cleApi(nom);
+      if (!cle) return false;                     // pays absent du fournisseur
+      if (charges[cle]) return true;
+      if (enCours[cle]) return enCours[cle];
+
+      enCours[cle] = fetch(BASE + window.NS_MANIFEST.pays[cle].fichier)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d) return false;
+          // STANDINGS_DATA est declare avec const : il vit dans la portee des
+          // scripts classiques, pas sur window. On y accede par le nom nu.
+          var SD = (typeof STANDINGS_DATA !== 'undefined') ? STANDINGS_DATA
+                 : (window.STANDINGS_DATA || null);
+          var L = SD && SD.lookup;
+          if (!L) return false;
+          // On ecrase l'ancienne entree : les donnees de l'API font autorite,
+          // sinon les anciens noms de championnat cohabitent avec les nouveaux.
+          var nomFr = window.NS_MANIFEST.pays[cle].nom;
+          L[cle] = d;
+          if (nomFr) L[nomFr] = d;
+          charges[cle] = true;
+          return true;
+        })
+        .catch(function () { return false; })
+        .then(function (ok) { delete enCours[cle]; return ok; });
+
+      return enCours[cle];
+    });
+  };
+
+  // Ecussons : 402 Ko pour 6 015 equipes, charges une seule fois au premier
+  // classement affiche. TeamLogo s'en sert en dernier recours.
+  window.NS_ensureLogos = function () {
+    if (window.NS_LOGOS) return Promise.resolve(window.NS_LOGOS);
+    if (enCours.__logos) return enCours.__logos;
+    enCours.__logos = fetch(BASE + 'logos.json')
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (d) { window.NS_LOGOS = d; return d; })
+      .catch(function () { window.NS_LOGOS = {}; return {}; });
+    return enCours.__logos;
+  };
+})();
+</script>
+<script src="app.compiled.js?v=522"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
