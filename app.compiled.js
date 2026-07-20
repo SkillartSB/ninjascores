@@ -3253,6 +3253,7 @@ const NS_LIGUE_LBL=function(nom){var n=String(nom||'');
 if(/^Premiere Ligue Feminine France$/i.test(n))return 'Première Ligue Féminine';
 // le troisieme echelon francais prend le nom de Ligue 3
 if(/^National 1$/i.test(n))return 'Ligue 3';
+if(n==='League')return 'Pro League';
 return n;};
 
 // ── FICHE EQUIPE : donnees de reference ──────────────────────────────────────
