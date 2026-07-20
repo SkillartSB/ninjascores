@@ -35,15 +35,25 @@ const ancien = (s) => {
   return a === b ? String(a) : `${a}/${String(b).slice(2)}`;
 };
 const correct = (s) => {
-  const a = new Date(s.start).getUTCFullYear(), b = new Date(s.end).getUTCFullYear();
-  // Saison a cheval sur deux annees civiles
-  if (b > a) return `${s.year}/${String(s.year + 1).slice(2)}`;
-  // Saison decalee : annee officielle Y mais jouee entierement en Y+1
-  // (Cote d'Ivoire 2020 disputee de mars a juin 2021, cause covid).
-  // C'est bien la campagne Y/Y+1, l'etiqueter "Y" la desaligne de ses
-  // voisines 2019/20 et 2021/22.
-  if (a === s.year + 1) return `${s.year}/${String(s.year + 1).slice(2)}`;
-  return String(s.year);
+  const d1 = new Date(s.start), d2 = new Date(s.end);
+  const a = d1.getUTCFullYear(), b = d2.getUTCFullYear();
+  const y = s.year;
+  const paire = (p) => `${p}/${String(p + 1).slice(2)}`;
+  // Saison dans une seule annee civile : on suit l'annee officielle.
+  if (a === b) {
+    // ex Cote d'Ivoire 2020 jouee entierement en 2021 : c'est la campagne 2020/21
+    if (a === y + 1) return paire(y);
+    return String(y);
+  }
+  // Saison a cheval sur deux annees.
+  const mois = (b - a) * 12 + (d2.getUTCMonth() - d1.getUTCMonth());
+  // L'annee officielle marque le debut : campagne classique Y/Y+1.
+  if (y === a) return paire(y);
+  // L'annee officielle marque la fin (fournisseur decale) :
+  //  - ~12 mois = annee civile decalee (Indonesie 2017, nov16->nov17) -> "Y"
+  //  - saison plus courte = campagne d'hiver Y-1/Y (Irak 2021, oct20->juil21)
+  if (mois >= 11) return String(y);
+  return paire(y - 1);
 };
 
 function normalise(rep) {
