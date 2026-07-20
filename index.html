@@ -2706,7 +2706,7 @@ window.NINJA_AB = (function() {
   if (ms > 0 && ms < 24 * 3600 * 1000) setTimeout(ensureFav, ms + 1500);
 })();
 </script>
-<script src="app.compiled.js?v=508"></script>
+<script src="app.compiled.js?v=511"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -2805,6 +2805,15 @@ window.NS_pulse = function(x, y){
         c.name = fr;
         if (fr === 'Angleterre') c.leagueCount = 2;
       }
+    });
+    // le compteur affiche ne tient pas compte des competitions feminines :
+    // elles ont leur propre section, elles ne sont pas listees sous le pays
+    var EST_FEM = /f[e\u00e9]minin|women|femenin|frauen|damallsvenskan|\bnwsl\b|\bwsl\b/i;
+    sd.countries.forEach(function(c) {
+      var lk = (sd.lookup && sd.lookup[c.name]) || null;
+      if (!lk) return;
+      var n = Object.keys(lk).filter(function(l){ return !EST_FEM.test(l); }).length;
+      if (n > 0) c.leagueCount = n;
     });
   }
 })();
