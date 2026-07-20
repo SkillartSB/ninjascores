@@ -13,6 +13,7 @@ const BASE = 'https://v3.football.api-sports.io';
 // requêtes arbitraires. Chaque entrée porte sa durée de cache en secondes.
 const ENDPOINTS = {
   'status':               60,          // suivi du quota restant
+  'countries':            86400,
   'leagues':              86400,       // 24 h — bouge une fois par saison
   'teams':                86400,
   'teams/statistics':     3600,
