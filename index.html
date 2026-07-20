@@ -1615,6 +1615,9 @@ window.NS_renderBookmakers = function(){
 
     React.useEffect(function() {
       if (props.src) { setLogo(props.src); return; }
+      // strict : le contexte est seul juge. Sans ecusson fourni on affiche
+      // l'initiale plutot que de risquer le blason d'un club homonyme.
+      if (props.strict) { setLogo(null); return; }
       if (key in CACHE) { setLogo(CACHE[key]); return; }
       var alive = true;
       fetchLogo(name).then(function(url) {
@@ -1646,6 +1649,7 @@ window.NS_renderBookmakers = function(){
             if (u && u !== logoUrl) { CACHE[key] = u; setLogo(u); return true; }
             return false;
           };
+          if (props.strict) { setError(true); return; }
           if (window.NS_LOGOS) { if (!essaie(window.NS_LOGOS)) setError(true); return; }
           if (window.NS_ensureLogos) {
             window.NS_ensureLogos().then(function(m) { if (!essaie(m)) setError(true); });
@@ -2790,6 +2794,10 @@ window.NINJA_AB = (function() {
     if (m.pays[nom]) return nom;
     for (var k in m.pays) {
       if (m.pays[k].nom === nom) return k;
+      // le lookup historique et l'affichage emploient d'autres libelles :
+      // "Bosnia and Herzegovina" pour la cle "Bosnia", par exemple
+      var al = m.pays[k].alias;
+      if (al && al.indexOf(nom) >= 0) return k;
     }
     var norm = String(nom).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
     for (var k2 in m.pays) {
@@ -2832,9 +2840,8 @@ window.NINJA_AB = (function() {
           // bahreini portent le meme nom).
           if (d._logos) { window.NS_LOGOS_PAYS = window.NS_LOGOS_PAYS || {};
             window.NS_LOGOS_PAYS[cle] = d._logos;
-            if (nomFr) window.NS_LOGOS_PAYS[nomFr] = d._logos;
-            window.NS_LOGOS_PAYS[cle.replace(/-/g, ' ')] = d._logos;
             delete d._logos; }
+          (window.NS_MANIFEST.pays[cle].alias || []).forEach(function (a) { L[a] = d; });
           var alias = cle.replace(/-/g, ' ');
           if (alias !== cle) L[alias] = d;
           // et toute autre cle existante designant le meme pays
@@ -2869,7 +2876,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=535"></script>
+<script src="app.compiled.js?v=536"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */

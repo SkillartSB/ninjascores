@@ -55,6 +55,12 @@ for (const [paysApi, ligues] of Object.entries(data)) {
       }
     }
   }
+  // corrections manuelles : clubs presents chez le fournisseur sous une
+  // autre graphie ("Energetyk-BDU" y figure comme "Ynergetyk-BDU")
+  try {
+    const OV = require('./logos-override.json')[paysApi];
+    if (OV) for (const [nom, url] of Object.entries(OV)) logosPays[nom] = url;
+  } catch (e) { /* pas de correction pour ce pays */ }
   sortie._logos = logosPays;
 
   const txt = JSON.stringify(sortie);
