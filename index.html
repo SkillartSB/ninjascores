@@ -1498,8 +1498,37 @@ window.NS_renderBookmakers = function(){
   // Noms d'usage : les classements portent le nom administratif complet
   // ("Heart Of Midlothian"), alors que tout le monde dit "Hearts".
   var NOM_USAGE = {
+    // nom d'usage plutot que denomination administrative
     'Heart Of Midlothian': 'Hearts',
     'Heart of Midlothian': 'Hearts',
+    // exonymes francais : le site s'adresse a un public francophone
+    'Mallorca': 'Majorque',
+    'RCD Mallorca': 'Majorque',
+    'Alaves': 'Alavés',
+    'Deportivo Alaves': 'Alavés',
+    'Sevilla': 'Séville',
+    'Sevilla FC': 'Séville',
+    'Athletic Club': 'Athletic Bilbao',
+    'Bayern München': 'Bayern Munich',
+    'Bayern Munchen': 'Bayern Munich',
+    'FC Koln': 'Cologne',
+    '1. FC Köln': 'Cologne',
+    'Borussia Mönchengladbach': 'Mönchengladbach',
+    'Internazionale': 'Inter Milan',
+    'Napoli': 'Naples',
+    'Torino': 'Turin',
+    'Genoa': 'Gênes',
+    'Venezia': 'Venise',
+    'Roma': 'AS Roma',
+    'FC Porto': 'Porto',
+    'Sporting CP': 'Sporting Portugal',
+    'Anderlecht': 'Anderlecht',
+    'Standard Liege': 'Standard de Liège',
+    'Antwerp': 'Anvers',
+    'Club Brugge KV': 'Bruges',
+    'Basel': 'Bâle',
+    'Zurich': 'Zurich',
+    'Young Boys': 'Young Boys',
   };
   window.NS_NOM_USAGE = NOM_USAGE;
 
@@ -2885,7 +2914,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=541"></script>
+<script src="app.compiled.js?v=542"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
