@@ -17,32 +17,27 @@ const DIR = path.join(__dirname, '..', 'data', 'standings');
 const BASE = 'https://ninjascores.com/api/foot';
 let depense = 0;
 
-// Plus le score est bas, plus le championnat est haut dans la hierarchie.
-const NIVEAU_2 = [
-  /\b2\b/, /\bii\b/, /\bsegunda\b/, /\bserie b\b/, /\bliga ?2\b/, /\b2\. ?liga\b/,
-  /\bchampionship\b/, /\bbirinci\b/, /\b1st division\b/, /\bdivision 1\b/,
-  /\bprimera b\b/, /\bnacional\b/, /\bchallenger\b/, /\bpersha\b/, /\bfirst league\b/,
-  /\bnational 1\b/, /\b1\. ?lig\b/, /\b1\. ?division\b/, /\bligue 2\b/, /\bliga i+\b/,
-  /\bsecond\b/, /\bmetropolitana\b/, /\besiliiga\b/, /\bsuper league 2\b/,
-];
-const NIVEAU_1 = [
-  /\bpremier\b/, /\bpremyer\b/, /\bpro league\b/, /\bsuper ?li[gq]/, /\bsuperliga\b/,
-  /\bprimera divisi/, /\bprimera a\b/, /\bserie a\b/, /\bligue 1\b/, /\bliga 1\b/,
-  /\bla liga\b/, /\bbundesliga\b/, /\beredivisie\b/, /\bmeistriliiga\b/,
-  /\bekstraklasa\b/, /\ballsvenskan\b/, /\beliteserien\b/, /\bbotola pro\b/,
-  /\bvirsliga\b/, /\ba lyga\b/, /\bveikkausliiga\b/, /\bsuperettan\b/,
-  /\belite one\b/, /\bk league 1\b/, /\bj1\b/, /\bliga profesional\b/,
-  /\bsuper league\b/, /\bprofesional\b/, /\bligi kuu\b/, /\b1a divisi/,
-];
-
-function niveau(nom) {
-  const n = String(nom || '').toLowerCase();
-  // Le niveau 2 est teste en premier : "Super League 2" doit compter comme D2
-  // malgre le mot "Super".
-  if (NIVEAU_2.some((r) => r.test(n))) return 2;
-  if (NIVEAU_1.some((r) => r.test(n))) return 1;
-  return 1.5;                                  // inconnu : entre les deux
-}
+// Critere retenu : l'identifiant API-Football, qui suit l'ordre des divisions
+// dans la quasi-totalite des pays (Ligue 1 = 61, Ligue 2 = 62, National 1 = 63).
+//
+// J'ai d'abord tente un classement par libelle : plus d'erreurs que de
+// corrections (accents non geres, "1st Division" pris pour une D1, "Super
+// League 2" pour une D1...). L'identifiant se trompe sur un seul pays sur
+// 150, on le corrige donc a la main plutot que d'inventer des regles.
+const EXCEPTIONS = {
+  // l'identifiant place la D2 avant la D1
+  'Azerbaijan':    ['Premyer Liqa', 'Birinci Dasta'],
+  'Australia':     ['A-League'],
+  'Guatemala':     ['Liga Nacional'],
+  'Israel':        ["Ligat Ha'al", 'Liga Leumit'],
+  'Faroe-Islands': ['Meistaradeildin', '1. Deild'],
+  'Argentina':     ['Liga Profesional Argentina', 'Primera Nacional'],
+  'Canada':        ['Canadian Premier League'],
+  'Estonia':       ['Meistriliiga', 'Esiliiga A', 'Esiliiga B'],
+  'Georgia':       ['Erovnuli Liga', 'Erovnuli Liga 2', 'Liga 3'],
+  'USA':           ['Major League Soccer', 'USL Championship', 'USL League One', 'USL League Two'],
+  'Greece':        ['Super League 1', 'Super League 2', 'Football League'],
+};
 
 async function api(params) {
   const r = await fetch(`${BASE}?${new URLSearchParams(params)}`);
@@ -68,21 +63,20 @@ async function api(params) {
       (j.response || []).forEach((l) => { ids[l.league.name] = l.league.id; });
     } catch (e) { /* departage indisponible */ }
 
-    info.ordre = noms.slice().sort((a, b) => {
-      const na = niveau(a), nb = niveau(b);
-      if (na !== nb) return na - nb;
+    const tete = (EXCEPTIONS[cle] || []).filter((x) => noms.includes(x));
+    const reste = noms.filter((x) => !tete.includes(x)).sort((a, b) => {
       const ia = ids[a] === undefined ? 1e9 : ids[a];
       const ib = ids[b] === undefined ? 1e9 : ids[b];
       return ia !== ib ? ia - ib : a.localeCompare(b, 'fr');
     });
+    info.ordre = tete.concat(reste);
 
     // signale les cas ou le libelle ne tranche pas
-    const niveaux = noms.map(niveau);
-    if (new Set(niveaux).size === 1) doutes.push(`${info.nom} : ${info.ordre.join(' > ')}`);
+    if (noms.length > 2) doutes.push(`${info.nom} : ${info.ordre.join(' > ')}`);
   }
 
   fs.writeFileSync(fichier, JSON.stringify(man));
   console.log(`${depense} requetes\n`);
-  console.log(`${doutes.length} pays ou le libelle ne tranche pas (departage par identifiant) :`);
+  console.log(`${doutes.length} pays a 3 divisions ou plus, a relire :`);
   doutes.forEach((d) => console.log('  ' + d));
 })();
