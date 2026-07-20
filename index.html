@@ -2919,7 +2919,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=554"></script>
+<script src="app.compiled.js?v=555"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -3017,6 +3017,9 @@ window.NS_pulse = function(x, y){
         if (sd.lookup && sd.lookup[c.name]) sd.lookup[fr] = sd.lookup[c.name];
         c.name = fr;
         if (fr === 'Angleterre') c.leagueCount = 2;
+        // L'emoji drapeau nord-irlandais n'est pas affichable : le fournisseur
+        // renvoie l'Union Jack. On lui substitue la croix de Saint-Patrick.
+        if (fr === 'Irlande du Nord') c.flag = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA2MCA0MCc+PHJlY3Qgd2lkdGg9JzYwJyBoZWlnaHQ9JzQwJyBmaWxsPScjZmZmJy8+PHBhdGggZD0nTTAgMCBMNjAgNDAgTTYwIDAgTDAgNDAnIHN0cm9rZT0nI2NmMTQyYicgc3Ryb2tlLXdpZHRoPSc3Jy8+PC9zdmc+';
       }
     });
     // le compteur affiche ne tient pas compte des competitions feminines :
