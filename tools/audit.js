@@ -30,7 +30,8 @@ function poules(lignes) {
     if (rupture) { cour = { nom, lignes: [] }; out.push(cour); }
     cour.lignes.push(r); prec = r.rank;
   }
-  return out;
+  const joue = out.filter((g) => g.lignes.reduce((a, r) => a + (r.played || 0), 0) > 0);
+  return joue.length ? joue : out;
 }
 
 const pb = { logos: [], ordre: [], poules: [], donnees: [], vides: [] };

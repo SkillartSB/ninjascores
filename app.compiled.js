@@ -3208,6 +3208,13 @@ var nom=r.groupe||null;
 var rupture=!cour||(nom?cour.nom!==nom:false)||r.rank<=prec;
 if(rupture){cour={nom:nom,lignes:[]};out.push(cour);}
 cour.lignes.push(r);prec=r.rank;}
+// Une phase pas encore disputee (Clausura a venir, play-offs a jouer)
+// renvoie toutes ses equipes a zero point : elle n'apprend rien et fait
+// croire a un classement casse. On ne l'affiche pas, sauf si aucune
+// phase n'a demarre.
+var joue=out.filter(function(g){
+return g.lignes.reduce(function(a,r){return a+(r.played||0);},0)>0;});
+if(joue.length)out=joue;
 if(out.length>1){
 var vus={};
 out.forEach(function(g,i){
