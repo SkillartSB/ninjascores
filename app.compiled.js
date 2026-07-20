@@ -3197,17 +3197,26 @@ pTab==='actus'&&_card('📰','Actualités',_empty('📰','Aucune actualité','Le
 // Deux cas : le groupe est nomme, ou il faut le deduire du rang qui repart.
 const NS_POULES=function(lignes){
 if(!lignes||!lignes.length)return [];
-var out=[],cour=null,prec=0;
+// Deux pieges distincts :
+//  - un championnat a poules doit etre coupe (Ligue 2 algerienne Est/Ouest) ;
+//  - la source renvoie parfois un tableau UNIQUE dans le desordre
+//    (Liga 2017/18 : 1, 2, 4, 3, 5, 7, 9, 6...).
+// Couper des que le rang redescend confondait les deux et fabriquait de
+// faux groupes. Le vrai signal d'une nouvelle poule, c'est le retour du
+// rang 1, ou un changement de nom de groupe.
+var out=[],cour=null;
+var nommes=lignes.some(function(r){return r.groupe;});
 for(var i=0;i<lignes.length;i++){
 var r=lignes[i];
 var nom=r.groupe||null;
-// On coupe au changement de nom ET au redemarrage du rang : une meme
-// phase peut contenir plusieurs poules portant le meme libelle
-// (Belgique 'Play-offs II' groupe A et B), auquel cas se fier au seul
-// nom les fusionnerait et les places repartiraient a 1 au milieu.
-var rupture=!cour||(nom?cour.nom!==nom:false)||r.rank<=prec;
+var rupture=!cour
+ ||(nommes&&cour.nom!==nom)
+ ||(r.rank===1&&cour.lignes.length>0);
 if(rupture){cour={nom:nom,lignes:[]};out.push(cour);}
-cour.lignes.push(r);prec=r.rank;}
+cour.lignes.push(r);}
+// la source n'est pas toujours triee : on remet chaque poule dans l'ordre
+out.forEach(function(g){g.lignes=g.lignes.slice().sort(function(a,b){
+return (a.rank||0)-(b.rank||0);});});
 // Une phase pas encore disputee (Clausura a venir, play-offs a jouer)
 // renvoie toutes ses equipes a zero point : elle n'apprend rien et fait
 // croire a un classement casse. On ne l'affiche pas, sauf si aucune

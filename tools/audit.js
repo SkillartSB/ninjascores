@@ -23,13 +23,16 @@ const LOGN = new Set(Object.keys(LOGOS).map(norm));
 
 // reproduit NS_POULES du front pour verifier le decoupage
 function poules(lignes) {
-  const out = []; let cour = null, prec = 0;
+  if (!lignes.length) return [];
+  const out = []; let cour = null;
+  const nommes = lignes.some((r) => r.groupe);
   for (const r of lignes) {
     const nom = r.groupe || null;
-    const rupture = !cour || (nom ? cour.nom !== nom : false) || r.rank <= prec;
+    const rupture = !cour || (nommes && cour.nom !== nom) || (r.rank === 1 && cour.lignes.length > 0);
     if (rupture) { cour = { nom, lignes: [] }; out.push(cour); }
-    cour.lignes.push(r); prec = r.rank;
+    cour.lignes.push(r);
   }
+  out.forEach((g) => { g.lignes = g.lignes.slice().sort((a, b) => (a.rank || 0) - (b.rank || 0)); });
   const joue = out.filter((g) => g.lignes.reduce((a, r) => a + (r.played || 0), 0) > 0);
   return joue.length ? joue : out;
 }
@@ -71,7 +74,8 @@ for (const [cle, info] of pays) {
       const gs = poules(lignes);
       for (const g of gs) {
         const rangs = g.lignes.map((x) => x.rank);
-        const croissant = rangs.every((v, i) => i === 0 || v > rangs[i - 1]);
+        // les ex aequo sont legitimes : deux equipes peuvent partager un rang
+        const croissant = rangs.every((v, i) => i === 0 || v >= rangs[i - 1]);
         if (!croissant) {
           pb.poules.push(`${info.nom} · ${ligue} ${saison} : rangs non croissants dans "${g.nom || 'poule unique'}"`);
         }
