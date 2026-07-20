@@ -1495,9 +1495,18 @@ window.NS_renderBookmakers = function(){
     return NAME_MAP[name] || name;
   }
 
+  // Noms d'usage : les classements portent le nom administratif complet
+  // ("Heart Of Midlothian"), alors que tout le monde dit "Hearts".
+  var NOM_USAGE = {
+    'Heart Of Midlothian': 'Hearts',
+    'Heart of Midlothian': 'Hearts',
+  };
+  window.NS_NOM_USAGE = NOM_USAGE;
+
   // Affichage : cleanTeamName uniquement (sans NAME_MAP, pour garder les noms en français)
   window.displayTeamName = function(n) {
     if (!n) return n;
+    if (NOM_USAGE[n]) return NOM_USAGE[n];
     var c = cleanTeamName(n);
     // Retirer le suffixe peut transformer un club en nom de pays :
     // "Bahrain SC" devenait "Bahrain". On garde alors le nom complet.
@@ -2876,7 +2885,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=539"></script>
+<script src="app.compiled.js?v=540"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */

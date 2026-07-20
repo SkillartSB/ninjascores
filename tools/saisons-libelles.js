@@ -36,7 +36,14 @@ const ancien = (s) => {
 };
 const correct = (s) => {
   const a = new Date(s.start).getUTCFullYear(), b = new Date(s.end).getUTCFullYear();
-  return b > a ? `${s.year}/${String(s.year + 1).slice(2)}` : String(s.year);
+  // Saison a cheval sur deux annees civiles
+  if (b > a) return `${s.year}/${String(s.year + 1).slice(2)}`;
+  // Saison decalee : annee officielle Y mais jouee entierement en Y+1
+  // (Cote d'Ivoire 2020 disputee de mars a juin 2021, cause covid).
+  // C'est bien la campagne Y/Y+1, l'etiqueter "Y" la desaligne de ses
+  // voisines 2019/20 et 2021/22.
+  if (a === s.year + 1) return `${s.year}/${String(s.year + 1).slice(2)}`;
+  return String(s.year);
 };
 
 function normalise(rep) {
@@ -81,9 +88,13 @@ function normalise(rep) {
       for (const s of util) {
         const a = ancien(s), c = correct(s);
         const collision = parAncien[a].length > 1;
-        if (bloc[a] && !collision) {
-          if (a !== c) { renommees++; paysTouches.add(info.nom); }
-          neuf[c] = bloc[a];
+        // Le script doit pouvoir etre rejoue : la saison peut deja porter
+        // son libelle corrige, ou celui d'une version precedente de la regle.
+        const candidats = [c, a, String(s.year), `${s.year}/${String(s.year + 1).slice(2)}`];
+        const trouve = candidats.find((k) => bloc[k] && !(k === a && collision));
+        if (trouve) {
+          if (trouve !== c) { renommees++; paysTouches.add(info.nom); }
+          neuf[c] = bloc[trouve];
         } else {
           // saison perdue par ecrasement, ou absente : a retelecharger
           perdues.push({ cle, nom, id: l.league.id, annee: s.year, libelle: c, pays: info.nom });
