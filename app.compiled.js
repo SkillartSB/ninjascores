@@ -3113,7 +3113,277 @@ _empty('🔄','Aucun transfert enregistré','L\'historique des transferts de ce 
 pTab==='actus'&&_card('📰','Actualités',_empty('📰','Aucune actualité','Les actualités liées à ce joueur apparaîtront ici dès qu\'un flux éditorial sera connecté.'))));
 };
 // ── TEAM DETAIL SCREEN ────────────────────────────────────────────────────────
-const TeamDetailScreen=({team,onBack,accent,t,isDark})=>{const teamPlayers=SEARCH_DATA.players.filter(p=>p.team===team.name&&p.league===team.league);const positionGroups={};teamPlayers.forEach(p=>{if(!positionGroups[p.position])positionGroups[p.position]=[];positionGroups[p.position].push(p);});return/*#__PURE__*/React.createElement("div",{style:{display:'flex',flexDirection:'column',height:'100%',background:t.bg}},/*#__PURE__*/React.createElement("div",{style:{display:'flex',alignItems:'center',gap:12,padding:'16px',borderBottom:`1px solid ${t.border}`,flexShrink:0}},/*#__PURE__*/React.createElement("button",{onClick:onBack,style:{background:'none',border:'none',fontSize:20,cursor:'pointer',color:accent}},"\u2190"),/*#__PURE__*/React.createElement("div",{style:{flex:1}},/*#__PURE__*/React.createElement("h2",{style:{fontSize:18,fontWeight:700,color:t.text,margin:'0 0 4px 0'}},team.name),/*#__PURE__*/React.createElement("p",{style:{fontSize:12,color:t.textSec,margin:0}},team.league))),/*#__PURE__*/React.createElement("div",{style:{flex:1,overflowY:'auto',padding:'16px'}},/*#__PURE__*/React.createElement("div",{style:{background:t.card,borderRadius:12,padding:12,marginBottom:16}},/*#__PURE__*/React.createElement("div",{style:{display:'flex',justifyContent:'space-around',textAlign:'center'}},/*#__PURE__*/React.createElement("div",null,/*#__PURE__*/React.createElement("div",{style:{fontSize:20,fontWeight:700,color:accent}},teamPlayers.length),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:4}},"Joueurs")))),Object.entries(positionGroups).map(([pos,players])=>/*#__PURE__*/React.createElement("div",{key:pos,style:{marginBottom:16}},/*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:700,color:t.textSec,textTransform:'uppercase',marginBottom:8}},TRPOS(pos)),/*#__PURE__*/React.createElement("div",{style:{display:'flex',flexDirection:'column',gap:6}},players.map(p=>/*#__PURE__*/React.createElement("div",{key:p.id,style:{background:isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.03)',borderRadius:8,padding:10}},/*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:t.text}},p.name),/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:t.textSec,marginTop:2}},p.nationality))))))));};// ── MAIN APP ──────────────────────────────────────────────────────────────────
+
+// ── FICHE EQUIPE : donnees de reference ──────────────────────────────────────
+// Stade fourni par l'utilisateur. Matchs, transferts et actualites sont des
+// donnees de DEMONSTRATION en attendant l'API.
+const NS_TEAM_INFO={'Marseille':{stade:'Orange Vélodrome',ville:'Marseille',
+capacite:67394,ouverture:1937,surface:'Pelouse naturelle',fondation:1899,
+surnom:'Les Olympiens'}};
+
+const NS_TEAM_MATCHES={'Marseille':{
+passes:[
+{date:'17/05/2026',comp:'Ligue 1',dom:'Marseille',ext:'Rennes',sd:2,sa:0},
+{date:'10/05/2026',comp:'Ligue 1',dom:'Lille',ext:'Marseille',sd:1,sa:1},
+{date:'03/05/2026',comp:'Ligue 1',dom:'Marseille',ext:'Monaco',sd:3,sa:1},
+{date:'26/04/2026',comp:'Coupe de France',dom:'Marseille',ext:'Lyon',sd:0,sa:2},
+{date:'19/04/2026',comp:'Ligue 1',dom:'Nice',ext:'Marseille',sd:0,sa:2}],
+avenir:[
+{date:'15/08/2026',heure:'21:00',comp:'Ligue 1',dom:'Marseille',ext:'Nice'},
+{date:'22/08/2026',heure:'19:00',comp:'Ligue 1',dom:'Lens',ext:'Marseille'},
+{date:'29/08/2026',heure:'21:00',comp:'Ligue 1',dom:'Marseille',ext:'Lyon'}]}};
+
+const NS_TEAM_CUP={'Marseille':{'2025/26':[
+{tour:'32es de finale',adv:'Saint-Étienne',dom:true,score:'3-1',passe:true},
+{tour:'16es de finale',adv:'Auxerre',dom:false,score:'2-0',passe:true},
+{tour:'8es de finale',adv:'Brest',dom:true,score:'1-0',passe:true},
+{tour:'Quarts de finale',adv:'Lille',dom:false,score:'2-1',passe:true},
+{tour:'Demi-finales',adv:'Lyon',dom:true,score:'0-2',passe:false}]}};
+
+const NS_TEAM_TRANSFERS={'Marseille':[
+{sens:'in',joueur:'Facundo Medina',club:'Lens',montant:'18,00 M€',date:'12 juil. 2026'},
+{sens:'in',joueur:'CJ Egan-Riley',club:'Burnley',montant:'Libre',date:'01 juil. 2026'},
+{sens:'out',joueur:'Ismaila Sarr',club:'Crystal Palace',montant:'14,00 M€',date:'08 juil. 2026'},
+{sens:'out',joueur:'Chancel Mbemba',club:'Lille',montant:'Libre',date:'30 juin 2026'}]};
+
+const NS_TEAM_NEWS={'Marseille':[
+{date:'18 juil. 2026',titre:'L’OM boucle l’arrivée de Facundo Medina',
+resume:'Le défenseur argentin s’engage pour cinq saisons en provenance de Lens.'},
+{date:'15 juil. 2026',titre:'Reprise de l’entraînement à la Commanderie',
+resume:'Le groupe a repris avec dix-neuf joueurs, dont quatre titis du centre de formation.'},
+{date:'11 juil. 2026',titre:'Le calendrier de Ligue 1 dévoilé',
+resume:'L’OM débutera sa saison au Vélodrome face à Nice le 15 août.'}]};
+
+const TeamDetailScreen=({team,onBack,accent,t,isDark,wide})=>{
+const nom=team.name;
+const[tab,setTab]=useState('resume');
+const info=NS_TEAM_INFO[nom]||null;
+const agenda=NS_TEAM_MATCHES[nom]||null;
+const coupe=NS_TEAM_CUP[nom]||null;
+const mvts=NS_TEAM_TRANSFERS[nom]||null;
+const actus=NS_TEAM_NEWS[nom]||null;
+const teamPlayers=SEARCH_DATA.players.filter(p=>p.team===nom&&p.league===team.league);
+
+// ── competitions ou l'equipe apparait reellement ──────────────────────────
+const pays=(function(){try{var r=NS_RESOLVE_LEAGUE(team.league);return r&&r.country;}catch(e){return null;}})();
+const liguesPays=(pays&&STANDINGS_DATA&&STANDINGS_DATA.lookup&&STANDINGS_DATA.lookup[pays])||{};
+const championnats=Object.keys(liguesPays).filter(function(lg){
+var ss=liguesPays[lg]||{};
+return Object.keys(ss).some(function(s){return (ss[s]||[]).some(function(r){return r.team===nom;});});});
+championnats.sort(function(a,b){if(a===team.league)return -1;if(b===team.league)return 1;return a.localeCompare(b,'fr');});const comps=championnats.concat(coupe?['Coupe de France']:[]);
+const[comp,setComp]=useState(comps.indexOf(team.league)>=0?team.league:(comps[0]||null));
+const estCoupe=comp==='Coupe de France';
+const saisons=estCoupe?(coupe?Object.keys(coupe).reverse():[]):
+(liguesPays[comp]?Object.keys(liguesPays[comp]).slice().reverse():[]);
+const[saison,setSaison]=useState(null);
+const saisonActive=(saison&&saisons.indexOf(saison)>=0)?saison:(saisons[0]||null);
+
+const F=wide?1:0;
+const fs=function(a,b){return F?a:b;};
+const carte={background:t.card,borderRadius:16,border:'1px solid '+t.border,
+boxShadow:t.shadowCard,overflow:'hidden'};
+const entete=function(txt){return React.createElement('div',{style:{background:accent+'18',
+padding:'10px 14px',borderBottom:'1px solid '+t.border}},
+React.createElement('div',{style:{fontSize:10,fontWeight:800,color:accent,letterSpacing:1.5,
+textTransform:'uppercase'}},txt));};
+const vide=function(txt){return React.createElement('div',{style:{padding:'22px 16px',
+textAlign:'center',fontSize:fs(14,12.5),color:t.textSec}},txt);};
+
+// ── stade ────────────────────────────────────────────────────────────────
+const blocStade=!info?null:React.createElement('div',{style:carte},entete('🏟️  Stade'),
+React.createElement('div',{style:{padding:'14px 16px'}},
+React.createElement('div',{style:{fontSize:fs(19,16),fontWeight:800,color:t.text}},info.stade),
+React.createElement('div',{style:{fontSize:fs(13,12),color:t.textSec,marginTop:2}},info.ville),
+React.createElement('div',{style:{display:'flex',gap:10,marginTop:14}},
+[[info.capacite.toLocaleString('fr-FR'),'Capacité'],[String(info.ouverture),'Ouverture'],
+[info.surface,'Surface']].map(function(p,k){
+return React.createElement('div',{key:k,style:{flex:1,minWidth:0,textAlign:'center',
+background:isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.03)',borderRadius:12,
+padding:'11px 6px'}},
+React.createElement('div',{style:{fontSize:fs(17,14),fontWeight:800,color:t.text,
+overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},p[0]),
+React.createElement('div',{style:{fontSize:fs(11.5,10),color:t.textSec,marginTop:3}},p[1]));}))));
+
+// ── une ligne de match ───────────────────────────────────────────────────
+const ligneMatch=function(m,k,futur){
+var gagne=!futur&&((m.dom===nom&&m.sd>m.sa)||(m.ext===nom&&m.sa>m.sd));
+var nul=!futur&&m.sd===m.sa;
+var pastille=futur?null:React.createElement('span',{style:{width:20,height:20,borderRadius:6,
+flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
+fontSize:10,fontWeight:800,color:'#fff',
+background:gagne?'#16A34A':(nul?'#F59E0B':'#EF4444')}},gagne?'V':(nul?'N':'D'));
+return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,
+padding:'11px 14px',borderTop:k?'1px solid '+t.divider:'none'}},
+React.createElement('div',{style:{width:fs(74,64),flexShrink:0}},
+React.createElement('div',{style:{fontSize:fs(12,11),fontWeight:600,color:t.textSec}},m.date),
+React.createElement('div',{style:{fontSize:fs(10.5,9.5),color:t.textTer,marginTop:1}},futur?m.heure:m.comp)),
+React.createElement('div',{style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:7}},
+React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(m.dom),color:accent,size:fs(24,20)}),
+React.createElement('span',{style:{fontSize:fs(14,12.5),fontWeight:m.dom===nom?800:600,
+color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},m.dom),
+React.createElement('span',{style:{fontSize:fs(13,11.5),fontWeight:800,color:t.textSec,
+flexShrink:0,padding:'0 4px'}},futur?'-':(m.sd+' - '+m.sa)),
+React.createElement('span',{style:{fontSize:fs(14,12.5),fontWeight:m.ext===nom?800:600,
+color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},m.ext),
+React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(m.ext),color:accent,size:fs(24,20)})),
+pastille);};
+
+const blocPasses=!agenda?null:React.createElement('div',{style:carte},
+entete('⏪  Derniers matchs'),
+agenda.passes.map(function(m,k){return ligneMatch(m,k,false);}));
+const blocAvenir=!agenda?null:React.createElement('div',{style:carte},
+entete('📅  Prochains matchs'),
+agenda.avenir.map(function(m,k){return ligneMatch(m,k,true);}));
+
+// ── classement / parcours de coupe ───────────────────────────────────────
+const filtres=React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap',
+padding:'12px 14px',borderBottom:'1px solid '+t.divider}},
+comps.map(function(c){var on=c===comp;
+return React.createElement('button',{key:c,onClick:function(){setComp(c);setSaison(null);},
+style:{padding:fs('8px 16px','6px 12px'),borderRadius:20,border:'none',cursor:'pointer',
+fontFamily:'inherit',fontSize:fs(13.5,11.5),fontWeight:on?800:600,
+background:on?accent:(isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.04)'),
+color:on?'#fff':t.textSec}},c);}));
+
+const choixSaison=!saisons.length?null:React.createElement('div',{style:{display:'flex',gap:6,
+padding:'10px 14px',overflowX:'auto',borderBottom:'1px solid '+t.divider}},
+saisons.map(function(s){var on=s===saisonActive;
+return React.createElement('button',{key:s,onClick:function(){setSaison(s);},
+style:{padding:fs('6px 13px','5px 10px'),borderRadius:14,border:'1px solid '+(on?accent:t.border),
+cursor:'pointer',fontFamily:'inherit',fontSize:fs(12.5,11),fontWeight:on?800:600,
+background:on?accent+'18':'transparent',color:on?accent:t.textSec,whiteSpace:'nowrap',
+flexShrink:0}},s);}));
+
+const tableau=(function(){
+if(estCoupe){
+var parcours=(coupe&&coupe[saisonActive])||[];
+if(!parcours.length)return vide('Parcours indisponible pour cette saison.');
+return React.createElement('div',null,parcours.map(function(r,k){
+return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,
+padding:'12px 14px',borderTop:k?'1px solid '+t.divider:'none'}},
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('div',{style:{fontSize:fs(13.5,12),fontWeight:700,color:t.text}},r.tour),
+React.createElement('div',{style:{fontSize:fs(12,11),color:t.textSec,marginTop:2}},
+(r.dom?'Domicile':'Extérieur')+' · '+r.adv)),
+React.createElement('span',{style:{fontSize:fs(15,13),fontWeight:800,
+color:r.passe?'#16A34A':'#EF4444'}},r.score),
+React.createElement('span',{style:{fontSize:fs(11,10),fontWeight:800,
+color:r.passe?'#16A34A':'#EF4444',background:(r.passe?'#16A34A':'#EF4444')+'1A',
+borderRadius:6,padding:'3px 8px',flexShrink:0}},r.passe?'Qualifié':'Éliminé'));}));}
+var lignes=(liguesPays[comp]&&liguesPays[comp][saisonActive])||[];
+if(!lignes.length)return vide('Classement indisponible pour cette saison.');
+var col={fontSize:fs(12.5,11),fontWeight:700,color:t.textTer,textAlign:'center',width:fs(38,30)};
+return React.createElement('div',{style:{padding:'4px 0 8px'}},
+React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,
+padding:'8px 14px',borderBottom:'1px solid '+t.divider}},
+React.createElement('span',{style:{width:fs(30,24),fontSize:fs(12.5,11),fontWeight:700,
+color:t.textTer,textAlign:'center'}},'#'),
+React.createElement('span',{style:{flex:1,fontSize:fs(12.5,11),fontWeight:700,color:t.textTer}},'Équipe'),
+['J','G','N','P','Diff','Pts'].map(function(c){return React.createElement('span',{key:c,style:col},c);})),
+lignes.map(function(r,k){var moi=r.team===nom;
+return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:8,
+padding:fs('10px 14px','8px 14px'),borderTop:k?'1px solid '+t.divider:'none',
+background:moi?accent+'12':'transparent'}},
+React.createElement('span',{style:{width:fs(30,24),fontSize:fs(13,11.5),fontWeight:800,
+color:moi?accent:t.textSec,textAlign:'center'}},r.rank),
+React.createElement('span',{style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:8}},
+React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(r.team),color:accent,size:fs(22,18)}),
+React.createElement('span',{style:{fontSize:fs(13.5,12),fontWeight:moi?800:600,
+color:moi?accent:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},r.team)),
+[r.played,r.won,r.drawn,r.lost,r.gd,r.pts].map(function(v,vi){
+return React.createElement('span',{key:vi,style:{width:fs(38,30),textAlign:'center',
+fontSize:fs(13,11.5),fontWeight:vi===5?800:600,color:vi===5?(moi?accent:t.text):t.textSec}},
+v==null?'-':String(v));}));}));})();
+
+const blocClassement=!comps.length?null:React.createElement('div',{style:carte},
+entete('🏆  Classement'),filtres,choixSaison,tableau);
+
+// ── effectif ─────────────────────────────────────────────────────────────
+const NS_ORDRE_POSTE=['gardien','arriere','defenseur','lateral','piston','milieu','ailier','attaquant','avant'];
+const groupes={};
+teamPlayers.forEach(function(p){var lbl=TRPOS(p.position)||p.position;(groupes[lbl]=groupes[lbl]||[]).push(p);});
+const groupesTries=Object.keys(groupes).sort(function(a,b){var na=a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');var nb=b.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');var ia=NS_ORDRE_POSTE.findIndex(function(k){return na.indexOf(k)>=0;});var ib=NS_ORDRE_POSTE.findIndex(function(k){return nb.indexOf(k)>=0;});if(ia<0)ia=99; if(ib<0)ib=99;return ia!==ib?ia-ib:a.localeCompare(b,'fr');});
+const blocEffectif=React.createElement('div',{style:carte},
+entete('👥  Effectif · '+teamPlayers.length+' joueurs'),
+groupesTries.length?groupesTries.map(function(pos,gi){
+return React.createElement('div',{key:pos},
+React.createElement('div',{style:{fontSize:fs(11,10),fontWeight:800,color:t.textTer,
+letterSpacing:1,textTransform:'uppercase',padding:'11px 14px 7px',
+borderTop:gi?'1px solid '+t.divider:'none',
+background:isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)'}},pos),
+groupes[pos].map(function(p,k){
+return React.createElement('div',{key:p.id,style:{display:'flex',alignItems:'center',gap:10,
+padding:fs('11px 14px','9px 14px'),borderTop:k?'1px solid '+t.divider:'none'}},
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('div',{style:{fontSize:fs(14,12.5),fontWeight:700,color:t.text}},p.name),
+React.createElement('div',{style:{fontSize:fs(12,11),color:t.textSec,marginTop:2}},
+(TRPAYS?TRPAYS(p.nationality):p.nationality)+(p.age?' · '+p.age+' ans':''))),
+p.marketValue?React.createElement('span',{style:{fontSize:fs(13,11.5),fontWeight:800,
+color:accent,flexShrink:0}},Math.round(parseInt(p.marketValue,10)/100000)/10+' M€'):null);}));})
+:vide('Effectif indisponible.'));
+
+// ── transferts ───────────────────────────────────────────────────────────
+const blocTransferts=React.createElement('div',{style:carte},entete('🔁  Transferts'),
+(mvts&&mvts.length)?mvts.map(function(x,k){var arrive=x.sens==='in';
+return React.createElement('div',{key:k,style:{display:'flex',alignItems:'center',gap:10,
+padding:'12px 14px',borderTop:k?'1px solid '+t.divider:'none'}},
+React.createElement('span',{style:{fontSize:fs(11,10),fontWeight:800,flexShrink:0,
+color:arrive?'#16A34A':'#EF4444',background:(arrive?'#16A34A':'#EF4444')+'1A',
+borderRadius:6,padding:'3px 8px'}},arrive?'Arrivée':'Départ'),
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('div',{style:{fontSize:fs(14,12.5),fontWeight:700,color:t.text}},x.joueur),
+React.createElement('div',{style:{fontSize:fs(12,11),color:t.textSec,marginTop:2}},
+(arrive?'← ':'→ ')+x.club+' · '+x.date)),
+React.createElement('span',{style:{fontSize:fs(13.5,12),fontWeight:800,color:t.text,
+flexShrink:0}},x.montant));}):vide('Aucun mouvement enregistré.'));
+
+// ── actualites ───────────────────────────────────────────────────────────
+const blocActus=React.createElement('div',{style:carte},entete('📰  Actualités'),
+(actus&&actus.length)?actus.map(function(a,k){
+return React.createElement('div',{key:k,style:{padding:'13px 14px',
+borderTop:k?'1px solid '+t.divider:'none'}},
+React.createElement('div',{style:{fontSize:fs(11.5,10.5),color:t.textTer,fontWeight:600}},a.date),
+React.createElement('div',{style:{fontSize:fs(14.5,13),fontWeight:700,color:t.text,
+marginTop:3}},a.titre),
+React.createElement('div',{style:{fontSize:fs(13,11.5),color:t.textSec,marginTop:3,
+lineHeight:1.45}},a.resume));}):vide('Aucune actualité pour le moment.'));
+
+// ── onglets ──────────────────────────────────────────────────────────────
+const ONGLETS=[['resume','Résumé'],['matchs','Matchs'],['classement','Classement'],
+['effectif','Effectif'],['transferts','Transferts'],['actus','Actualités']];
+const contenu={
+resume:[blocStade,blocPasses,blocAvenir],
+matchs:[blocPasses,blocAvenir],
+classement:[blocClassement],
+effectif:[blocEffectif],
+transferts:[blocTransferts],
+actus:[blocActus]}[tab]||[];
+
+return React.createElement('div',{style:{display:'flex',flexDirection:'column',
+height:'100%',background:t.bg}},
+React.createElement('div',{style:{display:'flex',alignItems:'center',gap:12,
+padding:fs('18px 16px','16px'),borderBottom:'1px solid '+t.border,flexShrink:0}},
+React.createElement('button',{onClick:onBack,style:{background:'none',border:'none',
+fontSize:fs(24,20),cursor:'pointer',color:accent,lineHeight:1,padding:0}},'←'),
+React.createElement(TeamLogo,{name:NS_ALIAS_CLUB(nom),color:accent,size:fs(52,40)}),
+React.createElement('div',{style:{flex:1,minWidth:0}},
+React.createElement('h2',{style:{fontSize:fs(24,18),fontWeight:800,color:t.text,margin:0}},nom),
+React.createElement('p',{style:{fontSize:fs(14,12),color:t.textSec,margin:'3px 0 0'}},
+team.league+(info?' · Fondé en '+info.fondation:'')))),
+React.createElement('div',{style:{display:'flex',gap:2,padding:fs('0 12px','0 8px'),
+borderBottom:'1px solid '+t.border,flexShrink:0,overflowX:'auto'}},
+ONGLETS.map(function(o){var on=o[0]===tab;
+return React.createElement('button',{key:o[0],onClick:function(){setTab(o[0]);},
+style:{flex:wide?'1 1 0':'0 0 auto',padding:fs('15px 8px','12px 12px'),background:'none',
+border:'none',borderBottom:'2px solid '+(on?accent:'transparent'),cursor:'pointer',
+fontFamily:'inherit',fontSize:fs(14.5,12.5),fontWeight:on?800:600,
+color:on?accent:t.textSec,whiteSpace:'nowrap'}},o[1]);})),
+React.createElement('div',{style:{flex:1,overflowY:'auto',padding:fs('16px','12px 12px 20px'),
+display:'flex',flexDirection:'column',gap:14,maxWidth:wide?880:'none',
+margin:wide?'0 auto':0,width:'100%',boxSizing:'border-box'}},
+contenu.filter(Boolean).length?contenu.filter(Boolean).map(function(el,k){return React.cloneElement(el,{key:'bloc'+k});})
+:React.createElement('div',{style:carte},vide('Aucune donnée disponible.'))));};
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
 const PronosticsScreen=({accent,t,isDark,wide})=>{
 const[pSubTab,setPSubTab]=useState('top');
 const[slip,setSlip]=useState([]);const[sportFilter,setSportFilter]=useState('foot');const SPORTS=[{id:'foot',label:'Foot'}];
@@ -3192,4 +3462,4 @@ false&&/*#__PURE__*/React.createElement('div',{style:{padding:'16px 14px',displa
 ['✅ Pronostics experts sans limite','✅ Alertes IA avant chaque match','✅ Statistiques avancées & tendances','✅ Value bets exclusifs','✅ Combinés optimisés quotidiens'].map((f,i)=>/*#__PURE__*/React.createElement('div',{key:i,style:{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',borderRadius:12,background:t.card,border:`1px solid ${t.border}`}},/*#__PURE__*/React.createElement('span',{style:{fontSize:13,color:t.text}},f)))
 )
 );};// end PronosticsScreen
-const App=()=>{const[tweaks,setTweak]=useTweaks(TWEAK_DEFAULTS);const isDark=tweaks.darkMode;const accent=tweaks.accentColor;const t=isDark?dark:light;window.ninjaDark=isDark;const[screen,setScreen]=useState('home');const[activeNav,setActiveNav]=useState('home');const[selectedMatch,setSelectedMatch]=useState(null);const[searchOpen,setSearchOpen]=useState(false);const[selectedPlayer,setSelectedPlayer]=useState(null);const[selectedTeam,setSelectedTeam]=useState(null);const[,_abTick]=useState(0);useEffect(function(){if(!window.NINJA_AB)return;var _i=setInterval(function(){_abTick(function(x){return x+1;});},20000);return function(){clearInterval(_i);};},[]);const handleMatchClick=match=>{setSelectedMatch(match);setScreen('matchDetail');};const handleBack=()=>{setScreen(activeNav);setSelectedMatch(null);setSelectedPlayer(null);setSelectedTeam(null);};const handleNav=tab=>{if(String(tab).indexOf('legal:')===0){setScreen(tab);setSearchOpen(false);return;}if(tab==='standings'){try{window._nsStdCountry=null;window._nsStdLeague=null;window._nsStdEuro=null;window._nsStdIntl=null;}catch(e){}setStdNonce(function(n){return n+1;});}setActiveNav(tab);setScreen(tab);setSelectedMatch(null);setSearchOpen(false);};const handleProfileClick=()=>{setScreen('profile');setSearchOpen(false);};const handleSearchClick=()=>{setSearchOpen(true);};const handlePlayerSelect=player=>{setSelectedPlayer(player);setSearchOpen(false);setScreen('playerDetail');};const handleTeamSelect=team=>{setSelectedTeam(team);setSearchOpen(false);setScreen('teamDetail');};const handleLeagueSelect=league=>{var _n=league&&(league.name||league);var _r=null;try{_r=_n?NS_RESOLVE_LEAGUE(_n):null;}catch(e){}if(_r){openLeague(_r);return;}setActiveNav('standings');setScreen('standings');setSearchOpen(false);};const[stdNonce,setStdNonce]=useState(0);const openLeague=(res)=>{try{window._nsStdCountry=null;window._nsStdLeague=null;window._nsStdEuro=null;window._nsStdIntl=null;if(res&&res.kind==='euro'){window._nsStdEuro=res.id;}else if(res&&res.kind==='intl'){window._nsStdIntl=res.id;}else if(res&&res.country&&res.league){window._nsStdCountry=res.country;window._nsStdLeague=res.league;}}catch(e){}setStdNonce(function(n){return n+1;});setActiveNav('standings');setScreen('standings');setSearchOpen(false);};const scaleRef=useRef(null);const[isWide,setIsWide]=useState(()=>{try{return window.innerWidth>=1024;}catch(e){return false;}});const[isXWide,setIsXWide]=useState(()=>{try{return window.innerWidth>=1280;}catch(e){return false;}});useEffect(()=>{const on=()=>{setIsWide(window.innerWidth>=1024);setIsXWide(window.innerWidth>=1280);};window.addEventListener('resize',on);return()=>window.removeEventListener('resize',on);},[]);const[mockup,setMockup]=useState(()=>{try{return localStorage.getItem('ns_mockup')==='1';}catch(e){return false;}});useEffect(()=>{try{var on=!!(isWide&&!mockup);document.body.classList.toggle('ns-web',on);document.documentElement.classList.toggle('ns-web',on);}catch(e){}},[isWide,mockup]);useEffect(()=>{window.NS_setMockup=function(v){try{localStorage.setItem('ns_mockup',v?'1':'0');}catch(e){}setMockup(!!v);};window.NS_getMockup=function(){return mockup;};window.NS_demo={home:function(){handleNav('home');},schedule:function(){handleNav('schedule');},favorites:function(){handleNav('favorites');},standings:function(){handleNav('standings');},profile:function(){handleProfileClick();},match:function(){handleMatchClick(MATCHES[0]);}};return function(){try{delete window.NS_setMockup;delete window.NS_getMockup;}catch(e){}};},[mockup]);useEffect(()=>{const el=scaleRef.current;if(!el)return;if(!mockup){el.style.transform='';return;}const fit=()=>{const vw=window.innerWidth,vh=window.innerHeight;const scale=Math.min(vw/(390+64),vh/(844+140),1);el.style.transform=`scale(${scale})`;};fit();window.addEventListener('resize',fit);return()=>window.removeEventListener('resize',fit);},[mockup]);return/*#__PURE__*/React.createElement("div",{style:(isWide&&!mockup)?{display:'flex',flexDirection:'column',width:'100vw',height:'100vh',background:t.bg,overflow:'hidden'}:{display:'flex',alignItems:'center',justifyContent:'center',width:'100vw',height:'100vh',background:mockup?(isDark?'#050508':'#E0E0EC'):t.bg,overflow:'hidden'}},(isWide&&!mockup)?React.createElement(NSTopBar,{t:t,accent:accent,isDark:isDark,onSearch:handleSearchClick,onProfile:handleProfileClick,active:searchOpen?null:activeNav,onNav:handleNav}):null,React.createElement('div',{className:(isWide&&!mockup)?'ns-row':'',style:(isWide&&!mockup)?{display:'flex',flexDirection:'row',flex:1,minHeight:0,width:'100%'}:{display:'contents'}},(isWide&&!mockup)?React.createElement(NSTopLeagues,{t:t,accent:accent,isDark:isDark,onLeague:openLeague}):null,/*#__PURE__*/React.createElement("div",{ref:scaleRef,style:mockup?{display:'flex',flexDirection:'column',alignItems:'center',gap:16,transformOrigin:'center center'}:{display:'flex',flexDirection:'column',width:'100%',height:'100%',minWidth:0,minHeight:0}},/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',gap:10,flexWrap:'wrap',justifyContent:'center'}},[{label:'🏠 Accueil',action:()=>handleNav('home')},{label:'📅 Calendrier',action:()=>handleNav('schedule')},{label:'❤️ Favoris',action:()=>handleNav('favorites')},{label:'🏆 Classement',action:()=>handleNav('standings')},{label:'👤 Profil',action:()=>handleProfileClick()},{label:'⚽ Détail match',action:()=>handleMatchClick(MATCHES[0])}].map(btn=>/*#__PURE__*/React.createElement("button",{key:btn.label,onClick:btn.action,style:{padding:'9px 18px',borderRadius:24,border:'none',cursor:'pointer',background:isDark?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.9)',color:isDark?'#fff':'#0D0F1C',fontSize:13,fontWeight:600,backdropFilter:'blur(12px)',boxShadow:'0 2px 10px rgba(0,0,0,0.12)',transition:'all 0.15s ease'},onMouseEnter:e=>{e.currentTarget.style.background=accent;e.currentTarget.style.color='#fff';},onMouseLeave:e=>{e.currentTarget.style.background=isDark?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.9)';e.currentTarget.style.color=isDark?'#fff':'#0D0F1C';}},btn.label))),/*#__PURE__*/React.createElement("div",{className:'ns-frame',style:mockup?{width:390,height:844,background:t.bg,borderRadius:52,overflow:'hidden',boxShadow:`0 40px 80px rgba(0,0,0,${isDark?0.6:0.25}), 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,${isDark?0.05:0.8})`,display:'flex',flexDirection:'column',position:'relative',fontFamily:"'Plus Jakarta Sans', sans-serif"}:{width:'100%',height:'100%',background:t.bg,borderRadius:0,overflow:'hidden',boxShadow:'none',display:'flex',flexDirection:(isXWide&&!mockup)?'row':'column',position:'relative',minHeight:0,fontFamily:"'Plus Jakarta Sans', sans-serif"}},/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',justifyContent:'space-between',alignItems:'center',padding:'14px 28px 0',background:t.bg,flexShrink:0}},/*#__PURE__*/React.createElement("span",{style:{fontSize:15,fontWeight:700,color:t.text}},"9:41"),/*#__PURE__*/React.createElement("div",{style:{width:120,height:34,background:'#000',borderRadius:20,position:'absolute',left:'50%',top:0,transform:'translateX(-50%)'}}),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:6,alignItems:'center'}},/*#__PURE__*/React.createElement("svg",{width:"16",height:"12",viewBox:"0 0 16 12",fill:t.text},/*#__PURE__*/React.createElement("rect",{x:"0",y:"3",width:"3",height:"9",rx:"1",opacity:"0.4"}),/*#__PURE__*/React.createElement("rect",{x:"4.5",y:"2",width:"3",height:"10",rx:"1",opacity:"0.6"}),/*#__PURE__*/React.createElement("rect",{x:"9",y:"0",width:"3",height:"12",rx:"1"}),/*#__PURE__*/React.createElement("rect",{x:"13.5",y:"0",width:"2.5",height:"12",rx:"1"})),/*#__PURE__*/React.createElement("svg",{width:"16",height:"12",viewBox:"0 0 16 12",fill:t.text},/*#__PURE__*/React.createElement("path",{d:"M8 2.4C5.6 2.4 3.4 3.4 1.8 5L0 3.2C2.2 1.2 5 0 8 0s5.8 1.2 8 3.2L14.2 5C12.6 3.4 10.4 2.4 8 2.4z",opacity:"0.4"}),/*#__PURE__*/React.createElement("path",{d:"M8 5.6C6.4 5.6 5 6.2 3.8 7.2L2 5.4C3.6 4 5.7 3.2 8 3.2s4.4.8 6 2.2L12.2 7.2C11 6.2 9.6 5.6 8 5.6z",opacity:"0.7"}),/*#__PURE__*/React.createElement("circle",{cx:"8",cy:"10",r:"2"})),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:1,alignItems:'center'}},/*#__PURE__*/React.createElement("div",{style:{width:22,height:11,borderRadius:3,border:`1.5px solid ${t.text}`,padding:1.5,display:'flex',alignItems:'center'}},/*#__PURE__*/React.createElement("div",{style:{flex:1,height:'100%',background:t.text,borderRadius:1.5}}))))),/*#__PURE__*/React.createElement("div",{className:(isWide&&!mockup)?'ns-center':'',style:(isWide&&!mockup)?{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',position:'relative',width:'100%',maxWidth:(screen==='matchDetail'||screen==='transfers'||screen==='playerDetail')?1120:((isXWide&&!mockup)?720:820),margin:'0 auto'}:{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}},searchOpen&&/*#__PURE__*/React.createElement(SearchModal,{wide:isWide&&!mockup,onClose:()=>setSearchOpen(false),onPlayerSelect:handlePlayerSelect,onTeamSelect:handleTeamSelect,onLeagueSelect:handleLeagueSelect,accent:accent,t:t,isDark:isDark}),screen==='home'&&!searchOpen&&(isWide&&!mockup)&&/*#__PURE__*/React.createElement(ScheduleScreen,{onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark}),screen==='home'&&!searchOpen&&!(isWide&&!mockup)&&/*#__PURE__*/React.createElement(HomeScreen,{onMatchClick:handleMatchClick,onProfileClick:handleProfileClick,onSearchClick:handleSearchClick,accent:accent,t:t,isDark:isDark,showSkeleton:tweaks.showSkeleton,wide:(isWide&&!mockup)}),screen==='schedule'&&!searchOpen&&/*#__PURE__*/React.createElement(ScheduleScreen,{onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark}),screen==='favorites'&&!searchOpen&&/*#__PURE__*/React.createElement(FavoritesScreen,{accent:accent,t:t,isDark:isDark,onMatchClick:handleMatchClick,wide:(isWide&&!mockup)}),screen==='standings'&&!searchOpen&&/*#__PURE__*/React.createElement(StandingsScreen,{key:'std'+stdNonce,onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='pronostics'&&!searchOpen&&/*#__PURE__*/React.createElement(PronosticsScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='transfers'&&!searchOpen&&/*#__PURE__*/React.createElement(TransfersScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='news'&&!searchOpen&&/*#__PURE__*/React.createElement(NewsScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),String(screen).indexOf('legal:')===0&&!searchOpen&&/*#__PURE__*/React.createElement(LegalScreen,{key:screen,doc:String(screen).slice(6),accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup),onNav:function(k){setScreen(k);}}),screen==='profile'&&!searchOpen&&/*#__PURE__*/React.createElement(ProfileScreen,{accent:accent,t:t,isDark:isDark,onBack:handleBack,onToggleDark:()=>setTweak('darkMode',!isDark)}),screen==='matchDetail'&&selectedMatch&&!searchOpen&&/*#__PURE__*/React.createElement(MatchDetailScreen,{match:selectedMatch,onBack:handleBack,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='playerDetail'&&selectedPlayer&&!searchOpen&&/*#__PURE__*/React.createElement(PlayerDetailScreen,{player:selectedPlayer,onBack:handleBack,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='teamDetail'&&selectedTeam&&!searchOpen&&/*#__PURE__*/React.createElement(TeamDetailScreen,{team:selectedTeam,onBack:handleBack,accent:accent,t:t,isDark:isDark})),(isXWide&&!mockup&&screen!=='matchDetail'&&screen!=='transfers'&&screen!=='playerDetail')?React.createElement(NSRightRail,{t:t,accent:accent,isDark:isDark,onNav:handleNav}):null,!(isWide&&!mockup)&&screen!=='matchDetail'&&screen!=='profile'&&screen!=='playerDetail'&&screen!=='teamDetail'&&!searchOpen&&/*#__PURE__*/React.createElement(BottomNav,{active:activeNav,onNav:handleNav,t:t,accent:accent}),/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',justifyContent:'center',padding:'6px 0 10px',background:t.navBg,flexShrink:0}},/*#__PURE__*/React.createElement("div",{style:{width:120,height:4,borderRadius:2,background:isDark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.15)'}}))),/*#__PURE__*/React.createElement(TweaksPanel,null,/*#__PURE__*/React.createElement(TweakSection,{label:"Apparence"}),/*#__PURE__*/React.createElement(TweakToggle,{label:"Mode sombre",value:tweaks.darkMode,onChange:v=>setTweak('darkMode',v)}),/*#__PURE__*/React.createElement(TweakColor,{label:"Couleur d'accent",value:tweaks.accentColor,onChange:v=>setTweak('accentColor',v)}),/*#__PURE__*/React.createElement(TweakSection,{label:"\xC9tats"}),/*#__PURE__*/React.createElement(TweakToggle,{label:"Skeleton Loading",value:tweaks.showSkeleton,onChange:v=>setTweak('showSkeleton',v)}),/*#__PURE__*/React.createElement(TweakSection,{label:"Navigation rapide"}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Accueil",onClick:()=>handleNav('home')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Calendrier",onClick:()=>handleNav('schedule')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Favoris",onClick:()=>handleNav('favorites')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Classement",onClick:()=>handleNav('standings')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Profil",onClick:()=>handleProfileClick()}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 D\xE9tail match",onClick:()=>handleMatchClick(MATCHES[0])})))),(isWide&&!mockup)?React.createElement(NSFooter,{t:t,accent:accent,isDark:isDark,onLeague:openLeague,onNav:function(k){if(k==='profile'){handleProfileClick();}else{handleNav(k);}}}):null);};ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App,null));
+const App=()=>{const[tweaks,setTweak]=useTweaks(TWEAK_DEFAULTS);const isDark=tweaks.darkMode;const accent=tweaks.accentColor;const t=isDark?dark:light;window.ninjaDark=isDark;const[screen,setScreen]=useState('home');const[activeNav,setActiveNav]=useState('home');const[selectedMatch,setSelectedMatch]=useState(null);const[searchOpen,setSearchOpen]=useState(false);const[selectedPlayer,setSelectedPlayer]=useState(null);const[selectedTeam,setSelectedTeam]=useState(null);const[,_abTick]=useState(0);useEffect(function(){if(!window.NINJA_AB)return;var _i=setInterval(function(){_abTick(function(x){return x+1;});},20000);return function(){clearInterval(_i);};},[]);const handleMatchClick=match=>{setSelectedMatch(match);setScreen('matchDetail');};const handleBack=()=>{setScreen(activeNav);setSelectedMatch(null);setSelectedPlayer(null);setSelectedTeam(null);};const handleNav=tab=>{if(String(tab).indexOf('legal:')===0){setScreen(tab);setSearchOpen(false);return;}if(tab==='standings'){try{window._nsStdCountry=null;window._nsStdLeague=null;window._nsStdEuro=null;window._nsStdIntl=null;}catch(e){}setStdNonce(function(n){return n+1;});}setActiveNav(tab);setScreen(tab);setSelectedMatch(null);setSearchOpen(false);};const handleProfileClick=()=>{setScreen('profile');setSearchOpen(false);};const handleSearchClick=()=>{setSearchOpen(true);};const handlePlayerSelect=player=>{setSelectedPlayer(player);setSearchOpen(false);setScreen('playerDetail');};const handleTeamSelect=team=>{setSelectedTeam(team);setSearchOpen(false);setScreen('teamDetail');};const handleLeagueSelect=league=>{var _n=league&&(league.name||league);var _r=null;try{_r=_n?NS_RESOLVE_LEAGUE(_n):null;}catch(e){}if(_r){openLeague(_r);return;}setActiveNav('standings');setScreen('standings');setSearchOpen(false);};const[stdNonce,setStdNonce]=useState(0);const openLeague=(res)=>{try{window._nsStdCountry=null;window._nsStdLeague=null;window._nsStdEuro=null;window._nsStdIntl=null;if(res&&res.kind==='euro'){window._nsStdEuro=res.id;}else if(res&&res.kind==='intl'){window._nsStdIntl=res.id;}else if(res&&res.country&&res.league){window._nsStdCountry=res.country;window._nsStdLeague=res.league;}}catch(e){}setStdNonce(function(n){return n+1;});setActiveNav('standings');setScreen('standings');setSearchOpen(false);};const scaleRef=useRef(null);const[isWide,setIsWide]=useState(()=>{try{return window.innerWidth>=1024;}catch(e){return false;}});const[isXWide,setIsXWide]=useState(()=>{try{return window.innerWidth>=1280;}catch(e){return false;}});useEffect(()=>{const on=()=>{setIsWide(window.innerWidth>=1024);setIsXWide(window.innerWidth>=1280);};window.addEventListener('resize',on);return()=>window.removeEventListener('resize',on);},[]);const[mockup,setMockup]=useState(()=>{try{return localStorage.getItem('ns_mockup')==='1';}catch(e){return false;}});useEffect(()=>{try{var on=!!(isWide&&!mockup);document.body.classList.toggle('ns-web',on);document.documentElement.classList.toggle('ns-web',on);}catch(e){}},[isWide,mockup]);useEffect(()=>{window.NS_setMockup=function(v){try{localStorage.setItem('ns_mockup',v?'1':'0');}catch(e){}setMockup(!!v);};window.NS_getMockup=function(){return mockup;};window.NS_demo={home:function(){handleNav('home');},schedule:function(){handleNav('schedule');},favorites:function(){handleNav('favorites');},standings:function(){handleNav('standings');},profile:function(){handleProfileClick();},match:function(){handleMatchClick(MATCHES[0]);}};return function(){try{delete window.NS_setMockup;delete window.NS_getMockup;}catch(e){}};},[mockup]);useEffect(()=>{const el=scaleRef.current;if(!el)return;if(!mockup){el.style.transform='';return;}const fit=()=>{const vw=window.innerWidth,vh=window.innerHeight;const scale=Math.min(vw/(390+64),vh/(844+140),1);el.style.transform=`scale(${scale})`;};fit();window.addEventListener('resize',fit);return()=>window.removeEventListener('resize',fit);},[mockup]);return/*#__PURE__*/React.createElement("div",{style:(isWide&&!mockup)?{display:'flex',flexDirection:'column',width:'100vw',height:'100vh',background:t.bg,overflow:'hidden'}:{display:'flex',alignItems:'center',justifyContent:'center',width:'100vw',height:'100vh',background:mockup?(isDark?'#050508':'#E0E0EC'):t.bg,overflow:'hidden'}},(isWide&&!mockup)?React.createElement(NSTopBar,{t:t,accent:accent,isDark:isDark,onSearch:handleSearchClick,onProfile:handleProfileClick,active:searchOpen?null:activeNav,onNav:handleNav}):null,React.createElement('div',{className:(isWide&&!mockup)?'ns-row':'',style:(isWide&&!mockup)?{display:'flex',flexDirection:'row',flex:1,minHeight:0,width:'100%'}:{display:'contents'}},(isWide&&!mockup)?React.createElement(NSTopLeagues,{t:t,accent:accent,isDark:isDark,onLeague:openLeague}):null,/*#__PURE__*/React.createElement("div",{ref:scaleRef,style:mockup?{display:'flex',flexDirection:'column',alignItems:'center',gap:16,transformOrigin:'center center'}:{display:'flex',flexDirection:'column',width:'100%',height:'100%',minWidth:0,minHeight:0}},/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',gap:10,flexWrap:'wrap',justifyContent:'center'}},[{label:'🏠 Accueil',action:()=>handleNav('home')},{label:'📅 Calendrier',action:()=>handleNav('schedule')},{label:'❤️ Favoris',action:()=>handleNav('favorites')},{label:'🏆 Classement',action:()=>handleNav('standings')},{label:'👤 Profil',action:()=>handleProfileClick()},{label:'⚽ Détail match',action:()=>handleMatchClick(MATCHES[0])}].map(btn=>/*#__PURE__*/React.createElement("button",{key:btn.label,onClick:btn.action,style:{padding:'9px 18px',borderRadius:24,border:'none',cursor:'pointer',background:isDark?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.9)',color:isDark?'#fff':'#0D0F1C',fontSize:13,fontWeight:600,backdropFilter:'blur(12px)',boxShadow:'0 2px 10px rgba(0,0,0,0.12)',transition:'all 0.15s ease'},onMouseEnter:e=>{e.currentTarget.style.background=accent;e.currentTarget.style.color='#fff';},onMouseLeave:e=>{e.currentTarget.style.background=isDark?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.9)';e.currentTarget.style.color=isDark?'#fff':'#0D0F1C';}},btn.label))),/*#__PURE__*/React.createElement("div",{className:'ns-frame',style:mockup?{width:390,height:844,background:t.bg,borderRadius:52,overflow:'hidden',boxShadow:`0 40px 80px rgba(0,0,0,${isDark?0.6:0.25}), 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 2px rgba(255,255,255,${isDark?0.05:0.8})`,display:'flex',flexDirection:'column',position:'relative',fontFamily:"'Plus Jakarta Sans', sans-serif"}:{width:'100%',height:'100%',background:t.bg,borderRadius:0,overflow:'hidden',boxShadow:'none',display:'flex',flexDirection:(isXWide&&!mockup)?'row':'column',position:'relative',minHeight:0,fontFamily:"'Plus Jakarta Sans', sans-serif"}},/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',justifyContent:'space-between',alignItems:'center',padding:'14px 28px 0',background:t.bg,flexShrink:0}},/*#__PURE__*/React.createElement("span",{style:{fontSize:15,fontWeight:700,color:t.text}},"9:41"),/*#__PURE__*/React.createElement("div",{style:{width:120,height:34,background:'#000',borderRadius:20,position:'absolute',left:'50%',top:0,transform:'translateX(-50%)'}}),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:6,alignItems:'center'}},/*#__PURE__*/React.createElement("svg",{width:"16",height:"12",viewBox:"0 0 16 12",fill:t.text},/*#__PURE__*/React.createElement("rect",{x:"0",y:"3",width:"3",height:"9",rx:"1",opacity:"0.4"}),/*#__PURE__*/React.createElement("rect",{x:"4.5",y:"2",width:"3",height:"10",rx:"1",opacity:"0.6"}),/*#__PURE__*/React.createElement("rect",{x:"9",y:"0",width:"3",height:"12",rx:"1"}),/*#__PURE__*/React.createElement("rect",{x:"13.5",y:"0",width:"2.5",height:"12",rx:"1"})),/*#__PURE__*/React.createElement("svg",{width:"16",height:"12",viewBox:"0 0 16 12",fill:t.text},/*#__PURE__*/React.createElement("path",{d:"M8 2.4C5.6 2.4 3.4 3.4 1.8 5L0 3.2C2.2 1.2 5 0 8 0s5.8 1.2 8 3.2L14.2 5C12.6 3.4 10.4 2.4 8 2.4z",opacity:"0.4"}),/*#__PURE__*/React.createElement("path",{d:"M8 5.6C6.4 5.6 5 6.2 3.8 7.2L2 5.4C3.6 4 5.7 3.2 8 3.2s4.4.8 6 2.2L12.2 7.2C11 6.2 9.6 5.6 8 5.6z",opacity:"0.7"}),/*#__PURE__*/React.createElement("circle",{cx:"8",cy:"10",r:"2"})),/*#__PURE__*/React.createElement("div",{style:{display:'flex',gap:1,alignItems:'center'}},/*#__PURE__*/React.createElement("div",{style:{width:22,height:11,borderRadius:3,border:`1.5px solid ${t.text}`,padding:1.5,display:'flex',alignItems:'center'}},/*#__PURE__*/React.createElement("div",{style:{flex:1,height:'100%',background:t.text,borderRadius:1.5}}))))),/*#__PURE__*/React.createElement("div",{className:(isWide&&!mockup)?'ns-center':'',style:(isWide&&!mockup)?{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',position:'relative',width:'100%',maxWidth:(screen==='matchDetail'||screen==='transfers'||screen==='playerDetail')?1120:((isXWide&&!mockup)?720:820),margin:'0 auto'}:{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',position:'relative'}},searchOpen&&/*#__PURE__*/React.createElement(SearchModal,{wide:isWide&&!mockup,onClose:()=>setSearchOpen(false),onPlayerSelect:handlePlayerSelect,onTeamSelect:handleTeamSelect,onLeagueSelect:handleLeagueSelect,accent:accent,t:t,isDark:isDark}),screen==='home'&&!searchOpen&&(isWide&&!mockup)&&/*#__PURE__*/React.createElement(ScheduleScreen,{onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark}),screen==='home'&&!searchOpen&&!(isWide&&!mockup)&&/*#__PURE__*/React.createElement(HomeScreen,{onMatchClick:handleMatchClick,onProfileClick:handleProfileClick,onSearchClick:handleSearchClick,accent:accent,t:t,isDark:isDark,showSkeleton:tweaks.showSkeleton,wide:(isWide&&!mockup)}),screen==='schedule'&&!searchOpen&&/*#__PURE__*/React.createElement(ScheduleScreen,{onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark}),screen==='favorites'&&!searchOpen&&/*#__PURE__*/React.createElement(FavoritesScreen,{accent:accent,t:t,isDark:isDark,onMatchClick:handleMatchClick,wide:(isWide&&!mockup)}),screen==='standings'&&!searchOpen&&/*#__PURE__*/React.createElement(StandingsScreen,{key:'std'+stdNonce,onMatchClick:handleMatchClick,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='pronostics'&&!searchOpen&&/*#__PURE__*/React.createElement(PronosticsScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='transfers'&&!searchOpen&&/*#__PURE__*/React.createElement(TransfersScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='news'&&!searchOpen&&/*#__PURE__*/React.createElement(NewsScreen,{accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),String(screen).indexOf('legal:')===0&&!searchOpen&&/*#__PURE__*/React.createElement(LegalScreen,{key:screen,doc:String(screen).slice(6),accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup),onNav:function(k){setScreen(k);}}),screen==='profile'&&!searchOpen&&/*#__PURE__*/React.createElement(ProfileScreen,{accent:accent,t:t,isDark:isDark,onBack:handleBack,onToggleDark:()=>setTweak('darkMode',!isDark)}),screen==='matchDetail'&&selectedMatch&&!searchOpen&&/*#__PURE__*/React.createElement(MatchDetailScreen,{match:selectedMatch,onBack:handleBack,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='playerDetail'&&selectedPlayer&&!searchOpen&&/*#__PURE__*/React.createElement(PlayerDetailScreen,{player:selectedPlayer,onBack:handleBack,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)}),screen==='teamDetail'&&selectedTeam&&!searchOpen&&/*#__PURE__*/React.createElement(TeamDetailScreen,{team:selectedTeam,onBack:handleBack,accent:accent,t:t,isDark:isDark,wide:(isWide&&!mockup)})),(isXWide&&!mockup&&screen!=='matchDetail'&&screen!=='transfers'&&screen!=='playerDetail')?React.createElement(NSRightRail,{t:t,accent:accent,isDark:isDark,onNav:handleNav}):null,!(isWide&&!mockup)&&screen!=='matchDetail'&&screen!=='profile'&&screen!=='playerDetail'&&screen!=='teamDetail'&&!searchOpen&&/*#__PURE__*/React.createElement(BottomNav,{active:activeNav,onNav:handleNav,t:t,accent:accent}),/*#__PURE__*/React.createElement("div",{style:{display:mockup?'flex':'none',justifyContent:'center',padding:'6px 0 10px',background:t.navBg,flexShrink:0}},/*#__PURE__*/React.createElement("div",{style:{width:120,height:4,borderRadius:2,background:isDark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.15)'}}))),/*#__PURE__*/React.createElement(TweaksPanel,null,/*#__PURE__*/React.createElement(TweakSection,{label:"Apparence"}),/*#__PURE__*/React.createElement(TweakToggle,{label:"Mode sombre",value:tweaks.darkMode,onChange:v=>setTweak('darkMode',v)}),/*#__PURE__*/React.createElement(TweakColor,{label:"Couleur d'accent",value:tweaks.accentColor,onChange:v=>setTweak('accentColor',v)}),/*#__PURE__*/React.createElement(TweakSection,{label:"\xC9tats"}),/*#__PURE__*/React.createElement(TweakToggle,{label:"Skeleton Loading",value:tweaks.showSkeleton,onChange:v=>setTweak('showSkeleton',v)}),/*#__PURE__*/React.createElement(TweakSection,{label:"Navigation rapide"}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Accueil",onClick:()=>handleNav('home')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Calendrier",onClick:()=>handleNav('schedule')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Favoris",onClick:()=>handleNav('favorites')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Classement",onClick:()=>handleNav('standings')}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 Profil",onClick:()=>handleProfileClick()}),/*#__PURE__*/React.createElement(TweakButton,{label:"\u2192 D\xE9tail match",onClick:()=>handleMatchClick(MATCHES[0])})))),(isWide&&!mockup)?React.createElement(NSFooter,{t:t,accent:accent,isDark:isDark,onLeague:openLeague,onNav:function(k){if(k==='profile'){handleProfileClick();}else{handleNav(k);}}}):null);};ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App,null));
