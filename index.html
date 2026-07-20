@@ -1525,7 +1525,21 @@ window.NS_renderBookmakers = function(){
         return LOGOS[cleanKey];
       }
 
-      // 3. Essayer l'API TheSportsDB avec nom nettoyé en priorité
+      // 3. Écussons API-Football : 6 015 équipes issues des classements.
+      //    Local, immédiat, et il couvre les championnats de niche où
+      //    TheSportsDB ne renvoie rien — on l'interroge donc avant le réseau.
+      return (window.NS_ensureLogos ? window.NS_ensureLogos()
+                                    : Promise.resolve({}))
+        .catch(function() { return {}; })
+        .then(function(NL) {
+          NL = NL || {};
+          var u = NL[name] || NL[key] || NL[clean] || NL[cleanKey];
+          if (u) { CACHE[key] = u; return u; }
+          return null;
+        })
+        .then(function(trouve) {
+          if (trouve) return trouve;
+      // 4. Dernier recours : TheSportsDB
       return fetch(
         'https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=' +
         encodeURIComponent(cleanKey || key)
@@ -1552,6 +1566,7 @@ window.NS_renderBookmakers = function(){
         .catch(function(e) {
           CACHE[key] = null;
           return null;
+        });
         });
     });
 
@@ -2787,7 +2802,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=522"></script>
+<script src="app.compiled.js?v=524"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
