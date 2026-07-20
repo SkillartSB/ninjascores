@@ -3245,6 +3245,8 @@ return k[0]||null;};
 const NS_EST_FEMININ=function(nom){return /f[eé]minin|women|femenin|frauen|damallsvenskan|\bnwsl\b|\bwsl\b/i.test(String(nom||''));};
 const NS_LIGUE_LBL=function(nom){var n=String(nom||'');
 if(/^Premiere Ligue Feminine France$/i.test(n))return 'Première Ligue Féminine';
+// le troisieme echelon francais prend le nom de Ligue 3
+if(/^National 1$/i.test(n))return 'Ligue 3';
 return n;};
 
 // ── FICHE EQUIPE : donnees de reference ──────────────────────────────────────

@@ -59,7 +59,11 @@ for (const [paysApi, ligues] of Object.entries(data)) {
   // autre graphie ("Energetyk-BDU" y figure comme "Ynergetyk-BDU")
   try {
     const OV = require('./logos-override.json')[paysApi];
-    if (OV) for (const [nom, url] of Object.entries(OV)) logosPays[nom] = url;
+    if (OV) for (const [nom, url] of Object.entries(OV)) {
+      // url null : ecusson volontairement retire (le fournisseur en
+      // renvoie un faux, cf. Toulon et le blason de rugby)
+      if (url === null) delete logosPays[nom]; else logosPays[nom] = url;
+    }
   } catch (e) { /* pas de correction pour ce pays */ }
   sortie._logos = logosPays;
 
