@@ -32,6 +32,7 @@ const EXCEPTIONS = {
   'Israel':        ["Ligat Ha'al", 'Liga Leumit'],
   'Faroe-Islands': ['Meistaradeildin', '1. Deild'],
   'Northern-Ireland': ['Premiership', 'Championship'],
+  'Kazakhstan': ['Premier League', '1. Division'],
   'Italy': ['Serie A', 'Serie B', 'Serie C'],
   'Argentina':     ['Liga Profesional Argentina', 'Primera Nacional'],
   'Canada':        ['Canadian Premier League'],
