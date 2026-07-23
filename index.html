@@ -3062,6 +3062,10 @@ window.NINJA_AB = (function() {
       awayTeam: f.teams.away.name,
       homeLogo: f.teams.home.logo,
       awayLogo: f.teams.away.logo,
+      // logo de la ligue fourni par l'API, indexe par identifiant : il ne peut
+      // pas se tromper de pays. « Serie A » existe au Bresil ET en Italie ; sans
+      // ce champ, l'entete resolvait par nom et sortait le logo italien.
+      leagueLogo: f.league.logo,
       // ATTENTION : l'affichage deduit la cote de la probabilite (100/pct).
       // Mettre 50/50 par "neutralite" fabriquait donc une cote de 2.00 sur
       // tous les matchs, presentee comme reelle. A zero, aucune cote n'est
@@ -3617,6 +3621,69 @@ window.NINJA_AB = (function() {
     return '/football/match/' + slugUrl(m.homeTeam) + '-' + slugUrl(m.awayTeam)
          + '-' + m.eventId + '/';
   };
+
+  // ── Bloc « À propos de ce match » ──────────────────────────────────────
+  // Le meme bloc que la page serveur, mais genere DANS l'application a partir
+  // du match : la version serveur n'existait qu'au premier chargement, donc
+  // invisible des qu'on naviguait vers un match depuis le calendrier.
+  var MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
+                   'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  window.NS_APROPOS_HTML = function (m, t, accent) {
+    if (!m || !m.homeTeam || !m.awayTeam) return '';
+    var esc = function (s) { return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+    var dom = m.homeTeam, ext = m.awayTeam;
+    var compet = String(m.competition || '').split(' · ')[0] || m.competition || '';
+    var lieu = m.venue ? ' à ' + m.venue : '';
+    var d = m.startDate ? new Date(m.startDate) : null;
+    var date = d ? (d.getDate() + ' ' + MOIS_LONG[d.getMonth()] + ' ' + d.getFullYear()) : '';
+    var fini = m.status === 'ended' || m.apiEnded;
+    var hs = m.homeScore, as = m.awayScore;
+    var ok = hs != null && as != null && hs !== '' && as !== '';
+    var phrase;
+    if (fini && ok) {
+      var h = parseInt(hs, 10), a = parseInt(as, 10), ec = Math.abs(h - a);
+      var sc = Math.max(h, a) + '-' + Math.min(h, a);
+      if (h === a) {
+        phrase = dom + ' et ' + ext + ' se sont neutralisés ' + h + '-' + a + lieu
+          + (compet ? ', en ' + compet : '') + (date ? ', le ' + date : '') + '.';
+      } else {
+        var vq = h > a ? dom : ext, pd = h > a ? ext : dom;
+        var verbe = ec >= 3 ? ' a largement dominé ' : (ec === 1 ? " s'est imposé d'un but face à " : ' a battu ');
+        phrase = vq + verbe + pd + ' ' + sc + lieu + (compet ? ', en ' + compet : '')
+          + (date ? ', le ' + date : '') + '.';
+      }
+    } else {
+      phrase = dom + ' reçoit ' + ext + lieu + (date ? ' le ' + date : '')
+        + (compet ? ", dans le cadre d'un match de " + compet : '') + '.';
+    }
+    var col = (t && t.text) || '#14121c', sec = (t && t.textSec) || '#5b5870';
+    var bord = (t && t.border) || 'rgba(128,128,128,.2)';
+    var ac = accent || '#6133E0';
+    var base = window.NS_URL_MATCH ? window.NS_URL_MATCH(m) : '';
+    var lien = function (href, txt) {
+      return '<a href="' + href + '" style="color:' + ac
+        + ';text-decoration:none;font-weight:600">' + esc(txt) + '</a>';
+    };
+    // Liens vers les onglets de la fiche + maillage interne vers les grands
+    // championnats, comme la version serveur : ce sont de vrais <a href>.
+    var sommaire = 'Retrouvez sur cette page le ' + lien(base, 'résumé') + ' du match, '
+      + 'les actualités des deux clubs, les ' + lien(base + 'compositions/', 'compositions') + ', '
+      + 'les ' + lien(base + 'cotes/', 'cotes') + ' et les '
+      + lien(base + 'tete-a-tete/', 'statistiques tête-à-tête') + ' entre ' + esc(dom) + ' et ' + esc(ext) + '.';
+    var pop = [['/football/france/ligue-1/', 'Ligue 1'], ['/football/angleterre/premier-league/', 'Premier League'],
+               ['/football/espagne/la-liga/', 'La Liga'], ['/football/italie/serie-a/', 'Serie A'],
+               ['/football/allemagne/bundesliga/', 'Bundesliga']].map(function (x) { return lien(x[0], x[1]); }).join(' · ');
+    var pied = 'Tous les scores en direct, les classements et les pronostics sur '
+      + lien('/', 'NinjaScores') + ' · ' + lien('/calendrier/', 'Calendrier des matchs') + ' · ' + pop;
+    return '<div style="max-width:820px;margin:0 auto;padding:22px 16px 34px;'
+      + 'border-top:1px solid ' + bord + ';font:14px/1.65 system-ui,-apple-system,sans-serif">'
+      + '<h2 style="font-size:16px;font-weight:800;margin:0 0 10px;color:' + col + '">À propos de ce match</h2>'
+      + '<p style="margin:0 0 12px;color:' + col + ';opacity:.92">' + esc(phrase) + '</p>'
+      + '<p style="margin:0 0 12px;color:' + col + ';opacity:.92">' + sommaire + '</p>'
+      + '<p style="margin:0;color:' + sec + ';font-size:13px">' + pied + '</p>'
+      + '</div>';
+  };
   // n'existe que pour les championnats reellement rendus cote serveur :
   // une competition internationale n'a pas de page pays
   window.NS_URL_COMPET = function (comp) {
@@ -3708,6 +3775,106 @@ window.NINJA_AB = (function() {
       .catch(function () { return null; });
   };
 
+  // Deroulement du match : buts, cartons, remplacements. La section existait
+  // dans l'UI mais n'etait jamais alimentee — seul le match demo avait des
+  // events. On va donc chercher les vrais events (le proxy les autorise deja).
+  window.NS_EVENTS = function (id, homeId) {
+    return window.NS_manifestPret
+      .then(function () { return reponse('path=fixtures/events&fixture=' + id); })
+      .then(function (brut) {
+        return (brut || []).map(function (e) {
+          var t = (e.type || '').toLowerCase(), det = (e.detail || '').toLowerCase(), ty;
+          if (t === 'goal') ty = 'goal';
+          else if (t === 'card') ty = det.indexOf('red') >= 0 ? 'red' : 'yellow';
+          else if (t === 'subst') ty = 'sub';
+          else return null;   // Var et autres : ignores
+          var min = (e.time && e.time.elapsed) || 0;
+          if (e.time && e.time.extra) min += e.time.extra;
+          return { minute: min, player: (e.player && e.player.name) || '',
+                   team: (e.team && e.team.id === homeId) ? 'home' : 'away', type: ty };
+        }).filter(Boolean).sort(function (a, b) { return a.minute - b.minute; });
+      })
+      .catch(function () { return []; });
+  };
+
+  // Statistiques du match (possession, tirs, xG, corners…), depuis
+  // fixtures/statistics. Le fournisseur ne donne que le TOTAL du match, pas le
+  // decoupage par mi-temps (verifie) : la phase 2 capturera les mi-temps en
+  // direct. Ici, la colonne « MATCH » avec de vraies valeurs.
+  window.NS_STATS = function (id) {
+    // 4e valeur `cumul` : la stat s'additionne dans le temps (soustractible
+    // pour la 2e MT). Possession et précision de passes sont des % : non.
+    var MAP = [
+      ['expected_goals', 'Expected Goals (xG)', '', true],
+      ['Ball Possession', 'Possession de balle', '%', false],
+      ['Total Shots', 'Tirs totaux', '', true],
+      ['Shots on Goal', 'Tirs cadrés', '', true],
+      ['Corner Kicks', 'Corners', '', true],
+      ['Total passes', 'Passes', '', true],
+      ['Passes %', 'Précision passes', '%', false],
+      ['Fouls', 'Fautes', '', true],
+      ['Offsides', 'Hors-jeu', '', true],
+      ['Yellow Cards', 'Cartons jaunes', '', true],
+      ['Goalkeeper Saves', 'Arrêts du gardien', '', true],
+    ];
+    var num = function (v) {
+      if (v == null) return null;
+      if (typeof v === 'string') v = v.replace('%', '');
+      var n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
+    return window.NS_manifestPret
+      .then(function () { return reponse('path=fixtures/statistics&fixture=' + id); })
+      .then(function (rep) {
+        if (!rep || rep.length < 2) return null;
+        var A = rep[0].statistics || [], B = rep[1].statistics || [];
+        var get = function (arr, type) {
+          var x = arr.find(function (s) { return s.type === type; });
+          return x ? x.value : null;
+        };
+        var out = [];
+        MAP.forEach(function (m) {
+          var h = num(get(A, m[0])), a = num(get(B, m[0]));
+          if (h == null && a == null) return;   // stat absente : on ne l'affiche pas
+          out.push({ label: m[1], home: h || 0, away: a || 0, unit: m[2], cumul: m[3] });
+        });
+        return out.length ? out : null;
+      })
+      .catch(function () { return null; });
+  };
+
+  // 1re mi-temps captee a la pause (via /api/stats-mt + Redis). `live` : on
+  // demande la capture (le serveur ne l'effectue que si le match est a « HT »).
+  window.NS_STATS_MT = function (id, live) {
+    var u = '/api/stats-mt/?fixture=' + id + (live ? '&capture=1' : '');
+    return fetch(u)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return (j && j.ht) || null; })
+      .catch(function () { return null; });
+  };
+
+  // Etat live de plusieurs matchs favoris en UN appel (ids joints par '-').
+  // Les favoris stockent une copie figee du match (0-0 au moment de l'ajout) ;
+  // c'est ce helper qui ramene le vrai score, comme le calendrier.
+  window.NS_FAV_LIVE = function (ids) {
+    ids = (ids || []).filter(Boolean);
+    if (!ids.length) return Promise.resolve({});
+    return window.NS_manifestPret
+      .then(function () { return reponse('path=fixtures&ids=' + ids.join('-')); })
+      .then(function (brut) {
+        var map = {};
+        brut.forEach(function (f) {
+          var m = convertir(f);
+          var p = m.apiScore ? m.apiScore.split('-') : null;
+          m.homeScore = p ? p[0] : null;
+          m.awayScore = p ? p[1] : null;
+          map[f.fixture.id] = m;
+        });
+        return map;
+      })
+      .catch(function () { return {}; });
+  };
+
   window.NS_FIXTURES = function (offset) {
     var cle;
     if (offset === 'live') cle = 'live';
@@ -3750,7 +3917,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=611"></script>
+<script src="/app.compiled.js?v=622"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
