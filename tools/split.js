@@ -49,6 +49,11 @@ try { GENERIQUES = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, 'plac
 
 const data = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const logos = {};
+// pays -> championnats ordonnes, premiere division en tete
+const ORDRE = require('./ordre-ligues.json');
+// libelles historiques du lookup, sinon un meme pays forme deux groupes
+const ALIAS = require('./alias-pays.json');
+
 const manifest = { genere: new Date().toISOString().slice(0, 10), pays: {} };
 
 let octets = 0;
@@ -70,6 +75,26 @@ for (const [paysApi, ligues] of Object.entries(data)) {
     }
     // trie decroissant : la saison la plus recente en premier
     entree.ligues[ligue] = Object.keys(sortie[ligue]).sort().reverse();
+  }
+
+  // Ordre hierarchique des championnats, premiere division en tete.
+  // La colonne laterale s'en sert pour classer les ligues ET pour afficher
+  // leur nombre des le demarrage : sans cette cle elle retombait sur le
+  // lookup, qui n'est rempli qu'a la visite du pays, et l'Allemagne
+  // s'affichait avec "1" championnat au lieu de 3.
+  //
+  // L'ordre force est applique ICI, a chaque regeneration. Le faire dans un
+  // script separe ne tenait pas : split.js reecrit le manifeste de zero, et
+  // l'Irlande du Nord comme le Kazakhstan etaient repasses D2 devant D1.
+  {
+    const voulu = ORDRE[paysApi] || [];
+    const restants = Object.keys(entree.ligues);
+    const tete = voulu.filter((l) => restants.includes(l));
+    entree.ordre = tete.concat(restants.filter((l) => !tete.includes(l)));
+    if (ALIAS[paysApi]) entree.alias = ALIAS[paysApi];
+    const ligues2 = {};
+    for (const l of entree.ordre) ligues2[l] = entree.ligues[l];
+    entree.ligues = ligues2;
   }
 
   // Ecussons propres au pays : deux clubs homonymes de pays differents

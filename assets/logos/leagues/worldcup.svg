@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- FIFA World Cup Trophy in gold -->
+
+  <!-- Base bottom -->
+  <rect x="28" y="86" width="44" height="8" rx="3" fill="#B8860B"/>
+  <rect x="24" y="82" width="52" height="6" rx="2" fill="#DAA520"/>
+  <rect x="28" y="86" width="44" height="2" rx="0" fill="#FFD700" opacity="0.5"/>
+
+  <!-- Column / stem -->
+  <rect x="38" y="62" width="24" height="22" rx="3" fill="#DAA520"/>
+  <!-- Column highlight -->
+  <rect x="41" y="62" width="6" height="22" rx="2" fill="#FFD700" opacity="0.4"/>
+
+  <!-- Widening base of cup bowl -->
+  <ellipse cx="50" cy="62" rx="20" ry="5" fill="#B8860B"/>
+  <ellipse cx="50" cy="62" rx="20" ry="5" fill="#FFD700" opacity="0.3"/>
+
+  <!-- Cup bowl body -->
+  <path d="M30 38 Q28 62 50 67 Q72 62 70 38 Z" fill="#DAA520"/>
+  <!-- Bowl highlight (left side shine) -->
+  <path d="M30 38 Q29 54 38 62 Q34 50 33 38 Z" fill="#FFD700" opacity="0.4"/>
+  <!-- Bowl inner shadow -->
+  <path d="M35 40 Q34 58 50 64 Q66 58 65 40 Z" fill="#B8860B" opacity="0.35"/>
+
+  <!-- Two figures holding up a globe (simplified silhouette) -->
+  <!-- Left figure -->
+  <ellipse cx="38" cy="32" rx="5" ry="5" fill="#B8860B"/>
+  <path d="M33 37 Q35 28 38 27 Q38 32 36 36 Z" fill="#DAA520"/>
+  <path d="M38 27 Q40 22 38 18 Q36 22 38 27 Z" fill="#DAA520"/>
+  <!-- Right figure -->
+  <ellipse cx="62" cy="32" rx="5" ry="5" fill="#B8860B"/>
+  <path d="M67 37 Q65 28 62 27 Q62 32 64 36 Z" fill="#DAA520"/>
+  <path d="M62 27 Q60 22 62 18 Q64 22 62 27 Z" fill="#DAA520"/>
+
+  <!-- Globe (top of trophy) -->
+  <circle cx="50" cy="22" r="13" fill="#DAA520"/>
+  <circle cx="50" cy="22" r="13" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <!-- Globe lines -->
+  <ellipse cx="50" cy="22" rx="13" ry="5" fill="none" stroke="#B8860B" stroke-width="1"/>
+  <line x1="50" y1="9" x2="50" y2="35" stroke="#B8860B" stroke-width="1"/>
+  <!-- Globe highlight -->
+  <circle cx="44" cy="17" r="4" fill="#FFD700" opacity="0.5"/>
+  <circle cx="44" cy="17" r="2" fill="white" opacity="0.25"/>
+</svg>

@@ -1,0 +1,3 @@
+app.compiled.js
+*.min.js
+*.compiled.*

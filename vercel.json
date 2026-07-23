@@ -1,0 +1,158 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": true,
+  "functions": {
+    "api/transferts.js": { "maxDuration": 60 }
+  },
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.ninjascores.com"
+        }
+      ],
+      "destination": "https://ninjascores.com/$1",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/libs/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap-equipes.xml",
+      "destination": "/api/seo?sitemap=equipes"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/seo?sitemap=index"
+    },
+    {
+      "source": "/sitemap-pays.xml",
+      "destination": "/api/seo?sitemap=pays"
+    },
+    {
+      "source": "/sitemap-competitions.xml",
+      "destination": "/api/seo?sitemap=competitions"
+    },
+    {
+      "source": "/sitemap-matchs.xml",
+      "destination": "/api/seo?sitemap=matchs"
+    },
+    {
+      "source": "/football/equipe/:slug/",
+      "destination": "/api/seo?equipe=:slug"
+    },
+    {
+      "source": "/football/equipe/:slug",
+      "destination": "/api/seo?equipe=:slug"
+    },
+    {
+      "source": "/football/match/:slug/:onglet(cotes|pronostics|compositions|volume|statistiques|tete-a-tete|tableau|resume)/",
+      "destination": "/api/seo?match=:slug&onglet=:onglet"
+    },
+    {
+      "source": "/football/match/:slug/:onglet(cotes|pronostics|compositions|volume|statistiques|tete-a-tete|tableau|resume)",
+      "destination": "/api/seo?match=:slug&onglet=:onglet"
+    },
+    {
+      "source": "/football/match/:slug/",
+      "destination": "/api/seo?match=:slug"
+    },
+    {
+      "source": "/football/match/:slug",
+      "destination": "/api/seo?match=:slug"
+    },
+    {
+      "source": "/football/:pays/:comp/",
+      "destination": "/api/seo?pays=:pays&comp=:comp"
+    },
+    {
+      "source": "/football/:pays/:comp",
+      "destination": "/api/seo?pays=:pays&comp=:comp"
+    },
+    {
+      "source": "/football/:pays/",
+      "destination": "/api/seo?pays=:pays"
+    },
+    {
+      "source": "/football/:pays",
+      "destination": "/api/seo?pays=:pays"
+    },
+    {
+      "source": "/football/",
+      "destination": "/api/seo"
+    },
+    {
+      "source": "/football",
+      "destination": "/api/seo"
+    },
+    {
+      "source": "/transferts/",
+      "destination": "/api/seo?transferts=1"
+    },
+    {
+      "source": "/transferts",
+      "destination": "/api/seo?transferts=1"
+    },
+    {
+      "source": "/calendrier/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/direct/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/classement/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pronostics/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/favoris/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/calendrier",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/direct",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/classement",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pronostics",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/favoris",
+      "destination": "/index.html"
+    }
+  ]
+}

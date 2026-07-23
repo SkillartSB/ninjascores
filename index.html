@@ -3,22 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NinjaScores — Prototype</title>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<title>NinjaScores — Résultats de foot en direct, classements et pronostics</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="canonical" href="https://ninjascores.com/"/>
+<meta name="description" content="Scores en direct, calendrier et classements de 150 pays : Ligue 1, Premier League, Ligue des Champions et des centaines de compétitions. Cotes, pronostics et statistiques sur chaque match."/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<meta name="theme-color" content="#6133E0"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="NinjaScores"/>
+<meta property="og:locale" content="fr_FR"/>
+<meta property="og:url" content="https://ninjascores.com/"/>
+<meta property="og:title" content="NinjaScores — Résultats de foot en direct, classements et pronostics"/>
+<meta property="og:description" content="Scores en direct, calendrier et classements de 150 pays. Cotes, pronostics et statistiques sur chaque match."/>
+<meta property="og:image" content="https://ninjascores.com/assets/og-ninjascores.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="NinjaScores — Résultats de foot en direct"/>
+<meta name="twitter:description" content="Scores en direct, classements de 150 pays, cotes et pronostics."/>
+<meta name="twitter:image" content="https://ninjascores.com/assets/og-ninjascores.png"/>
 <!-- ── Barlow Condensed (branding NinjaScores) ───────────────────────── -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
 <!-- ── Fonts locales (no CDN) ────────────────────────────────────────── -->
 <style>
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU7NSg.ttf) format('truetype')}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:500;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_m07NSg.ttf) format('truetype')}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:600;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_d0nNSg.ttf) format('truetype')}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_TknNSg.ttf) format('truetype')}
-@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_KUnNSg.ttf) format('truetype')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU7NSg.ttf) format('truetype')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:500;font-display:swap;src:url(/assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_m07NSg.ttf) format('truetype')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:600;font-display:swap;src:url(/assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_d0nNSg.ttf) format('truetype')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:700;font-display:swap;src:url(/assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_TknNSg.ttf) format('truetype')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:800;font-display:swap;src:url(/assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_KUnNSg.ttf) format('truetype')}
 </style>
 <!-- ── React locaux (no CDN) ─────────────────────────────────────────── -->
-<script src="assets/libs/react.development.js"></script>
-<script src="assets/libs/react-dom.development.js"></script>
+<script src="/assets/libs/react.production.min.js"></script>
+<script src="/assets/libs/react-dom.production.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; background: #E8E8F0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
@@ -549,7 +564,7 @@ window.NS_renderBookmakers = function(){
   el.innerHTML = window.NS_BOOKMAKERS.map(function(b){
     return '<div class="bk-card">'
       + '<div class="bk-card-top"><div class="bk-logo-rating">'
-      + '<div class="bk-logo"><img src="assets/logos/bookmakers/'+b.slug+'.svg" alt="'+b.nom+'"'
+      + '<div class="bk-logo"><img src="/assets/logos/bookmakers/'+b.slug+'.svg" alt="'+b.nom+'"'
       + ' onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';">'
       + '<svg style="display:none" viewBox="0 0 132 26" xmlns="http://www.w3.org/2000/svg"><text x="0" y="21"'
       + ' font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="800" letter-spacing="-1"'
@@ -765,7 +780,7 @@ window.NS_renderBookmakers = function(){
 <div id="root"></div>
 
 <!-- ── tweaks-panel (inlined) ──────────────────────────────────────────────── -->
-<script src="tweaks.compiled.js"></script>
+<script src="/tweaks.compiled.js?v=2"></script>
 
 <!-- ── TeamLogo : logos TheSportsDB + fallback initiales ───────────────────── -->
 <script>
@@ -1532,10 +1547,26 @@ window.NS_renderBookmakers = function(){
   };
   window.NS_NOM_USAGE = NOM_USAGE;
 
+  // Clubs dont le suffixe est le SEUL element distinctif : le retirer les
+  // ferait passer pour un homonyme celebre. "Barcelona SC" est le club de
+  // Guayaquil, pas le FC Barcelone ; "Santos FC" est sud-africain, pas
+  // bresilien. On garde donc leur denomination complete.
+  var GARDER_ENTIER = {
+    'Barcelona SC': 1,        // Equateur, a ne pas confondre avec le FC Barcelone
+    'Santos FC': 1,           // Afrique du Sud, a ne pas confondre avec Santos (Bresil)
+    'Rangers FC': 1,          // Hong Kong, a ne pas confondre avec les Rangers (Ecosse)
+    'Arsenal FC': 1,          // homonymes en Bielorussie et au Ghana
+    'Everton FC': 1,          // homonyme au Chili
+    'Liverpool FC': 1,        // homonyme en Uruguay
+    'Nacional FC': 1,
+    'America FC': 1,
+  };
+
   // Affichage : cleanTeamName uniquement (sans NAME_MAP, pour garder les noms en français)
   window.displayTeamName = function(n) {
     if (!n) return n;
     if (NOM_USAGE[n]) return NOM_USAGE[n];
+    if (GARDER_ENTIER[n]) return n;
     var c = cleanTeamName(n);
     // Retirer le suffixe peut transformer un club en nom de pays :
     // "Bahrain SC" devenait "Bahrain". On garde alors le nom complet.
@@ -1819,34 +1850,34 @@ window.NS_renderBookmakers = function(){
     'Bundesliga Autriche':       FM+'38.png',
     '2. Liga Autriche':          FM+'119.png',
     // ── Suisse ──
-    'Super League Suisse':       FM+'58.png',
+    'Super League Suisse':       FM+'69.png',
     'Challenge League Suisse':   FM+'163.png',
     // ── Belgique ──
     'First Division A':          FM+'4.png',
     'First Division B Belgique': FM+'5.png',
     // ── Écosse ──
     'Premiership':               FM+'60.png',
-    'Championship Ecosse':       FM+'168.png',
+    'Championship Ecosse':       FM+'123.png',
     // ── Russie ──
     'Premier League Russie':     FM+'63.png',
     '1. Division Russie':        FM+'253.png',
     // ── Ukraine ──
-    'Premier League Ukraine':    FM+'182.png',
+    'Premier League Ukraine':    FM+'441.png',
     // ── Azerbaïdjan ──
     'Premier League Azerbaidjan':FM+'228.png',
     // ── Géorgie ──
-    'Erovnuli Liga Georgie':     FM+'435.png',
+    'Erovnuli Liga Georgie':     FM+'439.png',
     // ── Arménie ──
     'Premier League Armenie':    FM+'118.png',
     // ── Norvège ──
-    'Eliteserien Norvege':       FM+'85.png',
-    '1. Divisjon Norvege':       FM+'332.png',
+    'Eliteserien Norvege':       FM+'59.png',
+    '1. Divisjon Norvege':       FM+'203.png',
     // ── Suède ──
     'Allsvenskan Suede':         FM+'67.png',
-    'Superettan Suede':          FM+'68.png',
+    'Superettan Suede':          FM+'168.png',
     // ── Danemark ──
-    'Superligaen':               FM+'69.png',
-    '1. Division Danemark':      FM+'204.png',
+    'Superligaen':               FM+'46.png',
+    '1. Division Danemark':      FM+'85.png',
     // ── Turquie ──
     'Super Lig':                 FM+'71.png',
     '1. Lig Turquie':            FM+'165.png',
@@ -1862,7 +1893,7 @@ window.NS_renderBookmakers = function(){
     'FNL Tcheque':               FM+'123.png',
     '1. Liga Tcheque':           FM+'122.png',
     // ── Slovaquie ──
-    '1. liga Slovaquie':         FM+'171.png',
+    '1. liga Slovaquie':         FM+'176.png',
     '2. liga Slovaquie':         FM+'8973.png',
     // ── Pologne ──
     'Ekstraklasa Pologne':       FM+'196.png',
@@ -1870,13 +1901,13 @@ window.NS_renderBookmakers = function(){
     // ── Roumanie ──
     'Liga I Roumanie':           FM+'189.png',
     // ── Serbie ──
-    'Super Liga Serbie':         FM+'189.png',
+    'Super Liga Serbie':         FM+'182.png',
     // ── Croatie ──
     'HNL Croatie':               FM+'271.png',
     // ── Bosnie ──
     'Premier League Bosnie':     FM+'267.png',
     // ── Bulgarie ──
-    'First Professional League Bulgarie': FM+'266.png',
+    'First Professional League Bulgarie': FM+'270.png',
     'Second Professional League Bulgarie': FM+'266.png',
     // ── Albanie ──
     'Kategoria Superiore':       FM+'260.png',
@@ -1940,7 +1971,7 @@ window.NS_renderBookmakers = function(){
     // ── Tanzanie ──
     'Premier League Tanzanie':   FM+'9066.png',
     // ── Uruguay ──
-    'Primera Division Uruguay':  FM+'335.png',
+    'Primera Division Uruguay':  FM+'161.png',
     // ── Colombie ──
     'Primera A Colombie':        FM+'274.png',
     // ── Bolivie ──
@@ -1952,13 +1983,13 @@ window.NS_renderBookmakers = function(){
     // ── Pérou ──
     'Liga 1 Perou':              FM+'131.png',
     // ── Chine ──
-    'Super League Chine':        FM+'70.png',
+    'Super League Chine':        FM+'120.png',
     // ── Japon ──
     'J. League 2 Japon':         FM+'125.png',
     'J. League 3 Japon':         FM+'126.png',
     // ── Corée du Sud ──
-    'K League 1 Coree du Sud':   FM+'79.png',
-    'K League 2 Coree du Sud':   FM+'80.png',
+    'K League 1 Coree du Sud':      FM+'9080.png',
+    'K League 2 Coree du Sud':      FM+'9116.png',
     'K League 3 Coree du Sud':   FM+'9537.png',
     // ── Thaïlande ──
     'Thai League Thailande':     FM+'8984.png',
@@ -1984,8 +2015,8 @@ window.NS_renderBookmakers = function(){
     // ── Argentine ──
     'Liga Profesional Argentine':FM+'112.png',
     // ── Brésil ──
-    'Serie A Brasil':            FM+'95.png',
-    'Serie B Brasil':            FM+'390.png',
+    'Serie A Brasil':            FM+'268.png',
+    'Serie B Brasil':            FM+'8814.png',
     // ── Maroc ──
     'Botola Pro':                FM+'530.png',
     // ── Arabie saoudite ──
@@ -2046,18 +2077,84 @@ window.NS_renderBookmakers = function(){
     // ── Aliases noms Polymarket / Calendrier ──
     'Chinese Super League': FM+'70.png',
     'Süper Lig':            FM+'71.png',
-    'J. League':            FM+'124.png',
+    'J. League':            FM+'223.png',
     'Brasileirão':          'https://api.sofascore.app/api/v1/unique-tournament/325/image',
     'Serie B':              FM+'86.png',
     'Liga MX':              FM+'230.png',
   };
+
+  // Un logo de championnat ne peut pas se deduire du seul nom : 28 pays ont
+  // une "Premier League", 9 une "Ligue 1". Sans le pays, l'Algerie affichait
+  // le logo de la Ligue 1 francaise et le Ghana celui de la Premier League
+  // anglaise. Ces libelles generiques n'ont donc le droit d'etre servis que
+  // pour le pays auquel l'entree appartient reellement.
+  var LEAGUE_AMBIGUS = {
+    'premier league':        'Angleterre',
+    'ligue 1':               'France',
+    'ligue 2':               'France',
+    'championship':          'Angleterre',
+    'premiership':           'Écosse',
+    'premier soccer league': 'Afrique du Sud',
+    'bundesliga':            'Allemagne',
+    'serie a':               'Italie',
+    'serie b':               'Italie',
+  };
+  function _nrmLg(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+  }
+
+  // Table pays -> championnat -> logo, deduite des cles deja suffixees du pays
+  // ("Ligue 1 Algerie", "Bundesliga Autriche"). Elle a besoin des noms de pays
+  // du manifeste, qui arrive apres ce script : on la construit a la demande.
+  var _logosParPays = null;
+  var SUFFIXE_ALIAS = { brasil: 'bresil' };   // la cle dit "Brasil", le site "Brésil"
+  function logosParPays() {
+    if (_logosParPays) return _logosParPays;
+    var m = window.NS_MANIFEST;
+    if (!m || !m.pays) return null;           // pas encore charge, on reessaiera
+    var noms = [];
+    for (var c in m.pays) noms.push(m.pays[c].nom);
+    var t = {};
+    Object.keys(LEAGUE_LOGOS).forEach(function (k) {
+      var nk = _nrmLg(k);
+      noms.forEach(function (p) {
+        var np = _nrmLg(p);
+        var suffixes = [np];
+        for (var a in SUFFIXE_ALIAS) if (SUFFIXE_ALIAS[a] === np) suffixes.push(a);
+        suffixes.forEach(function (suf) {
+          if (nk.length > suf.length + 1 && nk.slice(-(suf.length + 1)) === ' ' + suf) {
+            var lig = k.slice(0, k.length - suf.length - 1).trim();
+            (t[np] = t[np] || {})[_nrmLg(lig)] = LEAGUE_LOGOS[k];
+          }
+        });
+      });
+    });
+    _logosParPays = t;
+    return t;
+  }
 
   function LeagueLogo(props) {
     var name  = props.name  || '';
     var size  = props.size  || 20;
     var blend = props.blend || 'normal';
     var key   = name.split(' · ')[0].trim();
-    var src   = LEAGUE_LOGOS[key];
+    // Le logo fourni par le fournisseur est indexe par IDENTIFIANT de
+    // competition : il ne peut pas se tromper de championnat. La table
+    // curatee, elle, resout par nom et s'est revelee fausse a repetition
+    // (17 identifiants Fotmob errones corriges, dont la K League 1 qui
+    // affichait la 2. Bundesliga). Le fournisseur passe donc en premier.
+    var src   = props.src || null;
+    var pays  = props.country ? _nrmLg(props.country) : '';
+    if (!src && pays) {
+      var t = logosParPays();
+      if (t && t[pays] && t[pays][_nrmLg(key)]) src = t[pays][_nrmLg(key)];
+    }
+    if (!src && pays) {
+      // rien vaut mieux que le logo d'un autre pays
+      var proprio = LEAGUE_AMBIGUS[_nrmLg(key)];
+      if (proprio && _nrmLg(proprio) !== pays) return null;
+    }
+    if (!src) src = LEAGUE_LOGOS[key];
     if (!src) return null;
     return React.createElement('img', {
       src:    src,
@@ -2557,7 +2654,7 @@ window.NS_renderBookmakers = function(){
 })();</script>
 
 <!-- ── Polymarket Service ──────────────────────────────────────────────── -->
-<script src="polymarket.service.js?v=14"></script>
+<script src="/polymarket.service.js?v=14"></script>
 
 <!-- ── Enhance team displays with logos (non-invasive) ──────────────── -->
 <script>
@@ -2750,7 +2847,7 @@ window.FavMatchesStore = (function() {
   };
 })();
 </script>
-<script src="basketball_data.js?v=2"></script>
+<script src="/basketball_data.js?v=2"></script>
 <!-- ── A/B test Angleterre-Argentine : statut dynamique + auto-favori au coup d'envoi ── -->
 <script>
 window.NINJA_AB = (function() {
@@ -2817,14 +2914,18 @@ window.NINJA_AB = (function() {
 (function () {
   // 36 Ko au demarrage pour le manifeste. Les classements d'un pays (16 a 60 Ko)
   // ne sont telecharges que lorsqu'on ouvre ce pays, et jamais deux fois.
-  var BASE = 'data/standings/';
+  var BASE = '/data/standings/';
+  // Ces fichiers sont regeneres a chaque correction (ordre des championnats,
+  // ecussons). Sans numero de version, un navigateur qui les a deja en cache
+  // continue d'afficher les anciennes donnees. A incrementer avec le bundle.
+  var V = '?v=597';
   var enCours = {};          // pays -> Promise, evite les appels concurrents
   var charges = {};          // pays -> true
 
   window.NS_MANIFEST = null;
   window.NS_LOGOS = null;
 
-  window.NS_manifestPret = fetch(BASE + 'manifest.json')
+  window.NS_manifestPret = fetch(BASE + 'manifest.json' + V)
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (m) { window.NS_MANIFEST = m; return m; })
     .catch(function () { return null; });
@@ -2859,7 +2960,7 @@ window.NINJA_AB = (function() {
       if (charges[cle]) return true;
       if (enCours[cle]) return enCours[cle];
 
-      enCours[cle] = fetch(BASE + window.NS_MANIFEST.pays[cle].fichier)
+      enCours[cle] = fetch(BASE + window.NS_MANIFEST.pays[cle].fichier + V)
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
           if (!d) return false;
@@ -2911,7 +3012,7 @@ window.NINJA_AB = (function() {
   window.NS_ensureLogos = function () {
     if (window.NS_LOGOS) return Promise.resolve(window.NS_LOGOS);
     if (enCours.__logos) return enCours.__logos;
-    enCours.__logos = fetch(BASE + 'logos.json')
+    enCours.__logos = fetch(BASE + 'logos.json' + V)
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (d) { window.NS_LOGOS = d; return d; })
       .catch(function () { window.NS_LOGOS = {}; return {}; });
@@ -2919,7 +3020,737 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="app.compiled.js?v=561"></script>
+
+<!-- ── Matchs du calendrier : API-Football, un appel par journee ───────────── -->
+<script>
+(function () {
+  // Le fournisseur renvoie TOUS les matchs du monde pour une date : 2131 sur
+  // sept jours, dont plus de la moitie sans interet ici (amicaux de
+  // pre-saison, categories jeunes, feminin traite dans sa propre section).
+  // On filtre donc a la reception plutot que d'inonder l'ecran.
+  var JEUNES = /(\bu-?1[0-9]\b|\bu-?2[0-3]\b|youth|junior|primavera|junioren|aspirantes|jugend|sub-?2[0-3]|sub-?19|academy|cadet)/i;
+  var FEMININ = /(women|femen|f[ée]minin|femminile|frauen|\bwsl\b|\bnwsl\b|damallsvenskan|feminina|kvinner|naisten)/i;
+  var AMICAL = /(friendl|amistoso|amical|pre-?season|test match)/i;
+  // Competitions ecartees a la demande, dont le libelle ne trahit pas la
+  // nature : le COTIF est un tournoi de jeunes (U20) sans marqueur d'age.
+  var ECARTEES = /(cotif)/i;
+
+  var EN_COURS = { '1H': 1, '2H': 1, 'HT': 1, 'ET': 1, 'BT': 1, 'P': 1, 'LIVE': 1, 'INT': 1 };
+  var TERMINE = { 'FT': 1, 'AET': 1, 'PEN': 1, 'WO': 1 };
+
+  var cache = {};        // 'YYYY-MM-DD' | 'live'  ->  Promise
+
+  function paysFr(nomApi) {
+    try {
+      var cle = window.NS_cleApi && window.NS_cleApi(nomApi);
+      if (cle && window.NS_MANIFEST && window.NS_MANIFEST.pays[cle]) {
+        return window.NS_MANIFEST.pays[cle].nom;
+      }
+    } catch (e) {}
+    return nomApi;
+  }
+
+  function convertir(f) {
+    var st = (f.fixture.status && f.fixture.status.short) || '';
+    var live = !!EN_COURS[st], fini = !!TERMINE[st];
+    var g = f.goals || {};
+    return {
+      slug: 'af' + f.fixture.id,
+      eventId: f.fixture.id,
+      startDate: f.fixture.date,
+      homeTeam: f.teams.home.name,
+      awayTeam: f.teams.away.name,
+      homeLogo: f.teams.home.logo,
+      awayLogo: f.teams.away.logo,
+      // ATTENTION : l'affichage deduit la cote de la probabilite (100/pct).
+      // Mettre 50/50 par "neutralite" fabriquait donc une cote de 2.00 sur
+      // tous les matchs, presentee comme reelle. A zero, aucune cote n'est
+      // affichee -- tant qu'on n'aura pas branche /odds, mieux vaut rien.
+      homePct: 0, awayPct: 0,
+      status: live ? 'live' : (fini ? 'ended' : 'upcoming'),
+      apiScore: (g.home != null && g.away != null) ? (g.home + '-' + g.away) : null,
+      apiPeriod: st,
+      apiEnded: fini,
+      // l'affichage exige ces deux champs pour montrer le score en direct ;
+      // sans eux il retombait sur "? - ?" avec une minute calculee depuis le
+      // coup d'envoi (65' partout, 125' sur un match commence 2 h plus tot)
+      apiLive: live,
+      apiElapsed: (f.fixture.status && f.fixture.status.elapsed != null)
+        ? String(f.fixture.status.elapsed) : null,
+      minute: (f.fixture.status && f.fixture.status.elapsed) || null,
+      venue: (f.fixture.venue && f.fixture.venue.name) || null,
+      round: f.league.round || null,
+      homeId: f.teams.home.id, awayId: f.teams.away.id,
+    };
+  }
+
+  // ── Tendances des 2 equipes sur leurs derniers matchs ────────────────────
+  // Le bloc comparatif de l'onglet Pronostics etait alimente par NS_FORM, un
+  // jeu de donnees en dur ne contenant QU'UNE cle ('wc2026-eng-arg', le match
+  // de demonstration). Des que le calendrier a servi de vrais matchs, la
+  // condition NS_FORM[match.id] n'a plus jamais ete satisfaite et le bloc a
+  // disparu. On reconstruit ici la meme structure depuis le fournisseur.
+  var TERMINES = { FT: 1, AET: 1, PEN: 1 };
+  function codeCompet(nom) {
+    var n = String(nom || '');
+    if (/friendl/i.test(n)) return 'AMI';
+    if (/qualif/i.test(n)) return 'ELIM';
+    if (/world cup|coupe du monde/i.test(n)) return 'CDM';
+    if (/champions/i.test(n)) return 'LDC';
+    if (/europa|conference/i.test(n)) return 'UEFA';
+    if (/\bcup\b|coupe|copa/i.test(n)) return 'COUPE';
+    var mots = n.replace(/[^A-Za-zÀ-ÿ ]/g, ' ').split(/\s+/).filter(Boolean);
+    if (mots.length >= 2) return (mots[0][0] + mots[1][0] + (mots[2] ? mots[2][0] : '')).toUpperCase();
+    return n.slice(0, 4).toUpperCase();
+  }
+  function formeEquipe(id, n) {
+    return reponse('path=fixtures&team=' + id + '&last=' + (n || 20)).then(function (fx) {
+      return fx.filter(function (f) { return TERMINES[f.fixture.status.short]; })
+        .map(function (f) {
+          var dom = f.teams.home.id === id;
+          var g = f.goals, h = (f.score && f.score.halftime) || {};
+          var d = new Date(f.fixture.date);
+          return {
+            d: String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0')
+               + '.' + String(d.getFullYear()).slice(2),
+            cp: codeCompet(f.league.name),
+            opp: (window.displayTeamName || String)(dom ? f.teams.away.name : f.teams.home.name),
+            dom: dom ? 1 : 0,
+            gf: (dom ? g.home : g.away) || 0, ga: (dom ? g.away : g.home) || 0,
+            hf: (dom ? h.home : h.away) || 0, ha: (dom ? h.away : h.home) || 0,
+          };
+        });
+    }).catch(function () { return []; });
+  }
+  var cacheForme = {};
+  window.NS_FORME = function (idA, idB, nomA, nomB) {
+    if (!idA || !idB) return Promise.resolve(null);
+    var k = idA + '-' + idB;
+    if (cacheForme[k]) return cacheForme[k];
+    var p = Promise.all([formeEquipe(idA, 20), formeEquipe(idB, 20)]).then(function (r) {
+      // le comparatif exige autant de matchs de chaque cote
+      if (r[0].length < 5 || r[1].length < 5) return null;
+      var n = Math.min(r[0].length, r[1].length);
+      return { teams: [nomA, nomB], A: r[0].slice(0, n), B: r[1].slice(0, n) };
+    }).catch(function () { return null; });
+    cacheForme[k] = p;
+    return p;
+  };
+
+  // Le fournisseur nomme tout en anglais. On traduit ce qui a un nom francais
+  // etabli, et RIEN d'autre : "Premier League", "Serie A" ou "Eredivisie" sont
+  // les noms d'usage en francais aussi, les traduire serait une faute.
+  var TRAD_COMPET = {
+    'UEFA Champions League': 'Ligue des Champions',
+    'UEFA Europa League': 'Ligue Europa',
+    'UEFA Europa Conference League': 'Ligue Conférence',
+    'UEFA Super Cup': "Supercoupe d'Europe",
+    'UEFA Nations League': 'Ligue des Nations',
+    'Euro Championship': "Championnat d'Europe",
+    'World Cup': 'Coupe du monde',
+    'FIFA Club World Cup': 'Coupe du monde des clubs',
+    'Africa Cup of Nations': "Coupe d'Afrique des nations",
+    'CAF Champions League': 'Ligue des Champions de la CAF',
+    'CAF Confederation Cup': 'Coupe de la Confédération',
+    'CONMEBOL Libertadores': 'Copa Libertadores',
+    'CONMEBOL Sudamericana': 'Copa Sudamericana',
+    'CONCACAF Champions League': 'Ligue des Champions de la CONCACAF',
+    'CONCACAF Gold Cup': "Gold Cup",
+    'CONCACAF Nations League': 'Ligue des Nations de la CONCACAF',
+    'AFC Champions League Elite': "Ligue des Champions de l'AFC",
+    'AFC Champions League Two': "Coupe de l'AFC",
+    'Asian Cup': "Coupe d'Asie des nations",
+    'Gulf Cup of Nations': 'Coupe du Golfe',
+    'Arab Club Champions Cup': 'Coupe arabe des clubs champions',
+  };
+  function traduire(nom) {
+    var n = String(nom || '');
+    if (TRAD_COMPET[n]) return TRAD_COMPET[n];
+    // "World Cup - Qualification Europe" et ses six confederations
+    var q = n.match(/^World Cup - Qualification (.+)$/);
+    if (q) {
+      var z = { Europe: 'Europe', Africa: 'Afrique', Asia: 'Asie',
+                CONCACAF: 'CONCACAF', 'South America': 'Amérique du Sud',
+                Oceania: 'Océanie' }[q[1]] || q[1];
+      return 'Éliminatoires Coupe du monde · ' + z;
+    }
+    if (/^Cup$/i.test(n)) return 'Coupe';
+    if (/^Super Cup$/i.test(n)) return 'Supercoupe';
+    if (/^League Cup$/i.test(n)) return 'Coupe de la Ligue';
+    return n;
+  }
+  window.NS_TRAD_COMPET = traduire;
+
+  // "2nd Qualifying Round" ne dit pas la meme chose que "Group Stage" : pour
+  // une competition internationale, la phase est plus parlante que le mot
+  // "International", qui ne distinguait pas un tour preliminaire d'une finale.
+  function phase(round) {
+    var r = String(round || '');
+    if (/qualif/i.test(r)) return 'Qualification';
+    if (/play-?off/i.test(r)) return 'Barrages';
+    if (/group/i.test(r)) return 'Phase de groupes';
+    if (/round of 64/i.test(r)) return '32es de finale';
+    if (/round of 32/i.test(r)) return '16es de finale';
+    if (/round of 16|1\/8/i.test(r)) return '8es de finale';
+    if (/quarter/i.test(r)) return 'Quarts de finale';
+    if (/semi/i.test(r)) return 'Demi-finales';
+    if (/3rd place|third place/i.test(r)) return 'Petite finale';
+    if (/final/i.test(r)) return 'Finale';
+    return null;
+  }
+
+  // Ordre d'importance des competitions. Classe par IDENTIFIANT et non par
+  // libelle : le tri precedent lisait des expressions anglaises et la
+  // traduction en francais l'a rendu inoperant (la Ligue des champions
+  // tombait en 999, tout en bas). Il confondait aussi "Premier League"
+  // d'Angleterre et du Ghana, faute de tenir compte du pays.
+  var RANG_COMPET = {
+    2: 0, 3: 1, 848: 2, 531: 3, 15: 4,          // C1, C3, Conference, Supercoupe, Mondial des clubs
+    13: 5, 11: 6, 12: 7, 20: 8, 17: 9, 16: 10,  // Libertadores, Sudamericana, CAF, AFC, CONCACAF
+    1: 12, 4: 13, 6: 14, 9: 15, 7: 16, 5: 17,   // Mondial, Euro, CAN, Copa America, Asie, Nations
+    29: 18, 30: 18, 31: 18, 32: 18, 33: 18, 34: 18, 37: 18, 960: 19, 36: 20, 22: 21,
+    39: 25, 140: 26, 135: 27, 78: 28, 61: 29,   // les cinq grands championnats
+    94: 30, 88: 31, 203: 32, 144: 33, 71: 34, 128: 35, 262: 36, 253: 37,
+    307: 38, 98: 39, 292: 40, 179: 41,
+    40: 46, 62: 47, 136: 48, 79: 49, 141: 50,   // deuxiemes divisions des grands pays
+  };
+  function rangCompet(f) {
+    var id = f.league.id;
+    if (RANG_COMPET[id] != null) return RANG_COMPET[id];
+    var cle = null;
+    try { cle = window.NS_cleApi && window.NS_cleApi(f.league.country); } catch (e) {}
+    var info = cle && window.NS_MANIFEST && window.NS_MANIFEST.pays[cle];
+    if (info && info.ordre) {
+      var i = info.ordre.indexOf(f.league.name);
+      if (i === 0) return 60;                    // premiere division d'un pays couvert
+      if (i > 0) return 70 + Math.min(i, 8);     // divisions inferieures
+    }
+    return 90;                                   // coupes mineures, ligues regionales
+  }
+
+  function grouper(liste) {
+    var par = {};
+    liste.forEach(function (f) {
+      var nom = f.league.name;
+      if (AMICAL.test(nom) || JEUNES.test(nom) || FEMININ.test(nom) || ECARTEES.test(nom)) return;
+      var intl = f.league.country === 'World';
+      var cle = f.league.id + '|' + (intl ? (phase(f.league.round) || 'International') : '');
+      if (!par[cle]) {
+        par[cle] = {
+          ligue: traduire(nom), ligueVo: nom,
+          pays: intl ? (phase(f.league.round) || 'International') : paysFr(f.league.country),
+          seriesId: f.league.id, season: f.league.season, rang: rangCompet(f),
+          logo: f.league.logo, drapeau: f.league.flag,
+          matches: [],
+        };
+      }
+      par[cle].matches.push(convertir(f));
+    });
+    var out = Object.keys(par).map(function (k) { return par[k]; });
+    out.forEach(function (c) {
+      // le libelle doit rester unique : 28 pays ont une "Premier League"
+      c.competition = c.ligue + ' · ' + c.pays;
+      c.matches.sort(function (a, b) { return new Date(a.startDate) - new Date(b.startDate); });
+    });
+    return out;
+  }
+
+  function appel(params) {
+    return fetch('/api/foot/?' + params)   // slash final : evite une redirection 308 par appel
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return j || {}; })
+      .catch(function () { return {}; });
+  }
+  function reponse(params) {
+    return appel(params).then(function (j) { return j.response || []; });
+  }
+
+  // Cotes 1/N/2 d'une journee. L'endpoint pagine par 10 : une journee chargee
+  // demande une douzaine d'appels, d'ou le chargement en parallele. On ne
+  // fabrique jamais de cote : un match sans cote publiee n'en affichera pas.
+  var PREFERES = [8, 11, 7, 2, 32, 1];   // Bet365, 1xBet, William Hill, Marathon, Betano, 10Bet
+
+  function extraire(tout, par) {
+    (tout || []).forEach(function (o) {
+      if (!o || !o.fixture || par[o.fixture.id]) return;
+      var bks = o.bookmakers || [];
+      var choisi = null;
+      for (var i = 0; i < PREFERES.length && !choisi; i++) {
+        choisi = bks.filter(function (b) { return b.id === PREFERES[i]; })[0] || null;
+      }
+      if (!choisi) choisi = bks[0];
+      if (!choisi) return;
+      var mw = (choisi.bets || []).filter(function (b) { return b.name === 'Match Winner'; })[0];
+      if (!mw) return;
+      var v = {};
+      (mw.values || []).forEach(function (x) { v[x.value] = x.odd; });
+      if (v.Home && v.Away) {
+        par[o.fixture.id] = { c1: v.Home, cN: v.Draw || null, c2: v.Away, source: choisi.name };
+      }
+    });
+    return par;
+  }
+
+  // n promesses au maximum en vol, pour ne pas ouvrir 40 connexions d'un coup
+  function enFile(taches, largeur) {
+    var i = 0, res = [];
+    function suivant() {
+      if (i >= taches.length) return Promise.resolve();
+      var k = i++;
+      return taches[k]().then(function (r) { res[k] = r; return suivant(); });
+    }
+    var fils = [];
+    for (var f = 0; f < Math.min(largeur, taches.length); f++) fils.push(suivant());
+    return Promise.all(fils).then(function () { return res; });
+  }
+
+  // Deux passes, parce que l'appel par date est INCOMPLET : le 22/07 il
+  // ignorait 5 des 9 matchs de Ligue des champions et de Conference League,
+  // alors qu'un appel cible sur le championnat les renvoyait tous.
+  //   1. odds?date=      — pagine par 10, couvre l'essentiel en ~12 appels
+  //   2. odds?date&league&season — rattrapage, seulement pour les championnats
+  //      dont il reste au moins un match sans cote
+  function cotesJour(cle, ligues) {
+    return appel('path=odds&date=' + cle).then(function (j) {
+      var par = {};
+      extraire(j.response, par);
+      var pages = (j.paging && j.paging.total) || 1;
+      var suite = [];
+      for (var p = 2; p <= Math.min(pages, 25); p++) {
+        (function (n) {
+          suite.push(function () { return reponse('path=odds&date=' + cle + '&page=' + n); });
+        })(p);
+      }
+      return enFile(suite, 6).then(function (rest) {
+        rest.forEach(function (r) { extraire(r, par); });
+        var manquants = (ligues || []).filter(function (l) {
+          return l.fixtures.some(function (id) { return !par[id]; });
+        });
+        if (!manquants.length) return par;
+        var top = manquants.map(function (l) {
+          return function () {
+            return reponse('path=odds&date=' + cle + '&league=' + l.id + '&season=' + l.season);
+          };
+        });
+        return enFile(top, 6).then(function (rs) {
+          rs.forEach(function (r) { extraire(r, par); });
+          return par;
+        });
+      });
+    }).catch(function () { return {}; });
+  }
+
+  // Cotes detaillees d'UN match, pour la fiche ouverte. Une requete, a la
+  // demande : la fiche affichait jusqu'ici des valeurs codees en dur
+  // (Double chance 1.20/1.42/1.15 sur tous les matchs, sous logo Betsson).
+  var cacheMatch = {};
+  window.NS_COTES_MATCH = function (fixtureId) {
+    if (!fixtureId) return Promise.resolve(null);
+    if (cacheMatch[fixtureId]) return cacheMatch[fixtureId];
+    var p = reponse('path=odds&fixture=' + fixtureId).then(function (r) {
+      if (!r.length) return null;
+      var bks = r[0].bookmakers || [];
+      var choisi = null;
+      for (var i = 0; i < PREFERES.length && !choisi; i++) {
+        choisi = bks.filter(function (b) { return b.id === PREFERES[i]; })[0] || null;
+      }
+      if (!choisi) choisi = bks[0];
+      if (!choisi) return null;
+      var pari = function (nom) {
+        var b = (choisi.bets || []).filter(function (x) { return x.name === nom; })[0];
+        if (!b) return null;
+        var o = {};
+        (b.values || []).forEach(function (v) { o[v.value] = v.odd; });
+        return o;
+      };
+      return {
+        bookmaker: choisi.name,
+        mw: pari('Match Winner'),
+        dc: pari('Double Chance'),
+        fh: pari('First Half Winner'),
+        btts: pari('Both Teams Score'),
+        ou: pari('Goals Over/Under'),
+        exact: pari('Exact Score'),
+      };
+    }).catch(function () { return null; });
+    cacheMatch[fixtureId] = p;
+    return p;
+  };
+
+  // ── Tableau d'une coupe, ou classement d'un championnat ──────────────────
+  // Le fournisseur ne publie AUCUN tableau tout fait : on le reconstruit en
+  // recuperant tous les matchs de la saison et en les regroupant par tour.
+  // L'onglet de la fiche match affichait jusqu'ici un classement invente
+  // ("Team 1", "Team 2", points fictifs).
+  var RANGS = [
+    [/preliminary/i, 5], [/1st qualifying/i, 10], [/2nd qualifying/i, 11],
+    [/3rd qualifying/i, 12], [/qualif/i, 13], [/play-?off/i, 20],
+    [/group/i, 30], [/round of 128/i, 40], [/round of 64/i, 41],
+    [/round of 32/i, 42], [/round of 16|1\/8/i, 43], [/quarter/i, 50],
+    [/semi/i, 60], [/3rd place|third place/i, 70], [/final/i, 80],
+  ];
+  function rang(r) {
+    for (var i = 0; i < RANGS.length; i++) if (RANGS[i][0].test(r)) return RANGS[i][1];
+    return 99;
+  }
+  var ELIM = /(qualif|play-?off|round of|quarter|semi|final|1\/8|preliminary)/i;
+  function phaseDetail(r) {
+    var m = String(r || '').match(/^(\d)(?:st|nd|rd|th)\s+qualifying/i);
+    if (m) return m[1] + (m[1] === '1' ? 'er' : 'e') + ' tour de qualification';
+    if (/preliminary/i.test(r)) return 'Tour préliminaire';
+    return phase(r) || r;
+  }
+
+  var cacheCompet = {};
+  window.NS_COMPET = function (leagueId, season) {
+    if (!leagueId || !season) return Promise.resolve(null);
+    var k = leagueId + '/' + season;
+    if (cacheCompet[k]) return cacheCompet[k];
+    // C'est l'existence d'un CLASSEMENT qui distingue un championnat d'une
+    // coupe, pas le nombre de tours a elimination : la Reserve League
+    // argentine enchaine 18 journees PUIS des quarts et des demies, et se
+    // retrouvait presentee comme une coupe alors qu'elle a un classement.
+    var p = reponse('path=standings&league=' + leagueId + '&season=' + season)
+      .then(function (st) {
+        var g = st[0] && st[0].league && st[0].league.standings;
+        if (g && g.length) return { type: 'classement', groupes: g };
+        return reponse('path=fixtures&league=' + leagueId + '&season=' + season)
+          .then(function (fx) {
+        if (!fx.length) return null;
+        var tours = {};
+        fx.forEach(function (f) {
+          var r = f.league.round || '';
+          if (!ELIM.test(r)) return;
+          (tours[r] = tours[r] || []).push(f);
+        });
+        var noms = Object.keys(tours);
+        if (!noms.length) return null;
+        noms.sort(function (a, b) { return rang(a) - rang(b) || a.localeCompare(b); });
+        return {
+          type: 'tableau',
+          tours: noms.map(function (n) {
+            return {
+              // dans un tableau il faut distinguer les tours : les trois tours
+              // preliminaires s'appelaient tous "Qualification"
+              nom: phaseDetail(n),
+              matches: tours[n].map(convertir).sort(function (a, b) {
+                return new Date(a.startDate) - new Date(b.startDate);
+              }),
+            };
+          }),
+        };
+          });                       // fin du repli sur les matchs (coupe)
+      }).catch(function () { return null; });
+    cacheCompet[k] = p;
+    return p;
+  };
+
+  // Confrontations directes entre deux clubs. Une seule requete, en cache :
+  // l'onglet TaT affichait jusqu'ici des rencontres inventees (Arsenal,
+  // Chelsea, Valencia) quels que soient les deux clubs concernes.
+  var cacheH2H = {};
+  window.NS_H2H = function (idA, idB) {
+    if (!idA || !idB) return Promise.resolve(null);
+    var k = idA + 'x' + idB;
+    if (cacheH2H[k]) return cacheH2H[k];
+    var p = reponse('path=fixtures/headtohead&h2h=' + idA + '-' + idB + '&last=20')
+      .then(function (fx) {
+        var out = fx.filter(function (f) { return TERMINES[f.fixture.status.short]; })
+          .map(function (f) {
+            var g = f.goals, dt = new Date(f.fixture.date);
+            return {
+              date: String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0')
+                    + '/' + String(dt.getFullYear()).slice(2),
+              h: f.teams.home.name, a: f.teams.away.name,
+              hLogo: f.teams.home.logo, aLogo: f.teams.away.logo,
+              hs: g.home, as_: g.away,
+              hw: g.home > g.away, aw: g.away > g.home,
+              comp: f.league.name, compLogo: f.league.logo,
+            };
+          });
+        out.sort(function (x, y) { return 0; });
+        return out;
+      }).catch(function () { return []; });
+    cacheH2H[k] = p;
+    return p;
+  };
+
+  // ── Routeur : une URL par ecran ────────────────────────────────────────
+  // L'application vivait entierement sur "/" : impossible de partager un
+  // ecran, le bouton retour ne faisait rien, et rien n'etait indexable.
+  // On pose l'URL a chaque navigation et on restaure l'ecran au retour.
+  // ── Onglets de la fiche match : un segment d'URL chacun ─────────────────
+  // Doit rester aligne sur la table ONGLETS de api/seo.js : c'est le meme
+  // contrat d'URL des deux cotes.
+  window.NS_ONGLETS = (function () {
+    var T = [
+      ['resume', '', 'Résumé'], ['cotes', 'cotes', 'Cotes'],
+      ['pronostics', 'pronostics', 'Pronostics'], ['compo', 'compositions', 'Compositions'],
+      ['volume', 'volume', 'Volume'], ['stats', 'statistiques', 'Statistiques'],
+      ['tat', 'tete-a-tete', 'Tête-à-tête'], ['classements', 'tableau', 'Tableau'],
+    ];
+    var seg = {}, id = {}, nom = {};
+    T.forEach(function (r) { seg[r[0]] = r[1]; nom[r[0]] = r[2]; if (r[1]) id[r[1]] = r[0]; });
+    // onglets a canonique auto-referente : ceux dont le contenu est propre
+    return { seg: seg, id: id, nom: nom, propre: ['pronostics', 'compo', 'stats', 'tat'] };
+  })();
+
+  window.NS_ROUTE = (function () {
+    var ECRANS = {
+      home:       ['/',            'NinjaScores — Résultats de foot en direct, classements et pronostics'],
+      schedule:   ['/calendrier/',  'Calendrier des matchs de football — NinjaScores'],
+      standings:  ['/classement/',  'Classements de football — 150 pays | NinjaScores'],
+      pronostics: ['/pronostics/',  'Pronostics football du jour — NinjaScores'],
+      transfers:  ['/transferts/',  'Derniers transferts et mercato — NinjaScores'],
+      favorites:  ['/favoris/',     'Mes favoris — NinjaScores'],
+    };
+    var DESC = {
+      '/calendrier/': 'Tous les matchs de football du jour et des prochains jours : horaires, scores en direct et cotes.',
+      '/classement/': 'Classements complets de 150 pays : Ligue 1, Premier League, Liga, Serie A et des centaines de championnats.',
+      '/pronostics/': 'Nos pronostics football du jour, avec cotes et indices de confiance.',
+      '/transferts/': 'Les derniers transferts et le mercato des grands championnats : Ligue 1, Premier League, Liga, Serie A et plus.',
+      '/favoris/':    'Vos équipes et compétitions suivies.',
+    };
+    var popCb = null;
+
+    function meta(nom, val) {
+      var m = document.querySelector('meta[name="' + nom + '"]');
+      if (!m) { m = document.createElement('meta'); m.setAttribute('name', nom); document.head.appendChild(m); }
+      m.setAttribute('content', val);
+    }
+    function canonique(url) {
+      var l = document.querySelector('link[rel="canonical"]');
+      if (!l) { l = document.createElement('link'); l.setAttribute('rel', 'canonical'); document.head.appendChild(l); }
+      l.setAttribute('href', 'https://ninjascores.com' + url);
+    }
+    function applique(url, titre, desc) {
+      document.title = titre;
+      if (desc) meta('description', desc);
+      canonique(url);
+      // /direct/ ne porte aucune valeur SEO : son contenu change en permanence
+      // et ce sont les pages de match qui doivent capter les requetes
+      meta('robots', url === '/direct/' ? 'noindex, follow' : 'index, follow');
+    }
+
+    return {
+      // pose l'URL d'un ecran de l'application
+      ecran: function (id, live) {
+        var e = ECRANS[id]; if (!e) return;
+        var url = (id === 'schedule' && live) ? '/direct/' : e[0];
+        var titre = (url === '/direct/') ? 'Matchs en direct — NinjaScores' : e[1];
+        if (location.pathname !== url) history.pushState({ ecran: id, live: !!live }, '', url);
+        applique(url, titre, DESC[url] || null);
+      },
+      // pose l'URL canonique d'un match ouvert dans l'application
+      match: function (m) {
+        var url = window.NS_URL_MATCH && window.NS_URL_MATCH(m);
+        if (!url) return;
+        var t = (m.homeTeam || '') + ' - ' + (m.awayTeam || '') + ' — NinjaScores';
+        if (location.pathname !== url) history.pushState({ match: m.eventId }, '', url);
+        applique(url, t, null);
+      },
+      // pose l'URL d'un onglet de la fiche match. Le resume n'a pas de
+      // segment : il EST la fiche, sinon deux URLs porteraient la meme page.
+      onglet: function (m, tab, remplace) {
+        var base = window.NS_URL_MATCH && window.NS_URL_MATCH(m);
+        if (!base) return;
+        var seg = window.NS_ONGLETS.seg[tab];
+        if (seg === undefined) return;
+        var url = base + (seg ? seg + '/' : '');
+        var nom = window.NS_ONGLETS.nom[tab] || '';
+        var duo = (m.homeTeam || '') + ' - ' + (m.awayTeam || '');
+        var t = (tab === 'resume' ? duo : nom + ' ' + duo) + ' — NinjaScores';
+        if (location.pathname !== url) {
+          history[remplace ? 'replaceState' : 'pushState']({ match: m.eventId, onglet: tab }, '', url);
+        }
+        applique(url, t, null);
+        // seuls les onglets a contenu propre se referencent eux-memes ;
+        // les autres pointent la fiche, pour ne pas creer de doublon mince
+        if (window.NS_ONGLETS.propre.indexOf(tab) < 0) canonique(base);
+      },
+      // ecran a restaurer au chargement, d'apres l'URL
+      initial: function () {
+        var p = location.pathname;
+        for (var id in ECRANS) if (ECRANS[id][0] === p) return { ecran: id };
+        if (p === '/direct/') return { ecran: 'schedule', live: true };
+        // /football/match/{slug}-{id}/{onglet}/
+        var mm = p.match(/^\/football\/match\/.*?-(\d+)\/(?:([a-z-]+)\/)?$/);
+        if (mm) return { match: +mm[1], onglet: mm[2] ? (window.NS_ONGLETS.id[mm[2]] || 'resume') : 'resume' };
+        return null;
+      },
+      // applique titre/description/canonical pour l'URL courante, au chargement
+      appliquer: function () {
+        var p = location.pathname;
+        for (var id in ECRANS) if (ECRANS[id][0] === p) { applique(p, ECRANS[id][1], DESC[p] || null); return; }
+        if (p === '/direct/') applique(p, 'Matchs en direct — NinjaScores', null);
+      },
+      surRetour: function (cb) { popCb = cb; },
+      _pop: function (e) {
+        var st = (e && e.state) || window.NS_ROUTE.initial() || { ecran: 'home' };
+        window.NS_ROUTE.appliquer();
+        // le bouton retour pilote la navigation exposee par l'application
+        if (st.ecran && window.__nsNav) { try { window.__nsNav(st.ecran); } catch (x) {} }
+        // ... y compris entre deux onglets d'une meme fiche match.
+        // L'onglet se lit dans l'URL, pas dans l'etat : l'entree poussee a
+        // l'ouverture de la fiche ne porte pas d'onglet, et le retour depuis
+        // un onglet restait donc bloque sur l'onglet quitte.
+        if (window.__nsTab) {
+          var mm = location.pathname.match(/^\/football\/match\/.*?-\d+\/(?:([a-z-]+)\/)?$/);
+          if (mm) { try { window.__nsTab(mm[1] ? (window.NS_ONGLETS.id[mm[1]] || 'resume') : 'resume'); } catch (x) {} }
+        }
+        if (popCb) popCb(st);
+      },
+    };
+  })();
+  window.addEventListener('popstate', function (e) { window.NS_ROUTE._pop(e); });
+
+  // ── URLs canoniques, pour un maillage interne en vrais <a href> ─────────
+  // Le crawler ne suit pas les onClick : sans ces liens, les 1 805 pages
+  // rendues cote serveur ne sont atteignables que par le sitemap, et le
+  // maillage interne — qui pese lourd dans le classement — reste nul.
+  function slugUrl(x) {
+    return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  window.NS_URL_MATCH = function (m) {
+    if (!m || !m.eventId) return null;
+    return '/football/match/' + slugUrl(m.homeTeam) + '-' + slugUrl(m.awayTeam)
+         + '-' + m.eventId + '/';
+  };
+  // n'existe que pour les championnats reellement rendus cote serveur :
+  // une competition internationale n'a pas de page pays
+  window.NS_URL_COMPET = function (comp) {
+    if (!comp || !comp.ligue || !comp.pays) return null;
+    try {
+      var m = window.NS_MANIFEST; if (!m) return null;
+      for (var cle in m.pays) {
+        if (m.pays[cle].nom === comp.pays
+            && (m.pays[cle].ordre || []).indexOf(comp.ligueVo || comp.ligue) >= 0) {
+          return '/football/' + slugUrl(comp.pays) + '/'
+               + slugUrl(comp.ligueVo || comp.ligue) + '/';
+        }
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  // offset en jours par rapport a aujourd'hui ; 'live' pour les matchs en cours
+  // Rouvrir une fiche a partir du seul identifiant de l'URL. L'application ne
+  // savait ouvrir qu'un match DEJA charge dans le calendrier : en arrivant
+  // depuis Google sur /football/match/..., il n'y avait rien a ouvrir. On
+  // repasse par le meme `convertir` que le calendrier, pour que l'objet soit
+  // identique a celui d'un clic.
+  // ── Derniers transferts ────────────────────────────────────────────────
+  // Le balayage des clubs se fait cote serveur (api/transferts.js) : ici on
+  // ne fait que recuperer le fil deja constitue et l'habiller aux champs
+  // qu'attendent les trois blocs de l'interface.
+  var _trCache = null;
+  var MOIS_CRT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+                  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  window.NS_TRANSFERTS = function () {
+    if (_trCache) return _trCache;
+    _trCache = fetch('/api/transferts/')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var l = (j && j.transferts) || [];
+        return l.map(function (x) {
+          var d = new Date(x.date + 'T12:00:00Z');
+          return {
+            id: x.id,
+            date: d.getUTCDate() + ' ' + MOIS_CRT[d.getUTCMonth()] + ' ' + d.getUTCFullYear(),
+            iso: x.date,
+            player: x.joueur,
+            initials: x.initiales,
+            from: x.de, fromLogo: x.deLogo, fromId: x.deId,
+            to: x.vers, toLogo: x.versLogo, toId: x.versId,
+            // Moins de 4 % des mouvements portent un montant chez le
+            // fournisseur : on affiche la nature du transfert plutot qu'un
+            // chiffre absent, et jamais un montant invente.
+            value: x.valeur || (x.type === 'pret' ? 'Prêt'
+                  : (x.type === 'libre' ? 'Libre' : 'Transfert')),
+            pos: '', type: x.type, sport: '⚽', ligue: x.ligue,
+          };
+        });
+      })
+      .catch(function () { return []; });
+    return _trCache;
+  };
+
+  window.NS_MATCH_PAR_ID = function (id) {
+    return window.NS_manifestPret
+      .then(function () { return reponse('path=fixtures&id=' + id); })
+      .then(function (brut) {
+        if (!brut.length) return null;
+        var f = brut[0];
+        var m = convertir(f);
+        m.competition = traduire(f.league.name) + ' · '
+          + (f.league.country === 'World' ? (phase(f.league.round) || 'International')
+                                          : paysFr(f.league.country));
+        m.seriesId = f.league.id;
+        m.ligueId = f.league.id;
+        m.saison = f.league.season;
+        m.season = f.league.season;
+        m.leagueLogo = f.league.logo;
+        m.sport = 'football';
+        // L'en-tete de la fiche lit homeScore/awayScore, que `convertir` n'a
+        // jamais ecrits : c'est le calendrier qui les ajoute AU CLIC. Sans eux
+        // le score affichait "- -" alors que la donnee etait la, dans
+        // apiScore. On refait donc ici le meme enrichissement.
+        var p = m.apiScore ? m.apiScore.split('-') : null;
+        m.homeScore = p ? p[0] : null;
+        m.awayScore = p ? p[1] : null;
+        m.minute = null;
+        m.homeColor = '#6133E0';
+        m.awayColor = '#F59E0B';
+        m.badge = '';
+        return m;
+      })
+      .catch(function () { return null; });
+  };
+
+  window.NS_FIXTURES = function (offset) {
+    var cle;
+    if (offset === 'live') cle = 'live';
+    else {
+      var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + (offset || 0));
+      cle = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+          + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    // le direct change en permanence : jamais de cache local dessus
+    if (cle !== 'live' && cache[cle]) return cache[cle];
+    var p = window.NS_manifestPret
+      .then(function () {
+        return reponse(cle === 'live' ? 'path=fixtures&live=all' : 'path=fixtures&date=' + cle);
+      })
+      .then(function (brut) {
+        var comps = grouper(brut);
+        if (cle === 'live') return comps;
+        // le rattrapage des cotes se fait championnat par championnat : il
+        // faut donc savoir quels matchs on affiche et dans quelle saison
+        var ligues = comps.map(function (c) {
+          var s = null;
+          brut.some(function (f) {
+            if (f.league.id === c.seriesId) { s = f.league.season; return true; }
+            return false;
+          });
+          return { id: c.seriesId, season: s, fixtures: c.matches.map(function (m) { return m.eventId; }) };
+        });
+        return cotesJour(cle, ligues).then(function (cotes) {
+          comps.forEach(function (c) {
+            c.matches.forEach(function (m) {
+              var k = cotes[m.eventId];
+              if (k) { m.cote1 = k.c1; m.coteN = k.cN; m.cote2 = k.c2; m.coteSource = k.source; }
+            });
+          });
+          return comps;
+        });
+      });
+    if (cle !== 'live') cache[cle] = p;
+    return p;
+  };
+})();
+</script>
+<script src="/app.compiled.js?v=611"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */

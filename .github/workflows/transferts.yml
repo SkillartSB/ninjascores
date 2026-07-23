@@ -1,0 +1,67 @@
+# Enrichissement des transferts avec les montants Transfermarkt.
+#
+# Tourne tous les 3 jours (et manuellement au besoin). Deroule :
+#   1. scripts/enrichir-transferts.mjs recupere la base API-Football via
+#      /api/transferts?raw=1, cherche chaque montant sur Transfermarkt, et
+#      ecrit data/transferts.json ;
+#   2. si le fichier a change, on le commite ;
+#   3. on redeploie sur Vercel pour que l'endpoint serve la nouvelle version.
+#
+# Le scraping Transfermarkt se fait ICI, hors production : le site public ne
+# depend jamais de Transfermarkt a l'execution, et si TM casse un jour, le
+# dernier bon fichier reste servi.
+#
+# Secrets a definir dans GitHub (Settings > Secrets and variables > Actions) :
+#   VERCEL_TOKEN       jeton personnel Vercel (vercel.com/account/tokens)
+#   VERCEL_ORG_ID      team_AsQzbeTt9P78Zge7eRKRUcjG
+#   VERCEL_PROJECT_ID  prj_t6LOWkLVrl8TRTf7rAfrRxBs3c9e
+
+name: Enrichir les transferts
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'   # tous les 3 jours a 06:00 UTC
+  workflow_dispatch:          # bouton "Run workflow" pour lancer a la demande
+
+permissions:
+  contents: write             # autorise le commit de data/transferts.json
+
+concurrency:
+  group: transferts
+  cancel-in-progress: false
+
+jobs:
+  enrichir:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enrichir data/transferts.json
+        run: node scripts/enrichir-transferts.mjs
+        env:
+          SITE: https://ninjascores.com
+          COMBIEN: '60'
+
+      - name: Commiter si le fil a change
+        run: |
+          git config user.name  "ninjascores-bot"
+          git config user.email "bot@ninjascores.com"
+          if git status --porcelain data/transferts.json | grep -q .; then
+            git add data/transferts.json
+            git commit -m "chore: montants transferts (Transfermarkt) $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "aucun changement dans data/transferts.json"
+          fi
+
+      - name: Redeployer sur Vercel
+        run: |
+          npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          npx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}

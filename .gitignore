@@ -5,6 +5,9 @@
 *.py
 *.json
 !package.json
+# vercel.json pilote les reecritures, la canonisation et les fonctions :
+# l'exclure revient a deployer sans configuration, sans aucune erreur visible
+!vercel.json
 
 # ── Fichiers de travail / backups ──────────────────────────────────────────
 *.backup.*
@@ -33,3 +36,8 @@ node_modules/
 # ── Sortie brute de la reprise API (7,9 Mo) : seul le decoupage est publie ──
 standings_api.json
 !data/standings/*.json
+# fil des transferts enrichi (montants Transfermarkt), regenere par le job CI
+!data/transferts.json
+
+# sauvegardes locales, jamais versionnees
+*.bak

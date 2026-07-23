@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background rounded square -->
+  <rect width="200" height="200" rx="38" fill="#7c2fbe"/>
+
+  <!-- Bandana tails (behind head) -->
+  <ellipse cx="68" cy="28" rx="8" ry="14" fill="white" transform="rotate(-40 68 28)"/>
+  <ellipse cx="56" cy="42" rx="8" ry="13" fill="white" transform="rotate(15 56 42)"/>
+  <!-- Bandana knot (small circle upper-left of head) -->
+  <circle cx="70" cy="38" r="8" fill="white"/>
+
+  <!-- Ninja head (white circle) -->
+  <circle cx="118" cy="80" r="62" fill="white"/>
+
+  <!-- Mask band (purple) -->
+  <path d="M56 82 Q118 70 180 82 Q180 100 118 98 Q56 100 56 82 Z" fill="#7c2fbe"/>
+
+  <!-- Left eye — angry white slit (inner corner higher) -->
+  <path d="M72 85 Q85 76 98 83 Q85 90 72 85 Z" fill="white"/>
+  <!-- Right eye -->
+  <path d="M110 83 Q123 75 136 82 Q123 89 110 83 Z" fill="white"/>
+
+  <!-- Big N letter -->
+  <text x="10" y="168" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="80" fill="white" letter-spacing="-2">N</text>
+
+  <!-- Bottom: LIVE · · · SCORES -->
+  <text x="12" y="190" font-family="Arial, sans-serif" font-weight="700" font-size="17" fill="white">LIVE</text>
+  <circle cx="68" cy="185" r="3.5" fill="#d8a0ff"/>
+  <circle cx="78" cy="185" r="3.5" fill="#d8a0ff"/>
+  <circle cx="88" cy="185" r="3.5" fill="#d8a0ff"/>
+  <text x="96" y="190" font-family="Arial, sans-serif" font-weight="700" font-size="17" fill="white">SCORES</text>
+</svg>

@@ -1,0 +1,9 @@
+# NinjaScores — https://ninjascores.com
+User-agent: *
+Allow: /
+
+# Le proxy API n'a rien a faire dans l'index : ce sont des reponses JSON,
+# elles diluent le budget de crawl sans apporter de page utile.
+Disallow: /api/
+
+Sitemap: https://ninjascores.com/sitemap.xml
