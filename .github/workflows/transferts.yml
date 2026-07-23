@@ -19,9 +19,13 @@
 name: Enrichir les transferts
 
 on:
-  schedule:
-    - cron: '0 6 */3 * *'   # tous les 3 jours a 06:00 UTC
-  workflow_dispatch:          # bouton "Run workflow" pour lancer a la demande
+  # Planification DESACTIVEE : Transfermarkt bloque les IP des runners GitHub
+  # Actions (data-center Azure), l'enrichissement revient vide depuis ici.
+  # A reactiver une fois choisie une solution d'IP non bloquee (proxy
+  # residentiel, ou execution depuis une machine locale). Cf. discussion.
+  # schedule:
+  #   - cron: '0 6 */3 * *'
+  workflow_dispatch:          # reste lancable a la main
 
 permissions:
   contents: write             # autorise le commit de data/transferts.json

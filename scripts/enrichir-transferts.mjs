@@ -148,7 +148,9 @@ async function main() {
   if (liste.length >= 10 && trouves < liste.length * 0.2) {
     console.error('\n⚠ seulement ' + trouves + '/' + liste.length + ' apparies : '
       + 'Transfermarkt bloque probablement cette IP. Fichier NON modifie.');
-    process.exit(2);
+    // sortie 0 : un blocage n'est pas une erreur du job, juste « rien a faire ».
+    // Evite les notifications d'echec a repetition.
+    process.exit(0);
   }
 
   // on conserve TOUT le fil (150), seuls les 60 premiers sont enrichis
