@@ -142,6 +142,15 @@ async function main() {
     await dors(500);
   }
 
+  // Garde-fou anti-blocage : si presque rien n'a matche (Transfermarkt bloque
+  // l'IP — cas des runners GitHub Actions), on n'ecrit PAS. Ecraser le bon
+  // fichier par du vide serait pire que ne rien faire. Le precedent reste servi.
+  if (liste.length >= 10 && trouves < liste.length * 0.2) {
+    console.error('\n⚠ seulement ' + trouves + '/' + liste.length + ' apparies : '
+      + 'Transfermarkt bloque probablement cette IP. Fichier NON modifie.');
+    process.exit(2);
+  }
+
   // on conserve TOUT le fil (150), seuls les 60 premiers sont enrichis
   const sortie = {
     genere: base.genere,
