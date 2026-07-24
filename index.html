@@ -3290,7 +3290,7 @@ window.NINJA_AB = (function() {
     winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
     bet365:  { nom: 'Bet365',  couleur: '#126E51', url: null },
     melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335' },
-    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0' },
+    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=1', promo: 'NINJASCORES' },
     starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133' }
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
@@ -3331,6 +3331,14 @@ window.NINJA_AB = (function() {
   window.NS_BKLOGO = function (slug, h) {
     var R = React.createElement, s = h || 20;
     var p = (window.NS_PARTENAIRES && window.NS_PARTENAIRES[slug]) || { nom: slug, couleur: '#666' };
+    if (p.logo) {
+      // Vrai logo fourni : posé dans une pastille blanche pour rester
+      // lisible en thème clair ET sombre (beaucoup de logos sont noirs).
+      return R('span', { style: { display:'inline-flex', alignItems:'center', height:s,
+        padding:'0 ' + Math.round(s*0.36) + 'px', borderRadius:Math.round(s*0.3),
+        background:'#fff', boxShadow:'inset 0 0 0 1px rgba(20,18,28,0.10)' } },
+        R('img', { src:p.logo, alt:p.nom, style:{ height:Math.round(s*0.62), width:'auto', display:'block' } }));
+    }
     var c = (p.couleur || '#666').replace('#', '');
     var lum = 0.299 * parseInt(c.substr(0,2),16) + 0.587 * parseInt(c.substr(2,2),16) + 0.114 * parseInt(c.substr(4,2),16);
     return R('span', { style: { display:'inline-flex', alignItems:'center', height:s,
@@ -3360,7 +3368,12 @@ window.NINJA_AB = (function() {
           window.NS_BKLOGO(slug, 24),
           R('span', { style: { marginLeft: 'auto', fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: accent, background: accent + '18', padding: '3px 9px', borderRadius: 6 } }, 'PARTENAIRE')),
         R('div', { style: { padding: '12px 14px' } },
-          R('div', { style: { fontSize: 12.5, color: t.textSec, lineHeight: 1.5, marginBottom: 12 } }, 'Parie sur ce match avec ' + bk.nom + '.'),
+          R('div', { style: { fontSize: 12.5, color: t.textSec, lineHeight: 1.5, marginBottom: 11 } }, bk.promo ? ('Ouvre un compte ' + bk.nom + ' avec le code promo et re\u00e7ois ton bonus.') : ('Parie sur ce match avec ' + bk.nom + '.')),
+          bk.promo ? R('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12, padding: '8px 12px', borderRadius: 10, border: '1px dashed ' + bk.couleur, background: bk.couleur + '12' } },
+            R('div', null,
+              R('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: t.textTer } }, 'Code promo'),
+              R('div', { style: { fontSize: 15, fontWeight: 800, letterSpacing: 1, color: t.text, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, bk.promo)),
+            R('span', { style: { fontSize: 17 } }, '\uD83C\uDF81')) : null,
           R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'Parier chez ' + bk.nom + ' \u2192'))));
     });
     return out;
