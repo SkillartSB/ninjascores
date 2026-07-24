@@ -3288,9 +3288,9 @@ window.NINJA_AB = (function() {
   // rabat jamais un logo partenaire sur les cotes d'un autre bookmaker).
   window.NS_PARTENAIRES = {
     winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
-    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES' },
-    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=1', promo: 'NINJASCORES' },
-    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES' }
+    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES', bonus: '' },
+    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=2', logoWhite: '/assets/logos/bookmakers/win1-white.png?v=2', promo: 'NINJASCORES', bonus: '' },
+    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES', bonus: '' }
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
   // affil = partenaires par support ; mobile privilégie ceux presents sur
@@ -3367,15 +3367,41 @@ window.NINJA_AB = (function() {
           window.NS_BKLOGO(slug, 24),
           R('span', { style: { marginLeft: 'auto', fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: accent, background: accent + '18', padding: '3px 9px', borderRadius: 6 } }, 'PARTENAIRE')),
         R('div', { style: { padding: '12px 14px' } },
-          R('div', { style: { fontSize: 12.5, color: t.textSec, lineHeight: 1.5, marginBottom: 11 } }, bk.promo ? ('Ouvre un compte ' + bk.nom + ' avec le code promo et re\u00e7ois ton bonus.') : ('Parie sur ce match avec ' + bk.nom + '.')),
-          bk.promo ? R('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12, padding: '8px 12px', borderRadius: 10, border: '1px dashed ' + bk.couleur, background: bk.couleur + '12' } },
-            R('div', null,
-              R('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: t.textTer } }, 'Code promo'),
-              R('div', { style: { fontSize: 15, fontWeight: 800, letterSpacing: 1, color: t.text, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, bk.promo)),
-            R('span', { style: { fontSize: 17 } }, '\uD83C\uDF81')) : null,
+          R('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: t.textTer, marginBottom: 4 } }, 'Offre de bienvenue'),
+          R('div', { style: { fontSize: 19, fontWeight: 900, color: accent, lineHeight: 1.05, marginBottom: 12 } }, bk.bonus || 'Bonus de bienvenue'),
           R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'Parier chez ' + bk.nom + ' \u2192'))));
     });
     return out;
+  };
+
+  // Opérateurs pour la section Pronostics (bannières) selon le pays actif :
+  // nom + couleur + lien (rendu texte, pas d'image, car les bannières sont
+  // sur fond de couleur de marque). Utilisé hors France.
+  window.NS_BKMS_GEO = function () {
+    var pp = window.NS_GEO.actif();
+    var order = (pp.affil && pp.affil.desktop) || [], seen = {}, out = [];
+    order.forEach(function (s) {
+      if (seen[s]) return; seen[s] = 1;
+      var bk = window.NS_PARTENAIRES[s];
+      if (bk && bk.url) out.push({ nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logoWhite || null });
+    });
+    return out.length ? out : [{ nom: '', url: '#', color: '#666' }];
+  };
+
+  // Opérateur africain n° k (cyclique) pour la section Cotes : logo réel si
+  // disponible (sinon nom), offre = code promo, lien affilié.
+  window.NS_OPI = function (k) {
+    var pp = window.NS_GEO.actif();
+    var order = (pp.affil && pp.affil.desktop) || [], seen = {}, list = [];
+    order.forEach(function (s) {
+      if (seen[s]) return; seen[s] = 1;
+      var bk = window.NS_PARTENAIRES[s];
+      if (bk && bk.url) list.push(bk);
+    });
+    if (!list.length) return { nom: '', url: '#', color: '#666', logo: null, offre: '' };
+    var bk = list[k % list.length];
+    return { nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logo || null,
+      offre: bk.promo ? ('Code ' + bk.promo) : 'Bonus de bienvenue' };
   };
 
   window.NS_PAYS_GEO = [
@@ -4143,7 +4169,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=636"></script>
+<script src="/app.compiled.js?v=639"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
