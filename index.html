@@ -3339,6 +3339,33 @@ window.NINJA_AB = (function() {
       letterSpacing:0.2, lineHeight:1, whiteSpace:'nowrap' } }, p.nom);
   };
 
+  // Couleur de texte lisible sur un fond donné (luminance).
+  window.NS_TXTON = function (hex) {
+    var c = (hex || '#666').replace('#', '');
+    var l = 0.299*parseInt(c.substr(0,2),16) + 0.587*parseInt(c.substr(2,2),16) + 0.114*parseInt(c.substr(4,2),16);
+    return l > 150 ? '#14121c' : '#fff';
+  };
+  // Cartes « partenaires » (Pronostics) pour le pays actif hors France :
+  // logo + CTA affilié réel. Aucun bonus inventé. Renvoie un tableau vide
+  // si aucun partenaire n'a de lien -> rien ne s'affiche.
+  window.NS_AFRICABK = function (t, accent) {
+    var R = React.createElement, p = window.NS_GEO.actif();
+    var order = (p.affil && p.affil.desktop) || [], seen = {}, out = [];
+    order.forEach(function (slug) {
+      if (seen[slug]) return; seen[slug] = 1;
+      var bk = window.NS_PARTENAIRES[slug];
+      if (!bk || !bk.url) return;
+      out.push(R('div', { key: slug, style: { borderRadius: 14, background: t.card, border: '1px solid ' + t.border, overflow: 'hidden', flexShrink: 0 } },
+        R('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderBottom: '1px solid ' + t.border } },
+          window.NS_BKLOGO(slug, 24),
+          R('span', { style: { marginLeft: 'auto', fontSize: 10, fontWeight: 800, letterSpacing: 0.6, color: accent, background: accent + '18', padding: '3px 9px', borderRadius: 6 } }, 'PARTENAIRE')),
+        R('div', { style: { padding: '12px 14px' } },
+          R('div', { style: { fontSize: 12.5, color: t.textSec, lineHeight: 1.5, marginBottom: 12 } }, 'Parie sur ce match avec ' + bk.nom + '.'),
+          R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'Parier chez ' + bk.nom + ' \u2192'))));
+    });
+    return out;
+  };
+
   window.NS_PAYS_GEO = [
     { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
       affil:{ mobile:['bet365','winamax'], desktop:['bet365','winamax'] } },
@@ -3348,7 +3375,7 @@ window.NINJA_AB = (function() {
       affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } }
   ];
   window.NS_GEO = (function () {
-    var CLE = 'ns_geo_pays';
+    var CLE = 'ns_geo_pays', SRC = 'ns_geo_src';
     function trouver(code) {
       return window.NS_PAYS_GEO.filter(function (p) { return p.code === code; })[0] || null;
     }
@@ -3359,18 +3386,24 @@ window.NINJA_AB = (function() {
     }
     function set(code) {
       if (!trouver(code)) return;
-      try { localStorage.setItem(CLE, code); } catch (e) {}
+      try { localStorage.setItem(CLE, code); localStorage.setItem(SRC, 'manual'); } catch (e) {}
       window.location.reload();
     }
-    // Geodetection au premier passage uniquement (jamais apres un choix
-    // manuel) ; on ne recharge que si le pays detecte change l'affichage.
-    var deja = null;
-    try { deja = localStorage.getItem(CLE); } catch (e) {}
-    if (!deja) {
+    // Geodetection : au premier passage ET tant que l'utilisateur n'a pas
+    // choisi manuellement, on suit l'IP (utile en voyage / VPN). Un choix
+    // manuel dans le selecteur fige la preference (src='manual').
+    var src = null, cur = null;
+    try { src = localStorage.getItem(SRC); cur = localStorage.getItem(CLE); } catch (e) {}
+    if (src !== 'manual') {
       fetch('/api/geo/').then(function (r) { return r.json(); }).then(function (j) {
         var c = j && j.pays && trouver(j.pays) ? j.pays : 'FR';
-        try { localStorage.setItem(CLE, c); } catch (e) {}
-        if (c !== 'FR') window.location.reload();
+        var actuel = trouver(cur) ? cur : 'FR';
+        if (c !== actuel) {
+          try { localStorage.setItem(CLE, c); localStorage.setItem(SRC, 'auto'); } catch (e) {}
+          window.location.reload();
+        } else if (c !== cur) {
+          try { localStorage.setItem(CLE, c); localStorage.setItem(SRC, 'auto'); } catch (e) {}
+        }
       }).catch(function () {});
     }
     return { actif: actif, set: set, liste: window.NS_PAYS_GEO };
@@ -4098,7 +4131,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=635"></script>
+<script src="/app.compiled.js?v=636"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
