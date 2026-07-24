@@ -3325,6 +3325,20 @@ window.NINJA_AB = (function() {
     };
   })();
 
+  // Badge de marque d'un bookmaker (nom sur sa couleur officielle, façon
+  // logo). Couleur de texte auto selon la luminance du fond. Sert de logo
+  // tant qu'on n'a pas les vrais fichiers dans assets/logos/bookmakers/.
+  window.NS_BKLOGO = function (slug, h) {
+    var R = React.createElement, s = h || 20;
+    var p = (window.NS_PARTENAIRES && window.NS_PARTENAIRES[slug]) || { nom: slug, couleur: '#666' };
+    var c = (p.couleur || '#666').replace('#', '');
+    var lum = 0.299 * parseInt(c.substr(0,2),16) + 0.587 * parseInt(c.substr(2,2),16) + 0.114 * parseInt(c.substr(4,2),16);
+    return R('span', { style: { display:'inline-flex', alignItems:'center', height:s,
+      padding:'0 ' + Math.round(s*0.55) + 'px', borderRadius:s/2, background:p.couleur,
+      color: lum > 150 ? '#14121c' : '#fff', fontSize:Math.round(s*0.6), fontWeight:800,
+      letterSpacing:0.2, lineHeight:1, whiteSpace:'nowrap' } }, p.nom);
+  };
+
   window.NS_PAYS_GEO = [
     { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
       affil:{ mobile:['bet365','winamax'], desktop:['bet365','winamax'] } },
@@ -4084,7 +4098,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=634"></script>
+<script src="/app.compiled.js?v=635"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
