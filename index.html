@@ -3626,6 +3626,14 @@ window.NINJA_AB = (function() {
         if (location.pathname !== url) history.pushState({ ecran: 'standings', comp: url }, '', url);
         applique(url, t, 'Classement complet de ' + ligue + ' (' + pays + ') : équipes, points, victoires et différence de buts.');
       },
+      // pose l'URL d'une page pays (liste des championnats d'un pays)
+      pays: function (pays) {
+        var url = window.NS_URL_PAYS && window.NS_URL_PAYS(pays);
+        if (!url) { this.ecran('standings'); return; }
+        var t = 'Football ' + pays + ' — classements et résultats des championnats | NinjaScores';
+        if (location.pathname !== url) history.pushState({ ecran: 'standings', pays: url }, '', url);
+        applique(url, t, 'Les championnats de ' + pays + ' : classements complets, résultats et calendrier.');
+      },
       // ecran a restaurer au chargement, d'apres l'URL
       initial: function () {
         var p = location.pathname;
@@ -3757,6 +3765,23 @@ window.NINJA_AB = (function() {
           || (e.alias && e.alias.indexOf(cible) >= 0);
         if (match && (e.ordre || []).indexOf(lig) >= 0) {
           return '/football/' + slugUrl(e.nom) + '/' + slugUrl(lig) + '/';
+        }
+      }
+    } catch (e) {}
+    return null;
+  };
+  // URL d'une page pays. Meme tolerance que NS_URL_COMPET : le pays peut
+  // arriver en nom francais, en cle API ou via un alias.
+  window.NS_URL_PAYS = function (pays) {
+    if (!pays) return null;
+    try {
+      var m = window.NS_MANIFEST; if (!m) return null;
+      var cible = String(pays);
+      for (var cle in m.pays) {
+        var e = m.pays[cle];
+        if (e.nom === cible || cle === cible || cle.replace(/-/g, ' ') === cible
+            || (e.alias && e.alias.indexOf(cible) >= 0)) {
+          return '/football/' + slugUrl(e.nom) + '/';
         }
       }
     } catch (e) {}
@@ -3997,7 +4022,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=630"></script>
+<script src="/app.compiled.js?v=631"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
