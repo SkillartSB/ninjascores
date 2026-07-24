@@ -3296,6 +3296,35 @@ window.NINJA_AB = (function() {
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
   // affil = partenaires par support ; mobile privilégie ceux presents sur
   // l'App Store (meilleure conversion), desktop le meilleur revshare.
+  // Drapeaux ronds (SVG) — plus nets et cohérents que les emoji (qui
+  // s'affichent en texte « FR » sur Windows/Chrome). Tricolores verticaux ;
+  // id de clip unique par instance pour éviter les collisions.
+  window.NS_FLAG = (function () {
+    var n = 0;
+    var BANDES = {
+      FR: ['#0055A4', '#ffffff', '#EF4135'],
+      CI: ['#F77F00', '#ffffff', '#009E60'],
+      CM: ['#007A5E', '#CE1126', '#FCD116']
+    };
+    return function (code, taille) {
+      var R = React.createElement, s = taille || 20;
+      var b = BANDES[code] || ['#c9c6d4', '#ded9e8', '#c9c6d4'];
+      var id = 'nsfl' + (n++);
+      var kids = [
+        R('rect', { key: 0, width: 8, height: 24, fill: b[0] }),
+        R('rect', { key: 1, x: 8, width: 8, height: 24, fill: b[1] }),
+        R('rect', { key: 2, x: 16, width: 8, height: 24, fill: b[2] })
+      ];
+      if (code === 'CM') kids.push(R('path', { key: 's',
+        d: 'M12 8.4l0.88 2.39 2.54 0.1-1.99 1.57 0.69 2.45L12 13.5l-2.12 1.41 0.69-2.45-1.99-1.57 2.54-0.1z',
+        fill: '#FCD116' }));
+      return R('svg', { width: s, height: s, viewBox: '0 0 24 24', 'aria-hidden': 'true',
+        style: { borderRadius: '50%', boxShadow: 'inset 0 0 0 1px rgba(20,18,28,0.12)', flexShrink: 0, display: 'block' } },
+        R('defs', null, R('clipPath', { id: id }, R('circle', { cx: 12, cy: 12, r: 12 }))),
+        R('g', { clipPath: 'url(#' + id + ')' }, kids));
+    };
+  })();
+
   window.NS_PAYS_GEO = [
     { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
       affil:{ mobile:['bet365','winamax'], desktop:['bet365','winamax'] } },
@@ -4055,7 +4084,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=633"></script>
+<script src="/app.compiled.js?v=634"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
