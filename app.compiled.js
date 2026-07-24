@@ -544,9 +544,9 @@ style:{padding:'9px 14px',borderRadius:10,border:'1px solid '+t.border,backgroun
 color:t.textSec,fontSize:12.5,fontWeight:600,cursor:'pointer',fontFamily:'inherit'}},x[1]);})));};
 
 const NS_TOP=function(){try{window.scrollTo(0,0);var sc=document.scrollingElement;if(sc)sc.scrollTop=0;}catch(_){}};const NSFooter=({t,accent,isDark,onNav,onLeague})=>{
-var lien=function(txt,go,k){
-return React.createElement('button',{key:k,onClick:go?function(e){go(e);NS_TOP();}:null,
-style:{display:'block',border:'none',background:'none',padding:'5px 0',cursor:go?'pointer':'default',
+var lien=function(txt,go,k,href){
+return React.createElement(href?'a':'button',{key:k,href:href||undefined,onClick:go?function(e){if(href)e.preventDefault();go(e);NS_TOP();}:null,
+style:{display:'block',border:'none',background:'none',padding:'5px 0',cursor:(go||href)?'pointer':'default',textDecoration:'none',
 fontFamily:'inherit',fontSize:12.5,color:t.textSec,textAlign:'left',lineHeight:1.4},
 onMouseEnter:function(e){if(go)e.currentTarget.style.color=accent;},
 onMouseLeave:function(e){e.currentTarget.style.color=t.textSec;}},txt);};
@@ -554,7 +554,7 @@ var colonne=function(titre,items){
 return React.createElement('div',{style:{minWidth:150,flex:'1 1 150px'}},
 React.createElement('div',{style:{fontSize:11,fontWeight:800,color:t.text,marginBottom:11,
 letterSpacing:0.9,textTransform:'uppercase'}},titre),
-items.map(function(it,i){return lien(it.label,it.go,i);}));};
+items.map(function(it,i){return lien(it.label,it.go,i,it.href);}));};
 var reseau=function(nom,d,url){
 return React.createElement('button',{key:nom,title:nom,onClick:function(){if(url)window.open(url,'_blank','noopener,noreferrer');},
 style:{width:34,height:34,borderRadius:'50%',border:'1px solid '+t.border,background:'none',
@@ -577,7 +577,15 @@ React.createElement('div',{style:{fontSize:11,color:t.textTer,lineHeight:1.55,ma
 'Les pronostics sont fournis à titre informatif et ne garantissent aucun gain.')),
 
 colonne('Compétitions',NS_TOP_LEAGUES.slice(0,7).map(function(lg){
-return {label:lg.name,go:function(){onLeague(NS_RESOLVE_LEAGUE(lg.name));}};})),
+var h=null;try{h=window.NS_URL_COMPET?NS_URL_COMPET({ligue:lg.name,pays:lg.country}):null;}catch(e){}
+return {label:lg.name,href:h,go:function(){onLeague(NS_RESOLVE_LEAGUE(lg.name));}};})),
+
+colonne('Explorer',[
+{label:'Tous les championnats',href:'/football/'},
+{label:'Classements',href:'/classement/'},
+{label:'Calendrier des matchs',href:'/calendrier/'},
+{label:'Derniers transferts',href:'/transferts/'},
+{label:'Pronostics du jour',href:'/pronostics/'}]),
 
 colonne('Légal',[
 {label:'Mentions légales',go:function(){onNav('legal:mentions');}},
