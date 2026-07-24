@@ -3288,10 +3288,9 @@ window.NINJA_AB = (function() {
   // rabat jamais un logo partenaire sur les cotes d'un autre bookmaker).
   window.NS_PARTENAIRES = {
     winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
-    bet365:  { nom: 'Bet365',  couleur: '#126E51', url: null },
-    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335' },
+    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES' },
     win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=1', promo: 'NINJASCORES' },
-    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133' }
+    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES' }
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
   // affil = partenaires par support ; mobile privilégie ceux presents sur
@@ -3381,7 +3380,7 @@ window.NINJA_AB = (function() {
 
   window.NS_PAYS_GEO = [
     { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
-      affil:{ mobile:['bet365','winamax'], desktop:['bet365','winamax'] } },
+      affil:{ mobile:['winamax'], desktop:['winamax'] } },
     { code:'CI', nom:"C\u00f4te d'Ivoire", drapeau:'\uD83C\uDDE8\uD83C\uDDEE', cotes:[11,8,7,2,32,1],
       affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
     { code:'CM', nom:'Cameroun',       drapeau:'\uD83C\uDDE8\uD83C\uDDF2', cotes:[11,8,7,2,32,1],
