@@ -3288,9 +3288,9 @@ window.NINJA_AB = (function() {
   // rabat jamais un logo partenaire sur les cotes d'un autre bookmaker).
   window.NS_PARTENAIRES = {
     winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
-    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES', bonus: '' },
+    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES', bonus: '', logo: '/assets/logos/bookmakers/melbet.png?v=1', logoBleed: true },
     win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=3', logoWhite: '/assets/logos/bookmakers/win1-white.png?v=3', promo: 'NINJASCORES', bonus: '' },
-    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES', bonus: '' }
+    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES', bonus: '', logo: '/assets/logos/bookmakers/starz888.png?v=1', logoBleed: true }
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
   // affil = partenaires par support ; mobile privilégie ceux presents sur
@@ -3330,9 +3330,13 @@ window.NINJA_AB = (function() {
   window.NS_BKLOGO = function (slug, h) {
     var R = React.createElement, s = h || 20;
     var p = (window.NS_PARTENAIRES && window.NS_PARTENAIRES[slug]) || { nom: slug, couleur: '#666' };
+    if (p.logo && p.logoBleed) {
+      // Logo avec son propre fond (sombre) : image directe, coins arrondis.
+      return R('img', { src:p.logo, alt:p.nom, style:{ height:s, width:'auto',
+        borderRadius:Math.round(s*0.24), display:'block' } });
+    }
     if (p.logo) {
-      // Vrai logo fourni : posé dans une pastille blanche pour rester
-      // lisible en thème clair ET sombre (beaucoup de logos sont noirs).
+      // Logo monochrome : pastille blanche pour rester lisible clair/sombre.
       return R('span', { style: { display:'inline-flex', alignItems:'center', height:s,
         padding:'0 ' + Math.round(s*0.36) + 'px', borderRadius:Math.round(s*0.3),
         background:'#fff', boxShadow:'inset 0 0 0 1px rgba(20,18,28,0.10)' } },
@@ -3383,7 +3387,7 @@ window.NINJA_AB = (function() {
     order.forEach(function (s) {
       if (seen[s]) return; seen[s] = 1;
       var bk = window.NS_PARTENAIRES[s];
-      if (bk && bk.url) out.push({ nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logoWhite || null, w: 'auto', size: 22 });
+      if (bk && bk.url) out.push({ nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logoWhite || bk.logo || null, w: 'auto', size: 22 });
     });
     return out.length ? out : [{ nom: '', url: '#', color: '#666' }];
   };
@@ -4169,7 +4173,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=640"></script>
+<script src="/app.compiled.js?v=641"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
