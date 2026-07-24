@@ -3282,6 +3282,69 @@ window.NINJA_AB = (function() {
   // Cotes 1/N/2 d'une journee. L'endpoint pagine par 10 : une journee chargee
   // demande une douzaine d'appels, d'ou le chargement en parallele. On ne
   // fabrique jamais de cote : un match sans cote publiee n'en affichera pas.
+  // ===== GEO : pays de l'utilisateur, cotes et affiliation localisees =====
+  // Les URLS d'affiliation seront fournies par l'utilisateur ; tant qu'un
+  // partenaire a url:null, aucun lien affilie n'est rendu pour lui (on ne
+  // rabat jamais un logo partenaire sur les cotes d'un autre bookmaker).
+  window.NS_PARTENAIRES = {
+    winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
+    bet365:  { nom: 'Bet365',  couleur: '#126E51', url: null },
+    melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: null },
+    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: null },
+    starz888:{ nom: '888Starz',couleur: '#1B9E4B', url: null }
+  };
+  // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
+  // affil = partenaires par support ; mobile privilégie ceux presents sur
+  // l'App Store (meilleure conversion), desktop le meilleur revshare.
+  window.NS_PAYS_GEO = [
+    { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
+      affil:{ mobile:['bet365','winamax'], desktop:['bet365','winamax'] } },
+    { code:'CI', nom:"C\u00f4te d'Ivoire", drapeau:'\uD83C\uDDE8\uD83C\uDDEE', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
+    { code:'CM', nom:'Cameroun',       drapeau:'\uD83C\uDDE8\uD83C\uDDF2', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } }
+  ];
+  window.NS_GEO = (function () {
+    var CLE = 'ns_geo_pays';
+    function trouver(code) {
+      return window.NS_PAYS_GEO.filter(function (p) { return p.code === code; })[0] || null;
+    }
+    function actif() {
+      var c = null;
+      try { c = localStorage.getItem(CLE); } catch (e) {}
+      return trouver(c) || window.NS_PAYS_GEO[0];
+    }
+    function set(code) {
+      if (!trouver(code)) return;
+      try { localStorage.setItem(CLE, code); } catch (e) {}
+      window.location.reload();
+    }
+    // Geodetection au premier passage uniquement (jamais apres un choix
+    // manuel) ; on ne recharge que si le pays detecte change l'affichage.
+    var deja = null;
+    try { deja = localStorage.getItem(CLE); } catch (e) {}
+    if (!deja) {
+      fetch('/api/geo/').then(function (r) { return r.json(); }).then(function (j) {
+        var c = j && j.pays && trouver(j.pays) ? j.pays : 'FR';
+        try { localStorage.setItem(CLE, c); } catch (e) {}
+        if (c !== 'FR') window.location.reload();
+      }).catch(function () {});
+    }
+    return { actif: actif, set: set, liste: window.NS_PAYS_GEO };
+  })();
+  // Partenaire d'affiliation actif : premier partenaire du pays (selon le
+  // support) qui a une URL configurée ; alternance quotidienne s'il y en a
+  // plusieurs. Renvoie null si aucun lien n'est encore fourni.
+  window.NS_AFFIL = function () {
+    var p = window.NS_GEO.actif();
+    var mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+    var noms = (p.affil && (mobile ? p.affil.mobile : p.affil.desktop)) || [];
+    var dispo = noms.map(function (n) { return window.NS_PARTENAIRES[n]; })
+      .filter(function (x) { return x && x.url; });
+    if (!dispo.length) return null;
+    return dispo[new Date().getDate() % dispo.length];
+  };
+
   var PREFERES = [8, 11, 7, 2, 32, 1];   // Bet365, 1xBet, William Hill, Marathon, Betano, 10Bet
 
   function extraire(tout, par) {
@@ -3289,8 +3352,9 @@ window.NINJA_AB = (function() {
       if (!o || !o.fixture || par[o.fixture.id]) return;
       var bks = o.bookmakers || [];
       var choisi = null;
-      for (var i = 0; i < PREFERES.length && !choisi; i++) {
-        choisi = bks.filter(function (b) { return b.id === PREFERES[i]; })[0] || null;
+      var _prefs = (window.NS_GEO && NS_GEO.actif().cotes) || PREFERES;
+      for (var i = 0; i < _prefs.length && !choisi; i++) {
+        choisi = bks.filter(function (b) { return b.id === _prefs[i]; })[0] || null;
       }
       if (!choisi) choisi = bks[0];
       if (!choisi) return;
@@ -3365,8 +3429,9 @@ window.NINJA_AB = (function() {
       if (!r.length) return null;
       var bks = r[0].bookmakers || [];
       var choisi = null;
-      for (var i = 0; i < PREFERES.length && !choisi; i++) {
-        choisi = bks.filter(function (b) { return b.id === PREFERES[i]; })[0] || null;
+      var _prefs = (window.NS_GEO && NS_GEO.actif().cotes) || PREFERES;
+      for (var i = 0; i < _prefs.length && !choisi; i++) {
+        choisi = bks.filter(function (b) { return b.id === _prefs[i]; })[0] || null;
       }
       if (!choisi) choisi = bks[0];
       if (!choisi) return null;
@@ -3990,7 +4055,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=632"></script>
+<script src="/app.compiled.js?v=633"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
