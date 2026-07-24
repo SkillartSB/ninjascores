@@ -3614,6 +3614,18 @@ window.NINJA_AB = (function() {
         // les autres pointent la fiche, pour ne pas creer de doublon mince
         if (window.NS_ONGLETS.propre.indexOf(tab) < 0) canonique(base);
       },
+      // pose l'URL d'une competition ouverte dans l'ecran classement.
+      // Sans ca, l'app affichait le tableau sans changer l'URL : le lien
+      // n'etait ni partageable ni coherent avec la page indexee.
+      competition: function (pays, ligue) {
+        var url = window.NS_URL_COMPET && window.NS_URL_COMPET({ pays: pays, ligue: ligue });
+        // competition internationale (C1, C2...) : pas de page pays -> on
+        // retombe sur /classement/ plutot que sur une URL qui n'existe pas
+        if (!url) { this.ecran('standings'); return; }
+        var t = ligue + ' — classement ' + pays + ' | NinjaScores';
+        if (location.pathname !== url) history.pushState({ ecran: 'standings', comp: url }, '', url);
+        applique(url, t, 'Classement complet de ' + ligue + ' (' + pays + ') : équipes, points, victoires et différence de buts.');
+      },
       // ecran a restaurer au chargement, d'apres l'URL
       initial: function () {
         var p = location.pathname;
@@ -3732,11 +3744,19 @@ window.NINJA_AB = (function() {
     if (!comp || !comp.ligue || !comp.pays) return null;
     try {
       var m = window.NS_MANIFEST; if (!m) return null;
+      var lig = comp.ligueVo || comp.ligue;
+      var cible = String(comp.pays);
       for (var cle in m.pays) {
-        if (m.pays[cle].nom === comp.pays
-            && (m.pays[cle].ordre || []).indexOf(comp.ligueVo || comp.ligue) >= 0) {
-          return '/football/' + slugUrl(comp.pays) + '/'
-               + slugUrl(comp.ligueVo || comp.ligue) + '/';
+        var e = m.pays[cle];
+        // le pays peut arriver en nom francais (Angleterre), en cle API
+        // (England) ou via un alias : la barre laterale passe le nom API.
+        // On accepte les trois, et on construit le slug depuis le NOM
+        // francais pour que l'URL soit toujours la forme indexee.
+        var match = e.nom === cible || cle === cible
+          || cle.replace(/-/g, ' ') === cible
+          || (e.alias && e.alias.indexOf(cible) >= 0);
+        if (match && (e.ordre || []).indexOf(lig) >= 0) {
+          return '/football/' + slugUrl(e.nom) + '/' + slugUrl(lig) + '/';
         }
       }
     } catch (e) {}
@@ -3977,7 +3997,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=628"></script>
+<script src="/app.compiled.js?v=630"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
