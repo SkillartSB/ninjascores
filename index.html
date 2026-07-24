@@ -3083,6 +3083,9 @@ window.NINJA_AB = (function() {
         ? String(f.fixture.status.elapsed) : null,
       minute: (f.fixture.status && f.fixture.status.elapsed) || null,
       venue: (f.fixture.venue && f.fixture.venue.name) || null,
+      venueCity: (f.fixture.venue && f.fixture.venue.city) || null,
+      // arbitre : deja dans la reponse fixtures, souvent vide avant-match
+      referee: f.fixture.referee || null,
       round: f.league.round || null,
       homeId: f.teams.home.id, awayId: f.teams.away.id,
     };
@@ -3843,6 +3846,24 @@ window.NINJA_AB = (function() {
       .catch(function () { return null; });
   };
 
+  // Infos du stade de l'equipe a domicile (capacite, surface, adresse, photo).
+  // L'endpoint teams est mis en cache 24 h par le proxy ; en plus on garde le
+  // resultat en memoire cote client : la capacite d'un stade ne change pas.
+  var _stadeCache = {};
+  window.NS_STADE = function (teamId) {
+    if (!teamId) return Promise.resolve(null);
+    if (_stadeCache[teamId]) return _stadeCache[teamId];
+    _stadeCache[teamId] = window.NS_manifestPret
+      .then(function () { return reponse('path=teams&id=' + teamId); })
+      .then(function (rep) {
+        var v = rep[0] && rep[0].venue;
+        return v ? { nom: v.name, capacite: v.capacity || null, surface: v.surface || null,
+                     ville: v.city || null, adresse: v.address || null, image: v.image || null } : null;
+      })
+      .catch(function () { return null; });
+    return _stadeCache[teamId];
+  };
+
   // 1re mi-temps captee a la pause (via /api/stats-mt + Redis). `live` : on
   // demande la capture (le serveur ne l'effectue que si le match est a « HT »).
   window.NS_STATS_MT = function (id, live) {
@@ -3917,7 +3938,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=622"></script>
+<script src="/app.compiled.js?v=623"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
