@@ -3405,7 +3405,7 @@ window.NINJA_AB = (function() {
     if (!list.length) return { nom: '', url: '#', color: '#666', logo: null, offre: '' };
     var bk = list[k % list.length];
     return { nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logo || null,
-      offre: bk.promo ? ('Code ' + bk.promo) : 'Bonus de bienvenue' };
+      offre: bk.bonus || 'Bonus de bienvenue' };
   };
 
   // Bandeau compact des bonus partenaires (logo + bonus en violet + CTA),
@@ -4207,7 +4207,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=642"></script>
+<script src="/app.compiled.js?v=644"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
