@@ -3408,6 +3408,40 @@ window.NINJA_AB = (function() {
       offre: bk.promo ? ('Code ' + bk.promo) : 'Bonus de bienvenue' };
   };
 
+  // Bandeau compact des bonus partenaires (logo + bonus en violet + CTA),
+  // horizontal et scrollable. Affiché en haut des onglets Résumé/Cotes/
+  // Pronostics hors France. Renvoie null si pas de partenaire.
+  window.NS_BONUS_STRIP = function (t, accent) {
+    if (!window.NS_GEO) return null;
+    var R = React.createElement, p = window.NS_GEO.actif();
+    if (!p || p.code === 'FR') return null;
+    var order = (p.affil && p.affil.desktop) || [], seen = {}, list = [];
+    order.forEach(function (s) {
+      if (seen[s]) return; seen[s] = 1;
+      var bk = window.NS_PARTENAIRES[s];
+      if (bk && bk.url) list.push([s, bk]);
+    });
+    if (!list.length) return null;
+    return R('div', { style: { display:'flex', gap:10, overflowX:'auto', padding:'2px 0 6px',
+      marginBottom:6, WebkitOverflowScrolling:'touch' } },
+      list.map(function (pair) {
+        var slug = pair[0], bk = pair[1];
+        return R('a', { key:slug, href:bk.url, target:'_blank', rel:'noopener sponsored',
+          style:{ flex:'0 0 auto', width:172, textDecoration:'none', background:t.card,
+            border:'1px solid '+t.border, borderRadius:14, overflow:'hidden', display:'flex', flexDirection:'column' } },
+          R('div', { style:{ display:'flex', alignItems:'center', justifyContent:'space-between',
+            padding:'9px 11px', borderBottom:'1px solid '+t.border } },
+            window.NS_BKLOGO(slug, 20),
+            R('span', { style:{ fontSize:8, fontWeight:800, letterSpacing:0.5, color:accent,
+              background:accent+'18', padding:'2px 6px', borderRadius:5 } }, 'BONUS')),
+          R('div', { style:{ padding:'9px 11px' } },
+            R('div', { style:{ fontSize:14, fontWeight:900, color:accent, lineHeight:1.1, marginBottom:9,
+              minHeight:31 } }, bk.bonus || 'Bonus de bienvenue'),
+            R('div', { style:{ background:bk.couleur, color:window.NS_TXTON(bk.couleur), fontWeight:800,
+              fontSize:12, borderRadius:9, padding:'8px', textAlign:'center' } }, 'Parier \u2192')));
+      }));
+  };
+
   window.NS_PAYS_GEO = [
     { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', cotes:[8,11,7,2,32,1],
       affil:{ mobile:['winamax'], desktop:['winamax'] } },
@@ -4173,7 +4207,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=641"></script>
+<script src="/app.compiled.js?v=642"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
