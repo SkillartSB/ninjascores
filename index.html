@@ -3292,7 +3292,7 @@ window.NINJA_AB = (function() {
   window.NS_PARTENAIRES = {
     winamax: { nom: 'Winamax', couleur: '#E2001A', url: 'https://winamax.fr' },
     melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES', bonus: '200% jusqu’à 130 000 FCFA', logo: '/assets/logos/bookmakers/melbet.png?v=1', logoBleed: true },
-    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=4', logoBleed: true, logoWhite: '/assets/logos/bookmakers/win1-white.png?v=3', promo: 'NINJASCORES', bonus: '500% jusqu’à 620 000 FCFA' },
+    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=5', logoWhite: '/assets/logos/bookmakers/win1-white.png?v=3', promo: 'NINJASCORES', bonus: '500% jusqu’à 620 000 FCFA' },
     starz888:{ nom: '888Starz',couleur: '#E1222B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES', bonus: 'Jusqu’à 260 000 FCFA', logo: '/assets/logos/bookmakers/starz888.png?v=1', logoBleed: true }
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
@@ -3353,11 +3353,10 @@ window.NINJA_AB = (function() {
         borderRadius:Math.round(s*0.24), display:'block' } });
     }
     if (p.logo) {
-      // Logo monochrome : pastille blanche pour rester lisible clair/sombre.
-      return R('span', { style: { display:'inline-flex', alignItems:'center', height:s,
-        padding:'0 ' + Math.round(s*0.36) + 'px', borderRadius:Math.round(s*0.3),
-        background:'#fff', boxShadow:'inset 0 0 0 1px rgba(20,18,28,0.10)' } },
-        R('img', { src:p.logo, alt:p.nom, style:{ height:Math.round(s*0.62), width:'auto', display:'block' } }));
+      // Logo wordmark transparent (1WIN) : aucune boîte/arrière-plan.
+      // Version sombre en thème clair, blanche en thème sombre (window.ninjaDark).
+      var _src = (window.ninjaDark && p.logoWhite) ? p.logoWhite : p.logo;
+      return R('img', { src:_src, alt:p.nom, style:{ height:Math.round(s*0.9), width:'auto', display:'block' } });
     }
     var c = (p.couleur || '#666').replace('#', '');
     var lum = 0.299 * parseInt(c.substr(0,2),16) + 0.587 * parseInt(c.substr(2,2),16) + 0.114 * parseInt(c.substr(4,2),16);
