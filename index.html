@@ -3223,6 +3223,22 @@ window.NINJA_AB = (function() {
   }
   window.NS_TRAD_COMPET = traduire;
 
+  // Index complet des équipes (nom + logo + pays) pour la recherche et les
+  // favoris — 6600+ clubs de tous les championnats. Chargé à la demande
+  // (fichier séparé, pas dans le bundle) et mis en cache.
+  window.NS_ensureTeamsIndex = (function () {
+    var p = null;
+    return function () {
+      if (window.NS_TEAMS_INDEX) return Promise.resolve(window.NS_TEAMS_INDEX);
+      if (p) return p;
+      p = fetch('/data/teams-index.json?v=1')
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (a) { window.NS_TEAMS_INDEX = a || []; return window.NS_TEAMS_INDEX; })
+        .catch(function () { window.NS_TEAMS_INDEX = []; return window.NS_TEAMS_INDEX; });
+      return p;
+    };
+  })();
+
   // Traduction des sous-titres / groupes de classement (phases, poules,
   // conférences…) par motifs. Couvre les ~670 valeurs anglaises des données.
   // Apertura/Clausura conservés (noms de tournois). Les noms propres de
@@ -4343,7 +4359,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=653"></script>
+<script src="/app.compiled.js?v=654"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */

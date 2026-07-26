@@ -2735,7 +2735,7 @@ out.push({id:'pl-'+p.id,name:p.name,detail:(p.team?TRCLUB(p.team):'')+(p.league?
 return out;})();
 const FavoritesScreen=({accent,t,isDark,onMatchClick,wide})=>{
 const ACCENT_YEL=accent;
-const CATALOG=NS_FOOT_CATALOG;
+const[__tiReady,__setTiReady]=useState(!!(window.NS_TEAMS_INDEX&&window.NS_TEAMS_INDEX.length));useEffect(function(){if(window.NS_ensureTeamsIndex){window.NS_ensureTeamsIndex().then(function(){__setTiReady(true);});}},[]);const CATALOG=(function(){var _b=NS_FOOT_CATALOG;var _ti=window.NS_TEAMS_INDEX;if(!_ti||!_ti.length)return _b;var _have={};_b.forEach(function(e){if(e&&e.type==='team')_have[e.name]=1;});var _ex=[];_ti.forEach(function(x){if(!x||!x.n||_have[x.n])return;_have[x.n]=1;_ex.push({id:'tm-'+x.n,name:x.n,displayName:(window.displayTeamName||String)(x.n),detail:(typeof TRPAYS==='function'?TRPAYS(x.p):x.p),icon:'⚽',sport:'football',type:'team',category:'Football · Clubs & équipes',logo:x.l});});return _b.concat(_ex);})();
 const[favMatchTick,setFavMatchTick]=useState(0);useEffect(()=>{const hfm=()=>setFavMatchTick(n=>n+1);window.addEventListener('favmatchchange',hfm);return()=>window.removeEventListener('favmatchchange',hfm);},[]);const[favLive,setFavLive]=useState({});useEffect(function(){var vif=true;var charger=function(){try{var ids=(window.FavMatchesStore?window.FavMatchesStore.getAll():[]).map(function(x){return x.eventId;}).filter(Boolean);if(!ids.length||!window.NS_FAV_LIVE)return;window.NS_FAV_LIVE(ids).then(function(mp){if(vif)setFavLive(mp);});}catch(e){}};charger();var iv=setInterval(charger,30000);return function(){vif=false;clearInterval(iv);};},[favMatchTick]);const[favorites,setFavorites]=useState([]);
 const[showModal,setShowModal]=useState(false);
 const[search,setSearch]=useState('');
