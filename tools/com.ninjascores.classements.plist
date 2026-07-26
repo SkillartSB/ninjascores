@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.ninjascores.classements</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/julesmathis/NinjaScores APP/scripts/maj-classements.sh</string>
+  </array>
+
+  <!-- tous les jours à 05h00. launchd rattrape au réveil si le Mac dormait. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>5</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <!-- ne pas rejouer au chargement (on active à la main quand le plan 150k est prêt) -->
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/julesmathis/Library/Logs/ninjascores-classements.launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/julesmathis/Library/Logs/ninjascores-classements.launchd.log</string>
+</dict>
+</plist>
