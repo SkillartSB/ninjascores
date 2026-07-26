@@ -3425,6 +3425,22 @@ window.NINJA_AB = (function() {
   // Bandeau compact des bonus partenaires (logo + bonus en violet + CTA),
   // horizontal et scrollable. Affiché en haut des onglets Résumé/Cotes/
   // Pronostics hors France. Renvoie null si pas de partenaire.
+  // Liste 'Bonus du moment' selon le pays actif : France -> NS_BOOKMAKERS
+  // (opérateurs FR) ; pays africain -> partenaires (Melbet/1WIN/888Starz)
+  // avec leur logo + bonus. Format compatible avec la carte existante.
+  window.NS_BONUS_LIST = function () {
+    var p = window.NS_GEO && window.NS_GEO.actif();
+    if (!p || p.code === 'FR') return window.NS_BOOKMAKERS || [];
+    var order = (p.affil && p.affil.desktop) || [], seen = {}, out = [];
+    order.forEach(function (s) {
+      if (seen[s]) return; seen[s] = 1;
+      var bk = window.NS_PARTENAIRES[s];
+      if (bk && bk.url) out.push({ slug: s, nom: bk.nom, couleur: bk.couleur,
+        note: '', offre: bk.bonus || 'Bonus de bienvenue', url: bk.url, branded: true });
+    });
+    return out.length ? out : (window.NS_BOOKMAKERS || []);
+  };
+
   window.NS_BONUS_STRIP = function (t, accent) {
     if (!window.NS_GEO) return null;
     var R = React.createElement, p = window.NS_GEO.actif();
@@ -4227,7 +4243,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=647"></script>
+<script src="/app.compiled.js?v=648"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
