@@ -239,7 +239,7 @@ function pageCompetition(p, ligue, donnees) {
         lg ? `<img src="${esc(lg)}" alt="" width="18" height="18" loading="lazy" style="vertical-align:-4px;margin-right:6px"> ` : ''
       }${esc(r.team)}</td><td>${esc(r.played)}</td><td>${esc(r.won)}</td><td>${esc(r.drawn)}</td><td>${esc(r.lost)}</td><td>${esc(r.gd)}</td><td class="pts">${esc(r.pts)}</td></tr>`;
     }).join('');
-    return (g ? `<h2>${esc(g)}</h2>` : '')
+    return (g ? `<h2>${esc(tradGroupe(g))}</h2>` : '')
       + `<table><thead><tr><th>#</th><th class="eq">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${rows}</tbody></table>`;
   }).join('');
 
@@ -320,6 +320,77 @@ function tradCompet(nom) {
   if (/^Super Cup$/i.test(n)) return 'Supercoupe';
   if (/^League Cup$/i.test(n)) return 'Coupe de la Ligue';
   return n;
+}
+
+// Traduit les sous-titres / groupes de classement (phases, poules, conférences).
+// Meme jeu de regles que window.NS_TRAD_GROUPE cote client.
+function tradGroupe(s) {
+  if (!s) return s;
+  let r = String(s);
+  const rules = [
+    [/Conference League Play-?off Group/gi, 'Barrages Ligue Conférence'],
+    [/Copa Libertadores Play-?off/gi, 'Barrage Copa Libertadores'],
+    [/CL\/EL Play-?offs?/gi, 'Barrages LDC/Ligue Europa'],
+    [/Europa League Group/gi, 'Poule Ligue Europa'],
+    [/Championship Round/gi, 'Tour du titre'],
+    [/Championship Group/gi, 'Poule de titre'],
+    [/Relegation Round/gi, 'Tour de relégation'],
+    [/Relegation Group/gi, 'Poule de relégation'],
+    [/Rel\.?\/Prom\.? Play-?offs?/gi, 'Barrages relégation/promotion'],
+    [/Relegation\/Promotion/gi, 'Relégation/Promotion'],
+    [/Promotion Play-?offs?/gi, 'Barrages de promotion'],
+    [/Promotion Round/gi, 'Tour de promotion'],
+    [/Promotion Group/gi, 'Poule de promotion'],
+    [/Middle Play-?offs Group/gi, 'Poule de barrages intermédiaires'],
+    [/Qualification Play-?off/gi, 'Barrage de qualification'],
+    [/Qualifying Play-?off/gi, 'Barrage de qualification'],
+    [/Qualifying Round/gi, 'Tour de qualification'],
+    [/Regular Season/gi, 'Saison régulière'],
+    [/Group Stage/gi, 'Phase de groupes'],
+    [/Winners Stage/gi, 'Phase des vainqueurs'],
+    [/Losers Stage/gi, 'Phase des perdants'],
+    [/Main Round/gi, 'Tour principal'],
+    [/Opening Bottom 6/gi, 'Ouverture — Bas 6'],
+    [/Closing Bottom 6/gi, 'Clôture — Bas 6'],
+    [/Opening Top 6/gi, 'Ouverture — Top 6'],
+    [/Closing Top 6/gi, 'Clôture — Top 6'],
+    [/Opening Round/gi, "Tour d'ouverture"],
+    [/Closing Round/gi, 'Tour de clôture'],
+    [/Lower Table Round/gi, 'Tour bas de tableau'],
+    [/Upper Table Round/gi, 'Tour haut de tableau'],
+    [/Placement Matches/gi, 'Matchs de classement'],
+    [/Placement Round/gi, 'Tour de classement'],
+    [/Intermediate Round/gi, 'Tour intermédiaire'],
+    [/Hexagonal Final/gi, 'Hexagonal final'],
+    [/Final Four/gi, 'Final Four'],
+    [/Eastern Conference/gi, 'Conférence Est'],
+    [/Western Conference/gi, 'Conférence Ouest'],
+    [/\bConference\b/gi, 'Conférence'],
+    [/Qualification Playoff/gi, 'Barrage de qualification'],
+    [/Play-?offs?/gi, 'Barrages'],
+    [/1st Phase/gi, '1re phase'], [/2nd Phase/gi, '2e phase'],
+    [/1st Stage/gi, '1re phase'], [/2nd Stage/gi, '2e phase'], [/First Stage/gi, '1re phase'],
+    [/1st Round/gi, '1er tour'], [/2nd Round/gi, '2e tour'],
+    [/First Amateur Division/gi, 'Première Division Amateur'],
+    [/First Division/gi, 'Première Division'], [/Second Division/gi, 'Deuxième Division'], [/Third Division/gi, 'Troisième Division'],
+    [/1st Division/gi, '1re Division'], [/2nd Division/gi, '2e Division'],
+    [/Torneo Intermedio/gi, 'Tournoi intermédiaire'],
+    [/Torneo Competencia/gi, 'Tournoi de compétition'],
+    [/Tabla Anual/gi, 'Classement annuel'],
+    [/\bPromedios\b/gi, 'Moyennes'],
+    [/Quadrangular/gi, 'Quadrangulaire'],
+    [/\bGROUP\b/g, 'GROUPE'], [/\bGroup\b/gi, 'Groupe'],
+    [/\bRegion\b/gi, 'Région'],
+    [/\bEastern\b/gi, 'Est'], [/\bWestern\b/gi, 'Ouest'],
+    [/\bNorthern\b/gi, 'Nord'], [/\bSouthern\b/gi, 'Sud'],
+    [/Centre-East/gi, 'Centre-Est'],
+    [/\bNorth\b/gi, 'Nord'], [/\bSouth\b/gi, 'Sud'],
+    [/\bEast\b/gi, 'Est'], [/\bWest\b/gi, 'Ouest'],
+    [/\bCentral\b/gi, 'Centre'],
+    [/\bOpening\b/gi, 'Ouverture'], [/\bClosing\b/gi, 'Clôture'],
+  ];
+  rules.forEach((rl) => { r = r.replace(rl[0], rl[1]); });
+  return r.replace(/\s+/g, ' ').replace(/\s+:/g, ' :').trim();
 }
 
 const STATUTS = {

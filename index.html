@@ -3198,6 +3198,79 @@ window.NINJA_AB = (function() {
   }
   window.NS_TRAD_COMPET = traduire;
 
+  // Traduction des sous-titres / groupes de classement (phases, poules,
+  // conférences…) par motifs. Couvre les ~670 valeurs anglaises des données.
+  // Apertura/Clausura conservés (noms de tournois). Les noms propres de
+  // compétition (Premier League, Pro League…) restent inchangés.
+  window.NS_TRAD_GROUPE = function (s) {
+    if (!s) return s;
+    var r = String(s);
+    var rules = [
+      [/Conference League Play-?off Group/gi, 'Barrages Ligue Conférence'],
+      [/Copa Libertadores Play-?off/gi, 'Barrage Copa Libertadores'],
+      [/CL\/EL Play-?offs?/gi, 'Barrages LDC/Ligue Europa'],
+      [/Europa League Group/gi, 'Poule Ligue Europa'],
+      [/Championship Round/gi, 'Tour du titre'],
+      [/Championship Group/gi, 'Poule de titre'],
+      [/Relegation Round/gi, 'Tour de relégation'],
+      [/Relegation Group/gi, 'Poule de relégation'],
+      [/Rel\.?\/Prom\.? Play-?offs?/gi, 'Barrages relégation/promotion'],
+      [/Relegation\/Promotion/gi, 'Relégation/Promotion'],
+      [/Promotion Play-?offs?/gi, 'Barrages de promotion'],
+      [/Promotion Round/gi, 'Tour de promotion'],
+      [/Promotion Group/gi, 'Poule de promotion'],
+      [/Middle Play-?offs Group/gi, 'Poule de barrages intermédiaires'],
+      [/Qualification Play-?off/gi, 'Barrage de qualification'],
+      [/Qualifying Play-?off/gi, 'Barrage de qualification'],
+      [/Qualifying Round/gi, 'Tour de qualification'],
+      [/Regular Season/gi, 'Saison régulière'],
+      [/Group Stage/gi, 'Phase de groupes'],
+      [/Winners Stage/gi, 'Phase des vainqueurs'],
+      [/Losers Stage/gi, 'Phase des perdants'],
+      [/Main Round/gi, 'Tour principal'],
+      [/Opening Bottom 6/gi, 'Ouverture — Bas 6'],
+      [/Closing Bottom 6/gi, 'Clôture — Bas 6'],
+      [/Opening Top 6/gi, 'Ouverture — Top 6'],
+      [/Closing Top 6/gi, 'Clôture — Top 6'],
+      [/Opening Round/gi, "Tour d'ouverture"],
+      [/Closing Round/gi, 'Tour de clôture'],
+      [/Lower Table Round/gi, 'Tour bas de tableau'],
+      [/Upper Table Round/gi, 'Tour haut de tableau'],
+      [/Placement Matches/gi, 'Matchs de classement'],
+      [/Placement Round/gi, 'Tour de classement'],
+      [/Intermediate Round/gi, 'Tour intermédiaire'],
+      [/Hexagonal Final/gi, 'Hexagonal final'],
+      [/Final Four/gi, 'Final Four'],
+      [/Eastern Conference/gi, 'Conférence Est'],
+      [/Western Conference/gi, 'Conférence Ouest'],
+      [/\bConference\b/gi, 'Conférence'],
+      [/Qualification Playoff/gi, 'Barrage de qualification'],
+      [/Play-?offs?/gi, 'Barrages'],
+      [/1st Phase/gi, '1re phase'], [/2nd Phase/gi, '2e phase'],
+      [/1st Stage/gi, '1re phase'], [/2nd Stage/gi, '2e phase'], [/First Stage/gi, '1re phase'],
+      [/1st Round/gi, '1er tour'], [/2nd Round/gi, '2e tour'],
+      [/First Amateur Division/gi, 'Première Division Amateur'],
+      [/First Division/gi, 'Première Division'], [/Second Division/gi, 'Deuxième Division'], [/Third Division/gi, 'Troisième Division'],
+      [/1st Division/gi, '1re Division'], [/2nd Division/gi, '2e Division'],
+      [/Torneo Intermedio/gi, 'Tournoi intermédiaire'],
+      [/Torneo Competencia/gi, 'Tournoi de compétition'],
+      [/Tabla Anual/gi, 'Classement annuel'],
+      [/\bPromedios\b/gi, 'Moyennes'],
+      [/Quadrangular/gi, 'Quadrangulaire'],
+      [/\bGROUP\b/g, 'GROUPE'], [/\bGroup\b/gi, 'Groupe'],
+      [/\bRegion\b/gi, 'Région'],
+      [/\bEastern\b/gi, 'Est'], [/\bWestern\b/gi, 'Ouest'],
+      [/\bNorthern\b/gi, 'Nord'], [/\bSouthern\b/gi, 'Sud'],
+      [/Centre-East/gi, 'Centre-Est'],
+      [/\bNorth\b/gi, 'Nord'], [/\bSouth\b/gi, 'Sud'],
+      [/\bEast\b/gi, 'Est'], [/\bWest\b/gi, 'Ouest'],
+      [/\bCentral\b/gi, 'Centre'],
+      [/\bOpening\b/gi, 'Ouverture'], [/\bClosing\b/gi, 'Clôture'],
+    ];
+    rules.forEach(function (rl) { r = r.replace(rl[0], rl[1]); });
+    return r.replace(/\s+/g, ' ').replace(/\s+:/g, ' :').trim();
+  };
+
   // "2nd Qualifying Round" ne dit pas la meme chose que "Group Stage" : pour
   // une competition internationale, la phase est plus parlante que le mot
   // "International", qui ne distinguait pas un tour preliminaire d'une finale.
@@ -4245,7 +4318,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=650"></script>
+<script src="/app.compiled.js?v=651"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
