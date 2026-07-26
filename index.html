@@ -2241,7 +2241,7 @@ window.NS_renderBookmakers = function(){
       var proprio = LEAGUE_AMBIGUS[_nrmLg(key)];
       if (proprio && _nrmLg(proprio) !== pays) return null;
     }
-    if (!src) src = LEAGUE_LOGOS[key];
+    if (!src) src = LEAGUE_LOGOS[key] || _llNorm()[_nrmLg(key)];
     if (!src) return null;
     return React.createElement('img', {
       src:    src,
@@ -2261,6 +2261,26 @@ window.NS_renderBookmakers = function(){
 
   window.LeagueLogo    = LeagueLogo;
   window.LEAGUE_LOGOS  = LEAGUE_LOGOS;
+
+  // Index normalise (casse/accents) : favoris + recherche resolvaient le logo
+  // par cle EXACTE de LEAGUE_LOGOS -> 22 championnats sans logo pour un simple
+  // ecart de casse ('Fnl Tcheque' vs 'FNL Tcheque', 'Mls' vs 'MLS'...).
+  // Ce fallback normalise resout tout d'un coup et evite les recidives.
+  var _llNrmCache = null;
+  function _llNorm() {
+    if (_llNrmCache) return _llNrmCache;
+    _llNrmCache = {};
+    Object.keys(LEAGUE_LOGOS).forEach(function (k) {
+      var n = _nrmLg(k);
+      if (!(n in _llNrmCache)) _llNrmCache[n] = LEAGUE_LOGOS[k];
+    });
+    return _llNrmCache;
+  }
+  window.NS_hasLeagueLogo = function (name) {
+    if (!name) return false;
+    var key = String(name).split(' · ')[0].trim();
+    return !!(LEAGUE_LOGOS[key] || _llNorm()[_nrmLg(key)]);
+  };
 
   // ── Hockey team logos ─────────────────────────────────────────────────────
   var ESPN_NHL = 'https://a.espncdn.com/i/teamlogos/nhl/500/';
@@ -4416,7 +4436,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=656"></script>
+<script src="/app.compiled.js?v=657"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
