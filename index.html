@@ -3303,20 +3303,34 @@ window.NINJA_AB = (function() {
     var BANDES = {
       FR: ['#0055A4', '#ffffff', '#EF4135'],
       CI: ['#F77F00', '#ffffff', '#009E60'],
-      CM: ['#007A5E', '#CE1126', '#FCD116']
+      CM: ['#007A5E', '#CE1126', '#FCD116'],
+      SN: ['#00853F', '#FDEF42', '#E31B23'],
+      ML: ['#14B53A', '#FCD116', '#CE1126']
     };
+    var ETOILE = { CM: '#FCD116', SN: '#00853F' };
+    var PATH_ETOILE = 'M12 8.4l0.88 2.39 2.54 0.1-1.99 1.57 0.69 2.45L12 13.5l-2.12 1.41 0.69-2.45-1.99-1.57 2.54-0.1z';
     return function (code, taille) {
       var R = React.createElement, s = taille || 20;
-      var b = BANDES[code] || ['#c9c6d4', '#ded9e8', '#c9c6d4'];
       var id = 'nsfl' + (n++);
-      var kids = [
-        R('rect', { key: 0, width: 8, height: 24, fill: b[0] }),
-        R('rect', { key: 1, x: 8, width: 8, height: 24, fill: b[1] }),
-        R('rect', { key: 2, x: 16, width: 8, height: 24, fill: b[2] })
-      ];
-      if (code === 'CM') kids.push(R('path', { key: 's',
-        d: 'M12 8.4l0.88 2.39 2.54 0.1-1.99 1.57 0.69 2.45L12 13.5l-2.12 1.41 0.69-2.45-1.99-1.57 2.54-0.1z',
-        fill: '#FCD116' }));
+      var kids;
+      if (code === 'CD') {
+        // RD Congo : bleu ciel, bande diagonale rouge bordée de jaune, étoile jaune en haut à gauche.
+        kids = [
+          R('rect', { key: 'bg', width: 24, height: 24, fill: '#007FFF' }),
+          R('line', { key: 'y', x1: -3, y1: 27, x2: 27, y2: -3, stroke: '#F7D618', strokeWidth: 7 }),
+          R('line', { key: 'r', x1: -3, y1: 27, x2: 27, y2: -3, stroke: '#CE1021', strokeWidth: 3.8 }),
+          R('path', { key: 'star', fill: '#F7D618',
+            d: 'M6 3.2l0.68 1.87 1.98 0.06-1.57 1.22 0.56 1.92L6 9.15l-1.65 1.12 0.56-1.92-1.57-1.22 1.98-0.06z' })
+        ];
+      } else {
+        var b = BANDES[code] || ['#c9c6d4', '#ded9e8', '#c9c6d4'];
+        kids = [
+          R('rect', { key: 0, width: 8, height: 24, fill: b[0] }),
+          R('rect', { key: 1, x: 8, width: 8, height: 24, fill: b[1] }),
+          R('rect', { key: 2, x: 16, width: 8, height: 24, fill: b[2] })
+        ];
+        if (ETOILE[code]) kids.push(R('path', { key: 's', d: PATH_ETOILE, fill: ETOILE[code] }));
+      }
       return R('svg', { width: s, height: s, viewBox: '0 0 24 24', 'aria-hidden': 'true',
         style: { borderRadius: '50%', boxShadow: 'inset 0 0 0 1px rgba(20,18,28,0.12)', flexShrink: 0, display: 'block' } },
         R('defs', null, R('clipPath', { id: id }, R('circle', { cx: 12, cy: 12, r: 12 }))),
@@ -3448,6 +3462,12 @@ window.NINJA_AB = (function() {
     { code:'CI', nom:"C\u00f4te d'Ivoire", drapeau:'\uD83C\uDDE8\uD83C\uDDEE', cotes:[11,8,7,2,32,1],
       affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
     { code:'CM', nom:'Cameroun',       drapeau:'\uD83C\uDDE8\uD83C\uDDF2', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
+    { code:'SN', nom:'S\u00e9n\u00e9gal', drapeau:'\uD83C\uDDF8\uD83C\uDDF3', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
+    { code:'CD', nom:'RD Congo', drapeau:'\uD83C\uDDE8\uD83C\uDDE9', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } },
+    { code:'ML', nom:'Mali', drapeau:'\uD83C\uDDF2\uD83C\uDDF1', cotes:[11,8,7,2,32,1],
       affil:{ mobile:['melbet','starz888'], desktop:['win1','melbet','starz888'] } }
   ];
   window.NS_GEO = (function () {
