@@ -393,6 +393,13 @@ function tradGroupe(s) {
   return r.replace(/\s+/g, ' ').replace(/\s+:/g, ' :').trim();
 }
 
+// Fin estimee d'un match (coup d'envoi + 2 h) pour le champ endDate du
+// SportsEvent. Repli sur la date de debut si la date est invalide.
+function finEvt(d) {
+  try { const t = new Date(d).getTime(); return isNaN(t) ? d : new Date(t + 7200000).toISOString(); }
+  catch (e) { return d; }
+}
+
 const STATUTS = {
   NS: ['À venir', 'https://schema.org/EventScheduled'],
   '1H': ['1re mi-temps', 'https://schema.org/EventScheduled'],
@@ -924,9 +931,18 @@ async function pageMatch(slugComplet, onglet) {
     jsonld: o.id === 'resume' ? [{
       '@context': 'https://schema.org', '@type': 'SportsEvent',
       name: dom + ' - ' + ext, sport: 'Football',
+      description: 'Match de football ' + dom + ' - ' + ext + ' en ' + compet
+        + ' : résultat, cotes, compositions et statistiques.',
       startDate: f.fixture.date,
+      endDate: finEvt(f.fixture.date),
       eventStatus: statutLd,
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      image: [SITE + '/assets/og-ninjascores.png'],
+      organizer: { '@type': 'SportsOrganization', name: compet },
+      performer: [
+        { '@type': 'SportsTeam', name: dom },
+        { '@type': 'SportsTeam', name: ext },
+      ],
       url: SITE + url,
       homeTeam: { '@type': 'SportsTeam', name: dom, sport: 'Football' },
       awayTeam: { '@type': 'SportsTeam', name: ext, sport: 'Football' },
@@ -938,14 +954,32 @@ async function pageMatch(slugComplet, onglet) {
       location: (f.fixture.venue && f.fixture.venue.name)
         ? { '@type': 'Place', name: f.fixture.venue.name,
             address: { '@type': 'PostalAddress', addressLocality: f.fixture.venue.city || '' } }
-        : { '@type': 'Place', name: 'Stade non communiqué' },
+        : { '@type': 'Place', name: 'Stade non communiqué',
+            address: { '@type': 'PostalAddress', addressLocality: '' } },
     }] : (propre ? [{
       '@context': 'https://schema.org', '@type': 'SportsEvent',
-      name: dom + ' - ' + ext, sport: 'Football', startDate: f.fixture.date,
-      eventStatus: statutLd, url: SITE + url,
+      name: dom + ' - ' + ext, sport: 'Football',
+      description: 'Match de football ' + dom + ' - ' + ext + ' en ' + compet
+        + ' : résultat, cotes, compositions et statistiques.',
+      startDate: f.fixture.date,
+      endDate: finEvt(f.fixture.date),
+      eventStatus: statutLd,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      url: SITE + url,
+      image: [SITE + '/assets/og-ninjascores.png'],
+      organizer: { '@type': 'SportsOrganization', name: compet },
+      performer: [
+        { '@type': 'SportsTeam', name: dom },
+        { '@type': 'SportsTeam', name: ext },
+      ],
       homeTeam: { '@type': 'SportsTeam', name: dom, sport: 'Football' },
       awayTeam: { '@type': 'SportsTeam', name: ext, sport: 'Football' },
       superEvent: { '@type': 'SportsOrganization', name: compet, sport: 'Football' },
+      location: (f.fixture.venue && f.fixture.venue.name)
+        ? { '@type': 'Place', name: f.fixture.venue.name,
+            address: { '@type': 'PostalAddress', addressLocality: f.fixture.venue.city || '' } }
+        : { '@type': 'Place', name: 'Stade non communiqué',
+            address: { '@type': 'PostalAddress', addressLocality: '' } },
     }] : []),
   }) };
 }
