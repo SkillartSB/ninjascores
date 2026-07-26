@@ -3231,13 +3231,18 @@ window.NINJA_AB = (function() {
     return function () {
       if (window.NS_TEAMS_INDEX) return Promise.resolve(window.NS_TEAMS_INDEX);
       if (p) return p;
-      p = fetch('/data/teams-index.json?v=1')
+      p = fetch('/data/teams-index.json?v=2')
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (a) { window.NS_TEAMS_INDEX = a || []; return window.NS_TEAMS_INDEX; })
         .catch(function () { window.NS_TEAMS_INDEX = []; return window.NS_TEAMS_INDEX; });
       return p;
     };
   })();
+  // Préchargement différé (idle) : l'index est prêt pour la barre de recherche
+  // du haut comme pour « Ajouter un favori », quel que soit le point d'entrée.
+  try { (window.requestIdleCallback || function (f) { setTimeout(f, 1800); })(function () {
+    if (window.NS_ensureTeamsIndex) window.NS_ensureTeamsIndex();
+  }); } catch (e) {}
 
   // Traduction des sous-titres / groupes de classement (phases, poules,
   // conférences…) par motifs. Couvre les ~670 valeurs anglaises des données.
@@ -4359,7 +4364,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=654"></script>
+<script src="/app.compiled.js?v=656"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
