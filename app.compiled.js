@@ -488,29 +488,29 @@ React.createElement('div',{style:{fontSize:13,color:t.textSec,lineHeight:1.6,max
 
 
 const NS_LEGAL_DOCS={
-mentions:{titre:'Mentions légales',sections:[
-{h:'Éditeur du site',p:'NinjaScores — [À COMPLÉTER : raison sociale, forme juridique, capital social]\nSiège social : [À COMPLÉTER : adresse postale complète]\nSIREN / SIRET : [À COMPLÉTER]\nNuméro de TVA intracommunautaire : [À COMPLÉTER]\nContact : '+NS_MAIL_CONTACT},
-{h:'Directeur de la publication',p:'[À COMPLÉTER : nom et prénom du responsable de la publication]'},
+mentions:{titre:'Mentions légales',maj:'27 juillet 2026',sections:[
+{h:'Éditeur du site',p:'NinjaScores — édité par SKILLART GROUP LLC\nSiège social : 30 N Gould St Ste 100, Sheridan, WY 82801, États-Unis\nEmployer Identification Number (EIN) : 32-0822485\nNuméro de TVA intracommunautaire : non applicable (société établie hors Union européenne)\nContact : '+NS_MAIL_CONTACT},
+{h:'Directeur de la publication',p:'Jules Mathis'},
 {h:'Hébergeur',p:'Vercel Inc.\n340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis\nvercel.com'},
 {h:'Propriété intellectuelle',p:'L\'ensemble des contenus du site (textes, graphismes, logo, interface) est protégé par le droit d\'auteur. Les noms et logos des compétitions, clubs et opérateurs cités appartiennent à leurs propriétaires respectifs et sont utilisés à titre informatif.'}]},
-cgu:{titre:'Conditions générales d\'utilisation',sections:[
+cgu:{titre:'Conditions générales d\'utilisation',maj:'27 juillet 2026',sections:[
 {h:'Objet du service',p:'NinjaScores est un service éditorial d\'information sportive : scores en direct, calendriers, classements, statistiques et analyses. NinjaScores n\'est pas un opérateur de jeux d\'argent et ne prend aucun pari.'},
 {h:'Liens affiliés et partenariats',p:'Certains liens vers des opérateurs de paris sportifs sont des liens affiliés : NinjaScores peut percevoir une rémunération lorsqu\'un utilisateur s\'inscrit via ces liens. Cette rémunération n\'influence pas le contenu éditorial ni les analyses publiées. Les opérateurs cités sont titulaires d\'un agrément de l\'Autorité nationale des jeux.'},
 {h:'Nature des pronostics',p:'Les pronostics, indices de confiance et statistiques sont fournis à titre informatif et ne constituent ni un conseil en investissement, ni une garantie de résultat. Aucun gain ne peut être garanti.'},
-{h:'Accès au service',p:'Le service est accessible gratuitement. Les paris sportifs sont strictement interdits aux personnes mineures. [À COMPLÉTER : conditions de création de compte, comportements interdits, suspension]'},
-{h:'Responsabilité',p:'[À COMPLÉTER : clause de limitation de responsabilité sur l\'exactitude des données, la disponibilité du service et les sites tiers]'},
-{h:'Droit applicable',p:'[À COMPLÉTER : droit applicable et juridiction compétente]'}]},
+{h:'Accès au service',p:'Le service est accessible gratuitement, sans création de compte obligatoire à ce jour. Les paris sportifs sont strictement interdits aux personnes mineures. NinjaScores se réserve le droit de suspendre l\'accès au service à tout utilisateur dont le comportement porterait atteinte au bon fonctionnement du site, à la sécurité d\'autrui ou aux droits de tiers.'},
+{h:'Responsabilité',p:'NinjaScores s\'efforce de fournir des informations sportives (scores, statistiques, cotes, pronostics) exactes et à jour, en partie issues de fournisseurs de données tiers, sans garantir leur exhaustivité ni leur exactitude absolue. NinjaScores ne saurait être tenu responsable des interruptions ou dysfonctionnements du service, ni du contenu des sites tiers accessibles depuis des liens présents sur le site, y compris ceux des opérateurs de paris partenaires.'},
+{h:'Droit applicable',p:'Les présentes conditions sont soumises au droit de l\'État du Wyoming (États-Unis), lieu d\'établissement de la société éditrice. Sous réserve des dispositions d\'ordre public impératives applicables dans le pays de résidence de l\'utilisateur, tout litige relève de la compétence des tribunaux du Wyoming.'}]},
 cgv:{titre:'Conditions générales de vente',sections:[
 {h:'Statut actuel',p:'NinjaScores ne commercialise aujourd\'hui aucun produit ni service payant : l\'accès est entièrement gratuit et financé par la publicité et l\'affiliation.'},
 {h:'À compléter avant toute offre payante',p:'[À COMPLÉTER : prix, modalités de paiement, droit de rétractation, durée d\'abonnement, résiliation, service après-vente]\n\nCette page devra être rédigée avant la mise en ligne de toute offre payante.'}]},
-confidentialite:{titre:'Politique de confidentialité',sections:[
-{h:'Données collectées',p:'[À COMPLÉTER : catégories de données, finalités, base légale au sens du RGPD]'},
-{h:'Conservation',p:'[À COMPLÉTER : durées de conservation par catégorie]'},
-{h:'Vos droits',p:'Vous disposez d\'un droit d\'accès, de rectification, d\'effacement, de portabilité et d\'opposition sur vos données. Pour l\'exercer : '+NS_MAIL_CONTACT+'\n\n[À COMPLÉTER : coordonnées du DPO le cas échéant, autorité de contrôle CNIL]'},
-{h:'Sous-traitants',p:'[À COMPLÉTER : hébergeur, régie publicitaire, outils de mesure d\'audience]'}]},
-cookies:{titre:'Politique de cookies',sections:[
-{h:'Cookies utilisés',p:'[À COMPLÉTER : liste des cookies, finalité, durée, éditeur]'},
-{h:'Gestion du consentement',p:'[À COMPLÉTER : modalités de recueil et de retrait du consentement]'}]}};
+confidentialite:{titre:'Politique de confidentialité',maj:'27 juillet 2026',sections:[
+{h:'Données collectées',p:'NinjaScores ne demande la création d\'aucun compte à ce jour et ne collecte aucune donnée d\'identification directe (nom, e-mail, mot de passe...).\n\nLes seules données conservées le sont localement sur votre appareil (stockage local du navigateur), et ne sont jamais transmises à nos serveurs : vos pronostics enregistrés dans « Mes Pronostics », votre préférence de pays (pour adapter les cotes et partenaires affichés) et vos préférences d\'affichage.\n\nComme tout hébergeur web, notre prestataire technique (Vercel) collecte de façon standard les journaux techniques de connexion (adresse IP, type de navigateur, pages consultées, horodatage), nécessaires au fonctionnement et à la sécurité du service — base légale : intérêt légitime.\n\nSi des cookies publicitaires (Google AdSense) sont activés, des données de navigation seront partagées avec Google à des fins de personnalisation publicitaire, sur la base de votre consentement — voir notre Politique de cookies.'},
+{h:'Conservation',p:'Les données stockées localement sur votre appareil (pronostics, préférences) sont conservées jusqu\'à ce que vous les supprimiez vous-même ou que votre navigateur les efface. Les journaux techniques de connexion conservés par notre hébergeur le sont pour la durée standard appliquée par Vercel Inc., à des fins de sécurité et de diagnostic.'},
+{h:'Vos droits',p:'Vous disposez d\'un droit d\'accès, de rectification, d\'effacement, de portabilité et d\'opposition sur vos données. Pour l\'exercer : '+NS_MAIL_CONTACT+'\n\nAucun délégué à la protection des données (DPO) n\'est désigné à ce stade : toute demande relative à vos données peut être adressée directement à l\'adresse ci-dessus. Si vous résidez dans l\'Union européenne, vous pouvez également introduire une réclamation auprès de l\'autorité de contrôle compétente (la CNIL en France).'},
+{h:'Sous-traitants',p:'Hébergement : Vercel Inc. (340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis)\nDonnées sportives (scores, classements, cotes) : API-Football / api-sports.io — aucune donnée personnelle ne lui est transmise\nRégie publicitaire : Google AdSense (Google Ireland Ltd), une fois activée — voir notre Politique de cookies'}]},
+cookies:{titre:'Politique de cookies',maj:'27 juillet 2026',sections:[
+{h:'Cookies utilisés',p:'NinjaScores n\'utilise aucun cookie de mesure d\'audience à ce jour. Le site utilise uniquement le stockage local de votre navigateur (localStorage), qui n\'est pas un cookie au sens strict et n\'est jamais transmis à nos serveurs, pour mémoriser vos pronostics, votre pays et vos préférences d\'affichage.\n\nNinjaScores prévoit d\'intégrer Google AdSense pour financer l\'accès gratuit au service. Une fois activés, les cookies publicitaires de Google et de ses partenaires permettront de personnaliser les annonces affichées sur la base de votre navigation. Cette section sera mise à jour avec la liste précise des cookies déposés dès l\'activation effective d\'AdSense.'},
+{h:'Gestion du consentement',p:'Tant qu\'aucun cookie publicitaire ou de mesure d\'audience n\'est actif, aucun consentement n\'est requis au titre de la réglementation applicable : les données stockées localement sont strictement nécessaires au fonctionnement du service.\n\nDès l\'activation de Google AdSense, un bandeau de consentement conforme au RGPD et à la directive ePrivacy sera mis en place, permettant d\'accepter, refuser ou personnaliser les cookies publicitaires avant tout dépôt sur votre appareil.'}]}};
 
 const LegalScreen=({doc,accent,t,isDark,wide,onNav})=>{
 var d=NS_LEGAL_DOCS[doc]||NS_LEGAL_DOCS.mentions;
@@ -524,8 +524,8 @@ return React.createElement('div',{className:'screen-enter',style:{flex:1,display
 padding:wide?'20px 16px 40px':'14px 16px 30px'}},
 React.createElement('h1',{style:{fontSize:wide?26:20,fontWeight:800,color:t.text,marginBottom:6}},d.titre),
 React.createElement('div',{style:{fontSize:12,color:t.textSec,marginBottom:18}},
-'Dernière mise à jour : [À COMPLÉTER]'),
-React.createElement('div',{style:{background:'#FFE24D',borderRadius:12,padding:'12px 14px',marginBottom:20,
+d.maj?('Dernière mise à jour : '+d.maj):'Document en cours de rédaction'),
+d.sections.some(function(s){return /\[À COMPLÉTER/.test(s.p);})&&React.createElement('div',{style:{background:'#FFE24D',borderRadius:12,padding:'12px 14px',marginBottom:20,
 fontSize:12,lineHeight:1.5,color:'#111',fontWeight:600}},
 'Document en cours de rédaction. Les passages surlignés doivent être complétés et l\'ensemble validé juridiquement avant publication.'),
 React.createElement('div',{style:{background:t.card,borderRadius:16,border:'1px solid '+t.border,
