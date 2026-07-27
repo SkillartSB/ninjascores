@@ -317,6 +317,16 @@
   .bk-cta-secondary { display: block; width: 100%; background: transparent; border: 1.5px solid rgba(97,51,224,0.4); border-radius: 12px; padding: 11px; color: #6133E0; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; text-align: center; transition: background 0.15s; }
   .bk-cta-secondary:hover { background: rgba(97,51,224,0.06); }
   .bk-disclaimer { font-size: 9px; color: rgba(0,0,0,0.4); padding: 0 14px 12px; line-height: 1.4; }
+  /* Variante Afrique (partenaires 1WIN/Melbet/888Starz) : meme carte .bk-card,
+     mais logo sans boite (deja marque/colore) + libelle offre au lieu des
+     etoiles/avis, comme dans l'onglet Cotes boostees. */
+  .bk-card-top-africa { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid rgba(0,0,0,0.07); }
+  .bk-logo-plain { display: flex; align-items: center; flex-shrink: 0; }
+  .bk-logo-plain img { display: block; max-height: 26px; width: auto; }
+  .bk-partner-badge { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; color: #6133E0; background: rgba(97,51,224,0.10); padding: 3px 9px; border-radius: 6px; flex-shrink: 0; }
+  .bk-offer-africa { padding: 12px 14px 14px; }
+  .bk-offer-label { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(0,0,0,0.4); margin-bottom: 4px; }
+  .bk-offer-value { font-size: 18px; font-weight: 900; color: #6133E0; line-height: 1.15; }
 
   /* ══ MONEY / CREATOR PANEL ══ */
   .mn-overlay {
@@ -561,6 +571,29 @@ window.NS_BOOKMAKERS = [
 /* Le panneau 🎁 est genere depuis ce tableau : une seule source a maintenir. */
 window.NS_renderBookmakers = function(){
   var el = document.getElementById('bk-list'); if(!el) return;
+  var geo = window.NS_GEO && window.NS_GEO.actif();
+  if (geo && geo.code !== 'FR') {
+    // Hors France : partenaires reels du pays actif (Melbet/1WIN/888Starz),
+    // meme source que l'onglet "Cotes boostees" (window.NS_BONUS_LIST) —
+    // pas de note/avis ni d'atouts inventes, juste le bonus reel + le lien.
+    var partenaires = (window.NS_BONUS_LIST ? window.NS_BONUS_LIST() : []);
+    el.innerHTML = partenaires.map(function(b){
+      var p = (window.NS_PARTENAIRES && window.NS_PARTENAIRES[b.slug]) || {};
+      var logoHtml = p.logo
+        ? '<img src="'+p.logo+'" alt="'+b.nom+'"'+(p.logoBleed ? ' style="border-radius:6px"' : '')+'>'
+        : '<span style="font-weight:800;font-size:18px;color:'+b.couleur+'">'+b.nom+'</span>';
+      return '<div class="bk-card">'
+        + '<div class="bk-card-top-africa"><div class="bk-logo-plain">'+logoHtml+'</div>'
+        + '<span class="bk-partner-badge">PARTENAIRE</span></div>'
+        + '<div class="bk-offer-africa"><div class="bk-offer-label">Offre de bienvenue</div>'
+        + '<div class="bk-offer-value">'+b.offre+'</div></div>'
+        + '<div class="bk-cta-wrap">'
+        + '<a class="bk-cta" style="display:block;text-decoration:none;box-sizing:border-box;background:'+b.couleur+'"'
+        + ' href="'+b.url+'" target="_blank" rel="noopener sponsored">Parier chez '+b.nom+' →</a>'
+        + '</div></div>';
+    }).join('');
+    return;
+  }
   el.innerHTML = window.NS_BOOKMAKERS.map(function(b){
     return '<div class="bk-card">'
       + '<div class="bk-card-top"><div class="bk-logo-rating">'
