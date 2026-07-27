@@ -803,7 +803,7 @@ window.NS_renderBookmakers = function(){
       <div class="value" id="prono-total-odds">—</div>
     </div>
     <button class="prono-bet-btn" id="prono-bet-btn" disabled onclick="betNow()">
-      <span>Parier chez Betclic</span>
+      <span>Découvrir l'offre</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </button>
     <p class="prono-disclaimer">Jouer comporte des risques. Réservé aux +18 ans. Le jeu excessif est dangereux. Appelez le 09 74 75 13 13 (appel non surtaxé).</p>
@@ -5027,8 +5027,10 @@ window.NS_pulse = function(x, y){
   };
 
   window.betNow = function() {
-    // Affiliate link — à remplacer par le vrai lien affilié Betclic
-    window.open('https://www.betclic.fr', '_blank');
+    // Lien affilié réel du partenaire actif (GEO-aware, comme le reste du
+    // site) : Winamax en France, 1WIN/Melbet/888Starz en Afrique.
+    var p = (window.NS_AFFIL && window.NS_AFFIL()) || {};
+    window.open(p.url || 'https://winamax.fr', '_blank', 'noopener');
   };
 
   // Init badge count on load
