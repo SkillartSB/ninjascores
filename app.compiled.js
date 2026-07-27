@@ -282,13 +282,13 @@ p.lgs=p.lgs.filter(function(l){return !NS_EST_FEMININ(l);});
 var carte=function(titre,contenu){
 return React.createElement('div',{style:{background:t.card,borderRadius:14,border:'1px solid '+t.border,overflow:'hidden',marginBottom:14}},
 React.createElement('div',{style:{padding:'13px 14px 10px',fontSize:14,fontWeight:800,color:t.text}},titre),contenu);};
-var ligneLigue=function(co,lg,i,n){
+var ligneLigue=function(co,lg,i,n,fr){
 return React.createElement('button',{key:lg,onClick:function(){onLeague({kind:'domestic',country:co,league:lg});NS_TOP();},
 style:{display:'flex',alignItems:'center',gap:9,width:'100%',padding:'8px 14px 8px 44px',border:'none',
 borderTop:'1px solid '+t.divider,background:isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.015)',
 cursor:'pointer',fontFamily:'inherit',textAlign:'left',fontSize:12.5,fontWeight:600,color:t.textSec},
 onMouseEnter:function(e){e.currentTarget.style.color=accent;},
-onMouseLeave:function(e){e.currentTarget.style.color=t.textSec;}},NS_LIGUE_LBL(lg));};
+onMouseLeave:function(e){e.currentTarget.style.color=t.textSec;}},window.LeagueLogo&&React.createElement(window.LeagueLogo,{name:lg,country:fr,size:18}),NS_LIGUE_LBL(lg));};
 return React.createElement('aside',{className:'ns-side',style:{width:250,flexShrink:0,height:'100%',overflowY:'auto',padding:'16px 12px',borderRight:'1px solid '+t.border,background:t.bg}},
 carte('Top championnats',
 NS_TOP_LEAGUES.map(function(lg){
@@ -318,7 +318,7 @@ React.createElement('span',{style:{fontSize:10,color:t.textTer,fontWeight:700,fl
 React.createElement('svg',{width:13,height:13,viewBox:'0 0 24 24',fill:'none',stroke:t.textTer,strokeWidth:2.4,strokeLinecap:'round',strokeLinejoin:'round',
 style:{flexShrink:0,transform:ouvert?'rotate(90deg)':'none',transition:'transform 0.18s'}},
 React.createElement('polyline',{points:'9 18 15 12 9 6'}))),
-ouvert?x.lgs.map(function(lg,i){return ligneLigue(x.co,lg,i,x.lgs.length);}):null);}))));};
+ouvert?x.lgs.map(function(lg,i){return ligneLigue(x.co,lg,i,x.lgs.length,x.fr);}):null);}))));};
 
 const NSRightRail=({t,accent,isDark,onNav})=>{
 var picks=[];
