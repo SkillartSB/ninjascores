@@ -589,7 +589,7 @@ window.NS_renderBookmakers = function(){
         + '<div class="bk-offer-value">'+b.offre+'</div></div>'
         + '<div class="bk-cta-wrap">'
         + '<a class="bk-cta" style="display:block;text-decoration:none;box-sizing:border-box;background:'+b.couleur+'"'
-        + ' href="'+b.url+'" target="_blank" rel="noopener sponsored">Parier chez '+b.nom+' →</a>'
+        + ' href="'+b.url+'" target="_blank" rel="noopener sponsored">Découvrir l\'offre →</a>'
         + '</div></div>';
     }).join('');
     return;
@@ -3633,7 +3633,7 @@ window.NINJA_AB = (function() {
         R('div', { style: { padding: '12px 14px' } },
           R('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: t.textTer, marginBottom: 4 } }, 'Offre de bienvenue'),
           R('div', { style: { fontSize: 19, fontWeight: 900, color: accent, lineHeight: 1.05, marginBottom: 12 } }, bk.bonus || 'Bonus de bienvenue'),
-          R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'Parier chez ' + bk.nom + ' \u2192'))));
+          R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'D\u00e9couvrir l\u2019offre \u2192'))));
     });
     return out;
   };
@@ -3714,7 +3714,7 @@ window.NINJA_AB = (function() {
             R('div', { style:{ fontSize:14, fontWeight:900, color:accent, lineHeight:1.1, marginBottom:9,
               minHeight:31 } }, bk.bonus || 'Bonus de bienvenue'),
             R('div', { style:{ background:bk.couleur, color:window.NS_TXTON(bk.couleur), fontWeight:800,
-              fontSize:12, borderRadius:9, padding:'8px', textAlign:'center' } }, 'Parier \u2192')));
+              fontSize:12, borderRadius:9, padding:'8px', textAlign:'center' } }, 'Voir l\u2019offre \u2192')));
       }));
   };
 
@@ -4489,7 +4489,7 @@ window.NINJA_AB = (function() {
   };
 })();
 </script>
-<script src="/app.compiled.js?v=658"></script>
+<script src="/app.compiled.js?v=659"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -4829,8 +4829,25 @@ window.NS_pulse = function(x, y){
 <!-- ══ NAV INTERACTIONS ══ -->
 <script>
 (function() {
+  // ── Detection TWA (app installee depuis le Play Store) ──
+  // Chrome ajoute ce referrer specifique quand la page est lancee depuis une
+  // Trusted Web Activity (l'app "native" packagee pour le store). Sur le web
+  // classique (ninjascores.com dans un navigateur), document.referrer ne
+  // commence jamais par ce schema.
+  window.NS_isTWA = function () {
+    try { return document.referrer.indexOf('android-app://') === 0; } catch (e) { return false; }
+  };
+
   // ── Bookmakers panel ──
+  // Sur l'app Play Store (TWA), la promotion des partenaires paris sort de
+  // l'app vers un navigateur externe (meme logique que Flashscore) au lieu
+  // d'ouvrir un panneau in-app avec CTA de mise. Sur le web classique, le
+  // panneau in-app reste inchange.
   window.openBookmakers = function() {
+    if (window.NS_isTWA && window.NS_isTWA()) {
+      window.open('https://ninjascores.com/pronostics/', '_blank', 'noopener');
+      return;
+    }
     // Mention ANJ (jeu responsable FR) : uniquement en France.
     try { var b = document.querySelector('#bk-overlay .anj-banner');
       if (b) b.style.display = (window.NS_GEO && NS_GEO.actif().code !== 'FR') ? 'none' : ''; } catch (e) {}
