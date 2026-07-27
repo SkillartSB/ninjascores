@@ -806,7 +806,7 @@ window.NS_renderBookmakers = function(){
       <span>Découvrir l'offre</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </button>
-    <p class="prono-disclaimer">Jouer comporte des risques. Réservé aux +18 ans. Le jeu excessif est dangereux. Appelez le 09 74 75 13 13 (appel non surtaxé).</p>
+    <p class="prono-disclaimer" id="prono-disclaimer">Jouer comporte des risques. Réservé aux +18 ans. Le jeu excessif est dangereux. Appelez le 09 74 75 13 13 (appel non surtaxé).</p>
   </div>
 </div>
 
@@ -4952,6 +4952,15 @@ window.NS_pulse = function(x, y){
 
   // ── Mes Pronostics panel ──
   var pronos = JSON.parse(localStorage.getItem('ns_pronos') || '[]');
+
+  // Le numero ANJ (09 74 75 13 13) est un numero francais : reserve au
+  // marche FR. Hors France, mention generique de jeu responsable.
+  try {
+    var _pd = document.getElementById('prono-disclaimer');
+    if (_pd && window.NS_GEO && NS_GEO.actif().code !== 'FR') {
+      _pd.textContent = 'Jouer responsable -18 ans';
+    }
+  } catch (e) {}
 
   window.openPronoPanel = function(e) {
     if (e) e.preventDefault();
