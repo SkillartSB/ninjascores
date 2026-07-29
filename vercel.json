@@ -3,7 +3,8 @@
   "trailingSlash": true,
   "regions": ["fra1"],
   "functions": {
-    "api/transferts.js": { "maxDuration": 60 }
+    "api/transferts.js": { "maxDuration": 60 },
+    "api/archive-matches.js": { "maxDuration": 60 }
   },
   "redirects": [
     {
@@ -162,6 +163,46 @@
     },
     {
       "source": "/favoris",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mentions-legales/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mentions-legales",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cgu/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cgu",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/confidentialite/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/confidentialite",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cookies/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cookies",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cgv/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cgv",
       "destination": "/index.html"
     }
   ]

@@ -1,0 +1,27 @@
+# Archivage permanent des matchs terminés (résultats, compos, stats), toutes
+# les 10 minutes.
+#
+# Même principe que capture-mt.yml : le dépôt étant PUBLIC, GitHub Actions
+# offre des minutes illimitées, on s'en sert comme horloge. Le job se
+# contente d'appeler /api/archive-matches (qui tourne sur Vercel avec la clé
+# API-Football et les identifiants Supabase) — aucun secret nécessaire ici.
+
+name: Archivage des matchs
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: archive-matches
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher l'archivage
+        run: |
+          echo "Appel de l'endpoint d'archivage…"
+          curl -sS -m 55 "https://ninjascores.com/api/archive-matches/" -w "\nHTTP %{http_code}\n"
