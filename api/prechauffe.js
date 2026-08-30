@@ -105,7 +105,13 @@ export default async function handler(req, res) {
     for (const t of equipes) {
       if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
       await via('fixtures&team=' + t + '&last=10'); await dormir(PAUSE_MS);
-      resume.appels++;
+      // Chemin « compo probable » de NS_LINEUP : le dernier match joue, puis
+      // sa feuille de match. Cles distinctes de last=10 — les chauffer aussi,
+      // sinon l'onglet Compo reste au placeholder avant l'heure officielle.
+      const dernier = await via('fixtures&team=' + t + '&last=1'); await dormir(PAUSE_MS);
+      const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
+      if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await dormir(PAUSE_MS); }
+      resume.appels += fidDernier ? 3 : 2;
     }
 
     res.status(200).json(resume);
