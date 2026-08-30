@@ -29,4 +29,8 @@ jobs:
       - name: Declencher le prechauffage
         run: |
           echo "Appel de l'endpoint de prechauffage…"
-          curl -sS -m 55 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"
+          # -m 290 : depuis l'extension a toutes les ligues, l'endpoint peut
+          # travailler jusqu'a ~280 s (maxDuration 300). Avec l'ancien -m 55,
+          # curl abandonnait a 55 s et le job etait marque "failed" a chaque
+          # passage alors que la chauffe continuait cote Vercel.
+          curl -sS -m 290 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"
