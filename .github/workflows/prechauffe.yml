@@ -1,0 +1,32 @@
+# Préchauffage du cache des pages match, toutes les 30 minutes.
+#
+# Même mécanique que capture-mt : le plan Vercel limite les crons à 1/jour,
+# GitHub Actions sert d'horloge. L'endpoint /api/prechauffe (Vercel) chauffe
+# le cache Redis du proxy pour les matchs des compétitions couvertes qui
+# démarrent dans les 3 heures : cotes, confrontations, forme, compos,
+# blessés. Idempotent — une clé encore en cache ne coûte aucun appel amont,
+# chaque passage ne repaye que ce qui a expiré.
+#
+# Pourquoi 30 min : la TTL la plus courte des blocs chauffés est 30 min
+# (cotes, compos). Plus fréquent ne rafraîchirait rien de plus ; moins
+# fréquent laisserait des trous.
+
+name: Prechauffage pages match
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: prechauffe
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Declencher le prechauffage
+        run: |
+          echo "Appel de l'endpoint de prechauffage…"
+          curl -sS -m 55 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"

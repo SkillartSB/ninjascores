@@ -1,12 +1,50 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": true,
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "functions": {
-    "api/transferts.js": { "maxDuration": 60 },
-    "api/archive-matches.js": { "maxDuration": 60 }
+    "api/transferts.js": {
+      "maxDuration": 60
+    },
+    "api/archive-matches.js": {
+      "maxDuration": 60
+    },
+    "api/push-goals.js": {
+      "maxDuration": 60
+    },
+    "api/cron-articles.mjs": {
+      "maxDuration": 300
+    },
+    "api/transfert.mjs": {
+      "maxDuration": 60
+    },
+    "api/prechauffe.js": {
+      "maxDuration": 60
+    }
   },
+  "crons": [
+    {
+      "path": "/api/push-goals/",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron-articles/",
+      "schedule": "0 5 * * *"
+    }
+  ],
   "redirects": [
+    {
+      "source": "/football/pronostics/",
+      "destination": "/pronostics/",
+      "permanent": true
+    },
+    {
+      "source": "/football/pronostics",
+      "destination": "/pronostics/",
+      "permanent": true
+    },
     {
       "source": "/(.*)",
       "has": [
@@ -39,6 +77,15 @@
       ]
     },
     {
+      "source": "/assets/inline/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {
@@ -46,12 +93,216 @@
           "value": "public, max-age=604800"
         }
       ]
+    },
+    {
+      "source": "/data/(player-photos|teams-index|mv-history|league-ids).json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/data/goooall.webp",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
+      "source": "/api/sante/",
+      "destination": "/api/sante"
+    },
+    {
+      "source": "/api/sante",
+      "destination": "/api/sante"
+    },
+    {
+      "source": "/en/football/prediction/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=en"
+    },
+    {
+      "source": "/en/football/prediction/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=en"
+    },
+    {
+      "source": "/en/predictions/",
+      "destination": "/api/pronostics-liste?lang=en"
+    },
+    {
+      "source": "/en/predictions",
+      "destination": "/api/pronostics-liste?lang=en"
+    },
+    {
+      "source": "/sitemap-predictions-en.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=en"
+    },
+    {
+      "source": "/pt/futebol/prognostico/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=pt"
+    },
+    {
+      "source": "/pt/futebol/prognostico/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=pt"
+    },
+    {
+      "source": "/pt/prognosticos/",
+      "destination": "/api/pronostics-liste?lang=pt"
+    },
+    {
+      "source": "/pt/prognosticos",
+      "destination": "/api/pronostics-liste?lang=pt"
+    },
+    {
+      "source": "/sitemap-prognosticos-pt.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=pt"
+    },
+    {
+      "source": "/br/futebol/palpite/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=br"
+    },
+    {
+      "source": "/br/futebol/palpite/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=br"
+    },
+    {
+      "source": "/br/palpites/",
+      "destination": "/api/pronostics-liste?lang=br"
+    },
+    {
+      "source": "/br/palpites",
+      "destination": "/api/pronostics-liste?lang=br"
+    },
+    {
+      "source": "/sitemap-palpites-br.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=br"
+    },
+    {
+      "source": "/de/fussball/prognose/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=de"
+    },
+    {
+      "source": "/de/fussball/prognose/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=de"
+    },
+    {
+      "source": "/de/prognosen/",
+      "destination": "/api/pronostics-liste?lang=de"
+    },
+    {
+      "source": "/de/prognosen",
+      "destination": "/api/pronostics-liste?lang=de"
+    },
+    {
+      "source": "/sitemap-prognosen-de.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=de"
+    },
+    {
+      "source": "/it/calcio/pronostico/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=it"
+    },
+    {
+      "source": "/it/calcio/pronostico/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=it"
+    },
+    {
+      "source": "/it/pronostici/",
+      "destination": "/api/pronostics-liste?lang=it"
+    },
+    {
+      "source": "/it/pronostici",
+      "destination": "/api/pronostics-liste?lang=it"
+    },
+    {
+      "source": "/sitemap-pronostici-it.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=it"
+    },
+    {
+      "source": "/nl/voetbal/voorspelling/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=nl"
+    },
+    {
+      "source": "/nl/voetbal/voorspelling/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=nl"
+    },
+    {
+      "source": "/nl/voorspellingen/",
+      "destination": "/api/pronostics-liste?lang=nl"
+    },
+    {
+      "source": "/nl/voorspellingen",
+      "destination": "/api/pronostics-liste?lang=nl"
+    },
+    {
+      "source": "/sitemap-voorspellingen-nl.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=nl"
+    },
+    {
+      "source": "/es/futbol/pronostico/:slug/",
+      "destination": "/api/pronostic?slug=:slug&lang=es"
+    },
+    {
+      "source": "/es/futbol/pronostico/:slug",
+      "destination": "/api/pronostic?slug=:slug&lang=es"
+    },
+    {
+      "source": "/es/pronosticos/",
+      "destination": "/api/pronostics-liste?lang=es"
+    },
+    {
+      "source": "/es/pronosticos",
+      "destination": "/api/pronostics-liste?lang=es"
+    },
+    {
+      "source": "/sitemap-pronosticos-es.xml",
+      "destination": "/api/seo?sitemap=pronostics&lang=es"
+    },
+    {
+      "source": "/football/transfert/:slug/",
+      "destination": "/api/transfert?slug=:slug"
+    },
+    {
+      "source": "/football/transfert/:slug",
+      "destination": "/api/transfert?slug=:slug"
+    },
+    {
+      "source": "/football/pronostic/:slug/",
+      "destination": "/api/pronostic?slug=:slug"
+    },
+    {
+      "source": "/football/pronostic/:slug",
+      "destination": "/api/pronostic?slug=:slug"
+    },
+    {
       "source": "/sitemap-equipes.xml",
       "destination": "/api/seo?sitemap=equipes"
+    },
+    {
+      "source": "/sitemap-joueurs.xml",
+      "destination": "/api/seo?sitemap=joueurs"
     },
     {
       "source": "/sitemap.xml",
@@ -70,12 +321,24 @@
       "destination": "/api/seo?sitemap=matchs"
     },
     {
+      "source": "/sitemap-pronostics.xml",
+      "destination": "/api/seo?sitemap=pronostics"
+    },
+    {
       "source": "/football/equipe/:slug/",
       "destination": "/api/seo?equipe=:slug"
     },
     {
       "source": "/football/equipe/:slug",
       "destination": "/api/seo?equipe=:slug"
+    },
+    {
+      "source": "/football/joueur/:slug/",
+      "destination": "/api/seo?joueur=:slug"
+    },
+    {
+      "source": "/football/joueur/:slug",
+      "destination": "/api/seo?joueur=:slug"
     },
     {
       "source": "/football/match/:slug/:onglet(cotes|pronostics|compositions|volume|statistiques|tete-a-tete|tableau|resume)/",
@@ -139,7 +402,7 @@
     },
     {
       "source": "/pronostics/",
-      "destination": "/index.html"
+      "destination": "/api/pronostics-liste"
     },
     {
       "source": "/favoris/",
@@ -159,7 +422,7 @@
     },
     {
       "source": "/pronostics",
-      "destination": "/index.html"
+      "destination": "/api/pronostics-liste"
     },
     {
       "source": "/favoris",
