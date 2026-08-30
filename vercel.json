@@ -21,7 +21,7 @@
       "maxDuration": 60
     },
     "api/prechauffe.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "crons": [

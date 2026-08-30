@@ -24,20 +24,25 @@
 
 const SITE = 'https://ninjascores.com';
 
-// Compétitions couvertes par l'app (RANG_COMPET de assets/inline/s6.js).
-// Copie assumée : importer s6.js d'ici est impossible (fichier navigateur).
-const LIGUES = new Set([
+// TOUTES les ligues sont chauffées (demande utilisateur du 30/08 : « toutes
+// les ligues où API-Football a de la donnée », pas seulement les grandes).
+// La liste ci-dessous ne sert plus qu'à PRIORISER : grandes compétitions
+// d'abord, pour que le budget temps, s'il est dépassé un soir de grosse
+// affiche, tronque les ligues exotiques et jamais la Liga.
+// (RANG_COMPET de assets/inline/s6.js — copie assumée, importer un fichier
+// navigateur d'ici est impossible.)
+const PRIORITAIRES = new Set([
   2, 3, 848, 531, 15, 13, 11, 12, 20, 17, 16, 1, 4, 6, 9, 7, 5,
   29, 30, 31, 32, 33, 34, 37, 960, 36, 22, 39, 140, 135, 78, 61,
   94, 88, 203, 144, 71, 128, 262, 253, 307, 98, 292, 179, 40, 62, 136, 79, 141,
 ]);
 const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 
-// Fenêtre de chauffe : matchs qui commencent d'ici 3 h (ou déjà en cours,
+// Fenêtre de chauffe : matchs qui commencent d'ici 2 h 30 (ou déjà en cours,
 // pour les compos officielles qui tombent après le coup d'envoi).
-const FENETRE_MS = 3 * 3600 * 1000;
-const BUDGET_MS = 45000;          // maxDuration 60 s, marge de sécurité
-const PAUSE_MS = 280;             // ~3,5 appels/s — loin de la limite minute amont
+const FENETRE_MS = 2.5 * 3600 * 1000;
+const BUDGET_MS = 280000;         // maxDuration 300 s, marge de sécurité
+const PAUSE_MS = 250;             // 4 appels/s — loin de la limite minute amont
 
 function jourUTC() { return new Date().toISOString().slice(0, 10); }
 
@@ -62,10 +67,16 @@ export default async function handler(req, res) {
     const tous = (cal && cal.response) || [];
     const maintenant = Date.now();
     const cibles = tous.filter((f) => {
-      if (!LIGUES.has(f.league.id)) return false;
       if (FINIS.has(f.fixture.status.short)) return false;
       const debut = new Date(f.fixture.date).getTime();
       return debut - maintenant < FENETRE_MS;   // inclut les matchs en cours
+    });
+    // Grandes competitions d'abord, puis coup d'envoi le plus proche.
+    cibles.sort((x, y) => {
+      const px = PRIORITAIRES.has(x.league.id) ? 0 : 1;
+      const py = PRIORITAIRES.has(y.league.id) ? 0 : 1;
+      if (px !== py) return px - py;
+      return new Date(x.fixture.date) - new Date(y.fixture.date);
     });
     resume.cibles = cibles.length;
 
@@ -83,7 +94,10 @@ export default async function handler(req, res) {
       resume.appels += 4;
 
       if (!(cotes && cotes.response && cotes.response.length)) {
-        resume.sansCotes.push(f.teams.home.name + ' - ' + f.teams.away.name);
+        // Compte complet mais exemples plafonnes : sur 900 matchs toutes
+        // ligues, la liste exhaustive rendrait la reponse illisible.
+        resume.sansCotesTotal = (resume.sansCotesTotal || 0) + 1;
+        if (resume.sansCotes.length < 15) resume.sansCotes.push(f.teams.home.name + ' - ' + f.teams.away.name);
       }
       if (compo && compo.response && compo.response.length) resume.compos++;
     }
