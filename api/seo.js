@@ -16,7 +16,22 @@
 import fs from 'fs';
 import path from 'path';
 
+// Competitions suivies editorialement : si une ligue merite un article, ses
+// matchs meritent le sitemap. Sinon non.
+//
+// Volontairement recopie de LIGUES (lib/articles/moteur.mjs) plutot
+// qu'importe : Vercel transpile cette fonction d'ESM vers CommonJS, et
+// l'import d'un .mjs y provoque un FUNCTION_INVOCATION_FAILED — toutes les
+// pages SSR sont tombees en 500 le 15/08/2026 pour cette raison.
+// A tenir synchronise si LIGUES evolue.
+const LIGUES_SITEMAP = new Set([2,3,39,40,41,42,61,62,71,72,78,79,88,89,94,95,
+  128,135,136,140,141,144,179,207,208,218,239,242,253,262,265,268,281,848]);
+
 const SITE = 'https://ninjascores.com';
+// Canari CLS : types de page sur lesquels le correctif "#root masque jusqu'au
+// retrait de #ns-seo" est actif. Etendre progressivement une fois verifie
+// (voir HIDE_ROOT_TYPES plus bas dans page()).
+const HIDE_ROOT_TYPES = new Set(['competition', 'joueur', 'match']); // match : un seul appel reseau (fixtures&id=), pas de cascade — donnees live, pas de preload (fraicheur)
 const DIR = path.join(process.cwd(), 'data', 'standings');
 
 // ── utilitaires ────────────────────────────────────────────────────────────
@@ -37,6 +52,17 @@ function paysParSlug(s) {
   const m = manifeste();
   for (const cle of Object.keys(m)) if (slug(m[cle].nom) === s) return { cle, ...m[cle] };
   return null;
+}
+// L'API-Football renvoie les pays en anglais (« Brazil »). Le manifeste porte
+// deja leur nom francais : on s'en sert plutot que d'afficher l'anglais brut
+// sur un site francophone.
+function paysFr(nomApi) {
+  if (!nomApi) return '';
+  const m = manifeste();
+  if (m[nomApi] && m[nomApi].nom) return m[nomApi].nom;
+  const cible = String(nomApi).toLowerCase();
+  for (const cle of Object.keys(m)) if (cle.toLowerCase() === cible) return m[cle].nom;
+  return nomApi;
 }
 function lirePays(cle) {
   try { return JSON.parse(fs.readFileSync(path.join(DIR, cle + '.json'), 'utf8')); }
@@ -129,7 +155,31 @@ function remplacerBalise(html, motif, remplacement) {
 // `cible` decrit a l'application quel ecran rouvrir. On l'emet depuis le
 // serveur, qui connait deja les identifiants exacts : le client n'a pas a
 // rededuire un pays ou un championnat a partir d'un slug d'URL.
-function page({ url, titre, desc, h1, fil, corps, jsonld, canon, robots, cible }) {
+// Article de pronostic associe a un match, s'il a ete genere par le cron.
+// Sans ce lien, les articles n'etaient atteignables que par le sitemap.
+// Racine de l'article selon sa langue. Elle etait codee en dur en francais :
+// depuis le passage au multilingue, un match argentin ou anglais aurait pointe
+// vers /football/pronostic/…, une URL qui n'existe pas pour ces articles.
+const RACINE_LG = { fr: '/football/pronostic/', en: '/en/football/prediction/',
+  es: '/es/futbol/pronostico/', pt: '/pt/futebol/prognostico/',
+  br: '/br/futebol/palpite/', nl: '/nl/voetbal/voorspelling/',
+  de: '/de/fussball/prognose/', it: '/it/calcio/pronostico/' };
+
+async function lienPronostic(fixtureId) {
+  const u = process.env.SUPABASE_URL, k = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!u || !k) return null;
+  try {
+    const r = await fetch(
+      `${u}/rest/v1/articles?fixture_id=eq.${fixtureId}&select=slug,titre,langue&limit=1`,
+      { headers: { apikey: k, Authorization: 'Bearer ' + k } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const a = j?.[0];
+    return a ? { ...a, racine: RACINE_LG[a.langue] || RACINE_LG.fr } : null;
+  } catch (e) { return null; }
+}
+
+function page({ url, titre, desc, h1, fil, corps, jsonld, canon, robots, cible, preload }) {
   const canonique = SITE + (canon || url);
   const filHtml = fil.map((f) => (f.url
     ? `<a href="${esc(f.url)}">${esc(f.nom)}</a>`
@@ -154,7 +204,16 @@ function page({ url, titre, desc, h1, fil, corps, jsonld, canon, robots, cible }
   h = remplacerBalise(h, /<meta name="twitter:title"[^>]*>/, '<meta name="twitter:title" content="' + esc(titre) + '"/>');
   h = remplacerBalise(h, /<meta name="twitter:description"[^>]*>/, '<meta name="twitter:description" content="' + esc(desc) + '"/>');
 
-  h = h.replace('</head>', '<style>' + CSS_SEO + '</style>\n'
+  // CANARY (types dans HIDE_ROOT_TYPES uniquement) : #root demarre invisible
+  // et hors mise en page tant que #ns-seo n'a pas ete retire cote client.
+  // Sans ca, les deux blocs coexistent le temps que React resolve ses
+  // donnees, la page double de hauteur, puis s'effondre d'un coup au retrait
+  // de #ns-seo — c'est exactement ce shift que confirme Lighthouse (CLS
+  // ~1.0 sur une page competition testee). A generaliser a tous les types
+  // une fois verifie sur ce premier lot.
+  const styleRacine = HIDE_ROOT_TYPES.has((cible || {}).type)
+    ? '<style>#root{display:none}</style>\n' : '';
+  h = h.replace('</head>', styleRacine + '<style>' + CSS_SEO + '</style>\n'
     + '<script type="application/ld+json">' + JSON.stringify(ld) + '</script>\n</head>');
 
   const bloc = '<div id="ns-seo">'
@@ -166,13 +225,20 @@ function page({ url, titre, desc, h1, fil, corps, jsonld, canon, robots, cible }
     + '<p class="pied">Données mises à jour régulièrement · '
     + '<a href="/">Voir les scores en direct sur NinjaScores</a></p>'
     + '</main></div>'
-    + '<script>window.NS_SEO_CIBLE=' + JSON.stringify(cible || null) + ';</script>';
+    + '<script>window.NS_SEO_CIBLE=' + JSON.stringify(cible || null) + ';</script>'
+    + (preload ? '<script>window.__NS_PRELOAD_STANDINGS=' + JSON.stringify(preload) + ';</script>' : '');
 
-  return h.replace('<div id="root"></div>', bloc + '\n<div id="root"></div>');
+  // Le bloc SEO est injecte juste apres <body>, AVANT les modales/widgets
+  // statiques de l'appli (pronostics, connexion, parrainage — ~16 Ko de HTML
+  // identiques sur les 12 000+ pages). Sans ca, un crawler qui pese la
+  // prominence du contenu par ordre d'apparition dans le source voit d'abord
+  // ce bloc generique, puis seulement le contenu unique de la page — nefaste
+  // pour un domaine jeune qui doit etablir sa pertinence thematique.
+  return h.replace('<body>', '<body>\n' + bloc);
 }
 
 // ── /football/ ─────────────────────────────────────────────────────────────
-function pageRacine() {
+async function pageRacine() {
   const m = manifeste();
   const pays = Object.keys(m)
     .map((cle) => ({ cle, nom: m[cle].nom, n: (m[cle].ordre || []).length }))
@@ -180,6 +246,35 @@ function pageRacine() {
     .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
   const liens = pays.map((p) =>
     `<li><a href="/football/${slug(p.nom)}/">${esc(p.nom)}</a></li>`).join('');
+
+  // Pronostics recents : maillage interne vers les articles, sans lequel
+  // Google ne les decouvre jamais (« Aucune page d'origine detectee »).
+  let blocPronos = '';
+  try {
+    const u = process.env.SUPABASE_URL, k = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (u && k) {
+      const depuis = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
+      const r = await fetch(
+        `${u}/rest/v1/articles?langue=eq.fr&coup_envoi=gte.${depuis}&select=slug,competition,payload&order=coup_envoi.desc&limit=20`,
+        { headers: { apikey: k, Authorization: 'Bearer ' + k } });
+      if (r.ok) {
+        const arts = await r.json();
+        const items = arts.map((a) => {
+          const dom = a.payload?.entete?.domicile?.nom || '';
+          const ext = a.payload?.entete?.exterieur?.nom || '';
+          if (!dom || !ext) return '';
+          return `<li><a href="/football/pronostic/${esc(a.slug)}/">${esc(dom)} – ${esc(ext)}</a>`
+            + (a.competition ? ` <small style="color:#6B7280">(${esc(a.competition)})</small>` : '')
+            + '</li>';
+        }).filter(Boolean).join('');
+        if (items) {
+          blocPronos = '<h2>Pronostics récents</h2><ul class="liens">' + items + '</ul>'
+            + '<p><a href="/pronostics/">Tous les pronostics du jour →</a></p>';
+        }
+      }
+    }
+  } catch (e) { /* pas de pronostics, pas grave */ }
+
   return page({
     cible: { type: 'racine' },
     url: '/football/',
@@ -189,6 +284,7 @@ function pageRacine() {
     h1: 'Football — ' + pays.length + ' pays couverts',
     fil: [{ nom: 'Accueil', url: '/' }, { nom: 'Football' }],
     corps: `<p class="sous">Choisissez un pays pour accéder à ses championnats, classements et résultats.</p>
+${blocPronos}
 <h2>Tous les pays</h2><ul class="liens">${liens}</ul>`,
   });
 }
@@ -252,6 +348,7 @@ function pageCompetition(p, ligue, donnees) {
     // les libelles attendus par STANDINGS_DATA, pas les slugs d'URL :
     // c'est le serveur qui les connait, le client n'a pas a les rededuire
     cible: { type: 'competition', pays: p.nom, ligue },
+    preload: { [p.cle]: donnees },
     url: `/football/${slug(p.nom)}/${slug(ligue)}/`,
     titre: `${ligue} ${saison} — classement ${p.nom} | NinjaScores`,
     desc: `Classement complet de ${ligue} (${p.nom}) saison ${saison} : ${lignes.length} équipes, `
@@ -415,14 +512,42 @@ const STATUTS = {
 };
 const FINIS = { FT: 1, AET: 1, PEN: 1 };
 
+// Panne API constatee pendant CE rendu.
+//
+// API-Football repond 200 avec un objet `errors` quand le quota est epuise :
+// `response` vaut alors [], indiscernable d'une vraie absence de resultat.
+// Sans ce drapeau, une panne de quota transformait toutes les fiches match et
+// equipe en 404 — et un 404 dit a Google de RETIRER la page de son index.
+// On a perdu de l'indexation ainsi pendant des heures le 25/08/2026.
+let _apiIndispo = false;
+function apiIndispo() { return _apiIndispo; }
+function apiReset() { _apiIndispo = false; }
+
+// On passe par /api/foot plutot que d'appeler API-Football en direct.
+//
+// Le proxy porte un TTL par endpoint (headtohead 24 h, fixtures 5 min...) et
+// ses reponses sont mises en cache par le CDN : le meme appel sert alors TOUS
+// les rendus au lieu d'etre refacture a chaque affichage. En direct, une page
+// match coutait 8 requetes a CHAQUE visite de robot — 150 000/jour epuisees le
+// 25/08/2026, sans un seul visiteur reel.
+//
+// Le proxy signale les erreurs metier par un 502, ce qui nous donne enfin un
+// signal de panne fiable (l'API renvoie 200 meme quand le quota est mort).
 async function api(chemin) {
-  const cle = process.env.API_FOOTBALL_KEY;
-  if (!cle) return [];
-  const r = await fetch('https://v3.football.api-sports.io/' + chemin,
-    { headers: { 'x-apisports-key': cle } });
-  if (!r.ok) return [];
-  const j = await r.json();
-  return j.response || [];
+  const i = chemin.indexOf('?');
+  const point = i < 0 ? chemin : chemin.slice(0, i);
+  const params = i < 0 ? '' : '&' + chemin.slice(i + 1);
+  // La barre finale est obligatoire : trailingSlash renverrait une 308.
+  const url = SITE + '/api/foot/?path=' + encodeURIComponent(point) + params;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) { _apiIndispo = true; return []; }   // 502 = quota ou panne
+    const j = await r.json();
+    return (j && j.response) || [];
+  } catch (e) {
+    _apiIndispo = true;
+    return [];
+  }
 }
 
 function dateFr(iso) {
@@ -470,9 +595,12 @@ const tblStat = (lignes) => '<table><tbody>' + lignes.map(
 // ── rendu de chaque onglet ─────────────────────────────────────────────────
 // Tous renvoient { corps, titre, desc, vide } ; `vide` signale l'absence de
 // donnee chez le fournisseur, pas une erreur.
-async function ongletCotes(f, dom, ext) {
+// `pre` : la promesse de donnees deja lancee par pageMatch en parallele de
+// fixtures?id (meme requete qu'ici). Le repli api() ne sert que si un futur
+// appelant oublie de la fournir.
+async function ongletCotes(f, dom, ext, pre) {
   let bk = [];
-  try { bk = await api('odds?fixture=' + f.fixture.id + '&bookmaker=8'); } catch (e) {}
+  try { bk = (await (pre || api('odds?fixture=' + f.fixture.id + '&bookmaker=8'))) || []; } catch (e) {}
   const bets = ((bk[0] || {}).bookmakers || [])[0];
   const paris = (bets && bets.bets) || [];
   const prendre = (nom) => (paris.find((b) => b.name === nom) || {}).values || [];
@@ -509,9 +637,9 @@ async function ongletCotes(f, dom, ext) {
   };
 }
 
-async function ongletPronostics(f, dom, ext) {
+async function ongletPronostics(f, dom, ext, pre) {
   let p = [];
-  try { p = await api('predictions?fixture=' + f.fixture.id); } catch (e) {}
+  try { p = (await (pre || api('predictions?fixture=' + f.fixture.id))) || []; } catch (e) {}
   const d = p[0];
   const pr = d && d.predictions;
   if (!pr) return { vide: true, titre: 'Pronostic ' + dom + ' - ' + ext,
@@ -561,9 +689,9 @@ async function ongletPronostics(f, dom, ext) {
   };
 }
 
-async function ongletCompo(f, dom, ext) {
+async function ongletCompo(f, dom, ext, pre) {
   let lu = [];
-  try { lu = await api('fixtures/lineups?fixture=' + f.fixture.id); } catch (e) {}
+  try { lu = (await (pre || api('fixtures/lineups?fixture=' + f.fixture.id))) || []; } catch (e) {}
   if (!lu.length) return { vide: true, titre: 'Compositions ' + dom + ' - ' + ext,
     desc: 'Compositions probables de ' + dom + ' et ' + ext + '.',
     corps: '<p class="sous">Les compositions ne sont pas encore communiquées. '
@@ -590,9 +718,9 @@ async function ongletCompo(f, dom, ext) {
   };
 }
 
-async function ongletStats(f, dom, ext) {
+async function ongletStats(f, dom, ext, pre) {
   let st = [];
-  try { st = await api('fixtures/statistics?fixture=' + f.fixture.id); } catch (e) {}
+  try { st = (await (pre || api('fixtures/statistics?fixture=' + f.fixture.id))) || []; } catch (e) {}
   const dispo = st.filter((e) => (e.statistics || []).some((s) => s.value != null));
   if (dispo.length < 2) return { vide: true, titre: 'Statistiques ' + dom + ' - ' + ext,
     desc: 'Statistiques du match ' + dom + ' contre ' + ext + '.',
@@ -630,13 +758,17 @@ async function ongletStats(f, dom, ext) {
 // Le TaT du site compare les deux equipes sur leurs derniers matchs ET liste
 // les confrontations. Cote serveur on rend les trois listes : c'est le seul
 // onglet dont le contenu existe quel que soit l'etat du match.
-async function ongletTat(f, dom, ext, h2h) {
+// `h2hP` est une promesse (lancee par pageMatch) : la resoudre DANS le
+// Promise.all fait courir les confrontations et la forme des deux equipes
+// en meme temps, au lieu de les empiler.
+async function ongletTat(f, dom, ext, h2hP) {
   const idD = f.teams.home.id, idE = f.teams.away.id;
-  let dD = [], dE = [];
+  let dD = [], dE = [], h2h = [];
   try {
-    [dD, dE] = await Promise.all([
+    [dD, dE, h2h] = await Promise.all([
       api('fixtures?team=' + idD + '&last=10').catch(() => []),
       api('fixtures?team=' + idE + '&last=10').catch(() => []),
+      Promise.resolve(h2hP).then((x) => x || []).catch(() => []),
     ]);
   } catch (e) {}
   const bloc = (nom, lot, id) => !lot.length ? '' :
@@ -806,16 +938,41 @@ function blocApropos(txt, base, dom, ext) {
 
 function ligneH2H(x) {
   const d2 = new Date(x.fixture.date);
-  return '<tr><td>' + esc(String(d2.getDate()).padStart(2, '0') + '/'
-    + String(d2.getMonth() + 1).padStart(2, '0') + '/' + d2.getFullYear())
-    + '</td><td class="eq">' + esc(x.teams.home.name) + '</td><td class="pts">'
-    + esc(x.goals.home) + ' - ' + esc(x.goals.away) + '</td><td class="eq">'
+  const dateTxt = esc(String(d2.getDate()).padStart(2, '0') + '/'
+    + String(d2.getMonth() + 1).padStart(2, '0') + '/' + d2.getFullYear());
+  const urlM = '/football/match/' + slug(x.teams.home.name) + '-' + slug(x.teams.away.name)
+    + '-' + x.fixture.id + '/';
+  // lien reel vers la page du match archive : c'est ce qui rend les
+  // confrontations directes exploitables pour le maillage interne (SEO).
+  const lienScore = '<a href="' + esc(urlM) + '">' + esc(x.goals.home) + ' - ' + esc(x.goals.away) + '</a>';
+  return '<tr><td><a href="' + esc(urlM) + '">' + dateTxt + '</a></td><td class="eq">'
+    + esc(x.teams.home.name) + '</td><td class="pts">' + lienScore + '</td><td class="eq">'
     + esc(x.teams.away.name) + '</td><td>' + esc(x.league.name) + '</td></tr>';
 }
 
 async function pageMatch(slugComplet, onglet) {
   const id = (String(slugComplet).match(/-(\d+)$/) || [])[1];
   if (!id) return null;
+
+  // Onglet demande, resolu AVANT les appels : c'est lui qui decide des
+  // donnees dont cette URL a besoin. `resume` n'existe pas comme segment :
+  // c'est l'URL de base, sinon deux URLs porteraient la meme page.
+  const o = onglet ? PAR_SEG[onglet] : ONGLETS[0];
+  if (onglet && !o) return null;
+
+  // Les donnees de l'onglet ne dependent que de l'id (present dans le slug) :
+  // on les lance EN PARALLELE de fixtures?id au lieu d'attendre leur tour.
+  // La fonction est facturee au temps allume — deux attentes empilees
+  // coutaient le double d'une seule.
+  const lancerTab = {
+    cotes: () => api('odds?fixture=' + id + '&bookmaker=8').catch(() => []),
+    pronostics: () => api('predictions?fixture=' + id).catch(() => []),
+    compo: () => api('fixtures/lineups?fixture=' + id).catch(() => []),
+    stats: () => api('fixtures/statistics?fixture=' + id).catch(() => []),
+  }[o.id];
+  const tabP = lancerTab ? lancerTab() : null;
+  const artP = lienPronostic(Number(id));
+
   const rep = await api('fixtures?id=' + id);
   if (!rep.length) return null;
   const f = rep[0];
@@ -831,22 +988,23 @@ async function pageMatch(slugComplet, onglet) {
   const compet = tradCompet(competVo);
   const paysNom = f.league.country === 'World' ? 'International' : f.league.country;
 
-  // confrontations directes : c'est ce qui donne de la substance a la page
-  let h2h = [];
-  try {
-    h2h = (await api('fixtures/headtohead?h2h=' + f.teams.home.id + '-' + f.teams.away.id + '&last=11'))
+  // confrontations directes : c'est ce qui donne de la substance a la page —
+  // mais seuls le resume et le TaT les affichent. Les six autres onglets
+  // payaient cet appel pour rien (constat facture du 31/08). Promesse et non
+  // await : le TaT la resout en parallele de ses propres appels.
+  const besoinH2H = o.id === 'resume' || o.id === 'tat';
+  const h2hP = besoinH2H
+    ? api('fixtures/headtohead?h2h=' + f.teams.home.id + '-' + f.teams.away.id + '&last=11')
       // le fournisseur inclut la rencontre en cours : une page ne peut pas se
       // citer elle-meme parmi ses confrontations passees
-      .filter((x) => FINIS[x.fixture.status.short] && x.fixture.id !== f.fixture.id)
-      .slice(0, 10);
-  } catch (e) {}
+      .then((r) => r.filter((x) => FINIS[x.fixture.status.short] && x.fixture.id !== f.fixture.id).slice(0, 10))
+      .catch(() => [])
+    : Promise.resolve([]);
 
   const titreScore = fini && score ? dom + ' ' + score + ' ' + ext : dom + ' - ' + ext;
   const h1 = titreScore;
   const sousTitre = compet + ' · ' + date + ' · ' + libelle
     + (f.fixture.venue && f.fixture.venue.name ? ' · ' + f.fixture.venue.name : '');
-
-  const lignesH2H = h2h.map(ligneH2H).join('');
 
   // lien vers la competition quand elle fait partie des pages indexees
   let lienCompet = '';
@@ -864,19 +1022,22 @@ async function pageMatch(slugComplet, onglet) {
     }
   } catch (e) {}
 
-  // Onglet demande. `resume` n'existe pas comme segment : c'est l'URL de base,
-  // sinon deux URLs porteraient la meme page.
-  const o = onglet ? PAR_SEG[onglet] : ONGLETS[0];
-  if (onglet && !o) return null;
+  const art = await artP;
+  const blocPronostic = art
+    ? '<h2>Notre pronostic</h2><ul class="liens"><li><a href="' + art.racine
+      + esc(art.slug) + '/">' + esc(art.titre) + '</a></li></ul>'
+    : '';
 
-  const liensEquipes = '<h2>Les deux équipes</h2><ul class="liens">'
+  const liensEquipes = blocPronostic + '<h2>Les deux équipes</h2><ul class="liens">'
     + '<li><a href="/football/equipe/' + slug(dom) + '-' + f.teams.home.id + '/">' + esc(dom) + '</a></li>'
     + '<li><a href="/football/equipe/' + slug(ext) + '-' + f.teams.away.id + '/">' + esc(ext) + '</a></li>'
     + '</ul>'
     + (lienCompet ? '<h2>À voir aussi</h2><ul class="liens">' + lienCompet + '</ul>' : '');
 
   let vue;
+  let h2h = [];
   if (o.id === 'resume') {
+    h2h = await h2hP;
     vue = { vide: false,
       titre: titreScore + ' — ' + compet + ', ' + date + (fini ? ' : résultat et statistiques' : ' : avant-match'),
       desc: (fini && score
@@ -886,13 +1047,13 @@ async function pageMatch(slugComplet, onglet) {
       corps: (h2h.length
         ? '<h2>Confrontations directes</h2><table><thead><tr><th>Date</th><th class="eq">Domicile</th>'
           + '<th>Score</th><th class="eq">Extérieur</th><th>Compétition</th></tr></thead><tbody>'
-          + lignesH2H + '</tbody></table>'
+          + h2h.map(ligneH2H).join('') + '</tbody></table>'
         : '<h2>Confrontations directes</h2><p class="sous">Aucune rencontre entre ces deux équipes dans nos archives.</p>') };
-  } else if (o.id === 'cotes')      vue = await ongletCotes(f, dom, ext);
-  else if (o.id === 'pronostics')   vue = await ongletPronostics(f, dom, ext);
-  else if (o.id === 'compo')        vue = await ongletCompo(f, dom, ext);
-  else if (o.id === 'stats')        vue = await ongletStats(f, dom, ext);
-  else if (o.id === 'tat')          vue = await ongletTat(f, dom, ext, h2h);
+  } else if (o.id === 'cotes')      vue = await ongletCotes(f, dom, ext, tabP);
+  else if (o.id === 'pronostics')   vue = await ongletPronostics(f, dom, ext, tabP);
+  else if (o.id === 'compo')        vue = await ongletCompo(f, dom, ext, tabP);
+  else if (o.id === 'stats')        vue = await ongletStats(f, dom, ext, tabP);
+  else if (o.id === 'tat')          { vue = await ongletTat(f, dom, ext, h2hP); h2h = await h2hP; }
   else if (o.id === 'tableau')      vue = ongletTableau(f, dom, ext, competVo, compet, paysNom);
   else vue = { vide: true, titre: 'Volume des marchés — ' + dom + ' - ' + ext,
     desc: 'Volume échangé sur les marchés du match ' + dom + ' contre ' + ext + '.',
@@ -1019,7 +1180,7 @@ async function pageEquipe(slugComplet) {
   const eq = infos[0].team, stade = infos[0].venue || {};
   const nom = eq.name;
   const url = '/football/equipe/' + slug(nom) + '-' + id + '/';
-  const paysNom = eq.country || '';
+  const paysNom = paysFr(eq.country || '');
 
   const finis = passes.filter((f) => ['FT', 'AET', 'PEN'].includes(f.fixture.status.short));
   const bilan = finis.reduce((a, f) => {
@@ -1081,6 +1242,169 @@ async function pageEquipe(slugComplet) {
   }) };
 }
 
+// ── /football/joueur/{slug}-{id}/ ───────────────────────────────────────────
+// L'id est celui du DATASET (Transfermarkt), pas celui d'API-Football : c'est
+// le seul stable et disponible pour les 15 680 joueurs du site (l'id
+// API-Football n'est resolu que pour ~80% d'entre eux, via player-photos.json).
+
+let _players = null;
+function joueurs() {
+  if (_players) return _players;
+  const txt = fs.readFileSync(path.join(process.cwd(), 'search_data.js'), 'utf8');
+  const i = txt.indexOf('{'), j = txt.lastIndexOf('}');
+  _players = JSON.parse(txt.slice(i, j + 1)).players || [];
+  return _players;
+}
+let _photos = null;
+function photosMap() {
+  if (!_photos) {
+    try { _photos = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'player-photos.json'), 'utf8')); }
+    catch (e) { _photos = {}; }
+  }
+  return _photos;
+}
+let _teamsIdx = null;
+function teamsIndex() {
+  if (!_teamsIdx) {
+    try { _teamsIdx = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'teams-index.json'), 'utf8')); }
+    catch (e) { _teamsIdx = []; }
+  }
+  return _teamsIdx;
+}
+// meme normalisation que window.NS_PLAYER_INFO (index.html) : la cle de
+// player-photos.json doit correspondre EXACTEMENT, cote serveur comme client.
+const nrm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .toLowerCase().replace(/[^a-z0-9]/g, '');
+const dernierMot = (n) => { const t = String(n || '').replace(/\./g, ' ').trim().split(/\s+/);
+  return t.length ? nrm(t[t.length - 1]) : ''; };
+
+const TRPOS = {
+  Keeper: 'Gardien', keeper: 'Gardien', Goalkeeper: 'Gardien',
+  'Center Back': 'Défenseur central', 'Centre Back': 'Défenseur central',
+  'Left Back': 'Arrière gauche', 'Right Back': 'Arrière droit',
+  'Left Wing-Back': 'Piston gauche', 'Right Wing-Back': 'Piston droit',
+  defender: 'Défenseur', Defender: 'Défenseur',
+  'Defensive Midfielder': 'Milieu défensif', 'Central Midfielder': 'Milieu central',
+  'Attacking Midfielder': 'Milieu offensif', 'Left Midfielder': 'Milieu gauche', 'Right Midfielder': 'Milieu droit',
+  midfielder: 'Milieu', Midfielder: 'Milieu',
+  'Left Winger': 'Ailier gauche', 'Right Winger': 'Ailier droit',
+  Striker: 'Attaquant', forward: 'Attaquant', Forward: 'Attaquant', 'Centre-Forward': 'Avant-centre',
+};
+const tradPos = (p) => TRPOS[p] || p;
+
+function idEquipeParNom(nom) {
+  const n = nrm(nom);
+  const hit = teamsIndex().find((t) => nrm(t.n) === n);
+  if (!hit) return null;
+  const m = String(hit.l || '').match(/\/teams\/(\d+)\.png/);
+  return m ? m[1] : null;
+}
+
+function formatMontant(v) {
+  const n = parseInt(v || 0, 10) || 0;
+  if (!n) return null;
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.', ',').replace(',0', '') + ' M€';
+  if (n >= 1000) return Math.round(n / 1000) + ' K€';
+  return n + ' €';
+}
+
+async function pageJoueur(slugComplet) {
+  const id = (String(slugComplet).match(/-(\d+)$/) || [])[1];
+  if (!id) return null;
+  const j = joueurs().find((p) => String(p.id) === id);
+  if (!j) return null;
+
+  const nom = j.name;
+  const url = '/football/joueur/' + slug(nom) + '-' + id + '/';
+  const posTxt = tradPos(j.position);
+  const valeurTxt = formatMontant(j.marketValue);
+
+  const idClub = j.team ? idEquipeParNom(j.team) : null;
+  const urlClub = idClub ? '/football/equipe/' + slug(j.team) + '-' + idClub + '/' : null;
+
+  // resolution vers l'id API-Football (memes cles que le client) : sans lui,
+  // pas de carriere/transferts chiffres, mais la fiche existe quand meme.
+  const map = photosMap();
+  const entree = map[dernierMot(nom) + '|' + nrm(j.team || '')] || null;
+  const apiId = entree ? entree.apiId : null;
+
+  let carriere = [];
+  let transferts = [];
+  if (apiId) {
+    try {
+      const saisons = [2025, 2024, 2023];
+      const rep = await Promise.all(saisons.map((s) => api('players?id=' + apiId + '&season=' + s).catch(() => [])));
+      const lignes = [];
+      rep.forEach((r) => {
+        if (!r || !r[0]) return;
+        (r[0].statistics || []).forEach((st) => {
+          const lg = st.league || {}, tm = st.team || {}, g = st.games || {}, go = st.goals || {};
+          if (/friendl/i.test(lg.name || '')) return;
+          const apps = g.appearences || 0;
+          if (!apps && !go.total) return;
+          lignes.push({ saison: lg.season, comp: tradCompet(lg.name || ''), club: tm.name || '',
+            mj: apps, buts: go.total || 0, passes: go.assists || 0 });
+        });
+      });
+      carriere = lignes.sort((a, b) => (b.saison || 0) - (a.saison || 0));
+    } catch (e) {}
+    try {
+      const rt = await api('transfers?player=' + apiId).catch(() => []);
+      if (rt && rt[0]) {
+        transferts = (rt[0].transfers || []).slice(0, 8).map((t) => ({
+          date: t.date, type: t.type,
+          depuis: (t.teams && t.teams.out && t.teams.out.name) || '',
+          vers: (t.teams && t.teams.in && t.teams.in.name) || '',
+        }));
+      }
+    } catch (e) {}
+  }
+
+  const tblCarriere = carriere.length
+    ? '<h2>Carrière</h2><table><thead><tr><th>Saison</th><th class="eq">Club</th>'
+      + '<th>Compétition</th><th>MJ</th><th>Buts</th><th>Passes</th></tr></thead><tbody>'
+      + carriere.map((c) => '<tr><td>' + esc(c.saison ? c.saison + '-' + String(c.saison + 1).slice(2) : '')
+        + '</td><td class="eq">' + esc(c.club) + '</td><td>' + esc(c.comp) + '</td>'
+        + '<td class="pts">' + esc(c.mj) + '</td><td class="pts">' + esc(c.buts) + '</td>'
+        + '<td class="pts">' + esc(c.passes) + '</td></tr>').join('') + '</tbody></table>'
+    : '';
+
+  const tblTransferts = transferts.length
+    ? '<h2>Transferts</h2><table><thead><tr><th>Date</th><th class="eq">Depuis</th>'
+      + '<th class="eq">Vers</th><th>Type</th></tr></thead><tbody>'
+      + transferts.map((t) => '<tr><td>' + esc(dateFr(t.date)) + '</td><td class="eq">' + esc(t.depuis)
+        + '</td><td class="eq">' + esc(t.vers) + '</td><td>' + esc(t.type || '') + '</td></tr>').join('')
+      + '</tbody></table>'
+    : '';
+
+  const clubLien = urlClub ? '<a href="' + esc(urlClub) + '">' + esc(j.team) + '</a>' : esc(j.team || '—');
+
+  return { url, html: page({
+    cible: { type: 'joueur', id: Number(id) },
+    url,
+    titre: nom + ' — ' + posTxt + (j.team ? ' à ' + j.team : '') + ' | NinjaScores',
+    desc: nom + ', ' + posTxt.toLowerCase() + (j.team ? ' de ' + j.team : '')
+        + (valeurTxt ? ', valeur marchande estimée à ' + valeurTxt : '') + '.'
+        + (carriere.length ? ' Statistiques de carrière, ' : '') + 'transferts et actualités.',
+    h1: nom,
+    fil: [{ nom: 'Accueil', url: '/' }, { nom: 'Football', url: '/football/' }, { nom }],
+    corps: '<p class="sous">' + esc(posTxt)
+      + (j.team ? ' · ' + clubLien : '')
+      + (j.nationality ? ' · ' + esc(j.nationality) : '')
+      + (j.age ? ' · ' + esc(j.age) + ' ans' : '')
+      + '</p>'
+      + (valeurTxt ? '<h2>Valeur marchande</h2><p class="sous" style="font-size:22px;font-weight:800;color:var(--v)">' + esc(valeurTxt) + '</p>' : '')
+      + tblCarriere + tblTransferts
+      + (!apiId ? '<p class="sous">Statistiques détaillées non disponibles pour ce joueur.</p>' : ''),
+    jsonld: [{
+      '@context': 'https://schema.org', '@type': 'Person', name: nom, url: SITE + url,
+      ...(j.nationality ? { nationality: j.nationality } : {}),
+      ...(j.team ? { affiliation: { '@type': 'SportsTeam', name: j.team } } : {}),
+      jobTitle: posTxt,
+    }],
+  }) };
+}
+
 // ── Sitemaps ───────────────────────────────────────────────────────────────
 // Index segmente : Google traite mieux plusieurs fichiers thematiques qu'un
 // seul monolithe, et un segment qui echoue n'emporte pas les autres.
@@ -1124,8 +1448,73 @@ function sitemapEquipes(jour) {
   return xml(urls);
 }
 
+// Seuil de valeur marchande pour figurer au sitemap.
+//
+// Constat Search Console du 08/08/2026 : 7 711 pages « Detectee, actuellement
+// non indexee ». Google connait ces URLs et refuse d'aller les chercher. La
+// cause n'est ni le cache (verifie : HIT) ni la vitesse (~345 ms), mais le
+// VOLUME rapporte a l'autorite du domaine : 20 952 URLs soumises, dont 15 680
+// pages joueur — 75 % du total — pour des profils comme « gardien de Rodina,
+// 1re division russe », que personne ne recherche.
+//
+// Un sitemap n'est pas un inventaire : c'est une liste de pages qu'on veut
+// voir indexees. Noyer 4 800 joueurs interessants sous 11 000 inconnus dilue
+// le signal et gaspille le budget d'exploration.
+//
+// Les pages restent en ligne et accessibles par les liens internes : on cesse
+// seulement de les pousser. Google les trouvera si elles le meritent.
+// Releve de 1 M€ a 10 M€ le 15/08/2026 : le premier elagage laissait encore
+// 4 820 joueurs, et la Search Console montrait 17 634 URLs « Detectee,
+// actuellement non indexee » — Google refusait toujours d'explorer. A 10 M€ il
+// reste 1 272 profils reellement recherches.
+const VALEUR_MIN_SITEMAP = 10000000;
+
+function sitemapJoueurs(jour) {
+  const urls = joueurs()
+    .filter((p) => Number(p.marketValue) >= VALEUR_MIN_SITEMAP)
+    .map((p) => ({
+      loc: '/football/joueur/' + slug(p.name) + '-' + p.id + '/',
+      lastmod: jour, freq: 'weekly', prio: '0.5',
+    }));
+  return xml(urls);
+}
+
+// Articles de pronostics ecrits par api/cron-articles dans Supabase.
+// On ne liste que ceux dont le match n'est pas trop ancien : un pronostic
+// perime n'a aucune valeur pour un lecteur ni pour Google.
+// Racine des URLs d'article par langue. Elle doit rester alignee sur les
+// rewrites de vercel.json et sur LANGUES dans lib/articles/langues.mjs :
+// un sitemap qui pointe vers une URL non routee vaut moins que pas de sitemap.
+const RACINE_ARTICLE = { fr: '/football/pronostic/', es: '/es/futbol/pronostico/',
+  nl: '/nl/voetbal/voorspelling/', pt: '/pt/futebol/prognostico/',
+  br: '/br/futebol/palpite/', de: '/de/fussball/prognose/', it: '/it/calcio/pronostico/', en: '/en/football/prediction/' };
+
+async function sitemapPronostics(jour, langue) {
+  const lg = RACINE_ARTICLE[langue] ? langue : 'fr';
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return xml([]);
+  const depuis = new Date(Date.now() - 30 * 86400000).toISOString();
+  try {
+    const r = await fetch(
+      `${url}/rest/v1/articles?langue=eq.${lg}&coup_envoi=gte.${depuis}&select=slug,coup_envoi&order=coup_envoi.desc&limit=5000`,
+      { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+    if (!r.ok) return xml([]);
+    const lignes = await r.json();
+    return xml(lignes.map((a) => ({
+      loc: RACINE_ARTICLE[lg] + a.slug + '/',
+      lastmod: String(a.coup_envoi).slice(0, 10),
+      freq: 'daily', prio: '0.8',
+    })));
+  } catch (e) { return xml([]); }
+}
+
 function sitemapIndex(jour) {
-  const seg = ['pays', 'competitions', 'equipes', 'matchs'];
+  const seg = ['pays', 'competitions', 'equipes', 'joueurs', 'matchs', 'pronostics',
+    // Une entree par langue : sans elle, Google ne decouvrirait jamais les
+    // articles espagnols, aucune page du site francais n'y menant.
+    'pronosticos-es', 'voorspellingen-nl',
+    'prognosticos-pt', 'palpites-br', 'prognosen-de', 'pronostici-it', 'predictions-en'];
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
     + '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + seg.map((n) => '<sitemap><loc>' + SITE + '/sitemap-' + n + '.xml</loc>'
@@ -1137,7 +1526,15 @@ function sitemapPays(jour) {
   const m = manifeste();
   const urls = [{ loc: '/', lastmod: jour, freq: 'hourly', prio: '1.0' },
                 { loc: '/football/', lastmod: jour, freq: 'daily', prio: '0.9' },
-                { loc: '/transferts/', lastmod: jour, freq: 'daily', prio: '0.7' }];
+                { loc: '/transferts/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/pronostics/', lastmod: jour, freq: 'daily', prio: '0.8' },
+                { loc: '/pronosticos/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/voorspellingen/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/prognosticos/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/palpites/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/prognosen/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/pronostici/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/predictions/', lastmod: jour, freq: 'daily', prio: '0.7' }];
   Object.keys(m).forEach((cle) => {
     if (!(m[cle].ordre || []).length) return;
     urls.push({ loc: '/football/' + slug(m[cle].nom) + '/', lastmod: jour, freq: 'weekly', prio: '0.7' });
@@ -1179,17 +1576,22 @@ async function sitemapMatchs(jour) {
     fx.forEach((f) => {
       const n = f.league.name;
       if (AMICAL_S.test(n) || JEUNES_S.test(n) || FEMININ_S.test(n) || ECARTEES_S.test(n)) return;
+      // Hors des competitions suivies, une page de match n'a ni demande de
+      // recherche ni article associe : elle consomme du budget d'exploration
+      // sans rien pouvoir ramener.
+      if (!LIGUES_SITEMAP.has(f.league.id)) return;
       const base = '/football/match/' + slug(f.teams.home.name) + '-'
                  + slug(f.teams.away.name) + '-' + f.fixture.id + '/';
       const lastmod = (f.fixture.date || '').slice(0, 10) || jour;
       // un match passe ne bouge plus, un match a venir change chaque jour
       const freq = passe ? 'monthly' : 'daily';
       urls.push({ loc: base, lastmod, freq, prio: passe ? '0.5' : '0.6' });
-      // Seuls les onglets dont la donnee existe toujours entrent au sitemap.
-      // Les compositions n'arrivent qu'une heure avant le coup d'envoi : les
-      // annoncer plus tot ferait crawler une page vide, donc noindex.
-      urls.push({ loc: base + 'pronostics/', lastmod, freq, prio: '0.5' });
-      urls.push({ loc: base + 'tete-a-tete/', lastmod, freq, prio: '0.4' });
+      // Les onglets /pronostics/ et /tete-a-tete/ restent servis et crawlables
+      // par lien interne (depuis la page de match), mais ne sont plus soumis
+      // au sitemap : leur contenu est quasi identique a la page principale
+      // (meme gabarit ~468 Ko), et les soumettre doublait le volume d'URLs du
+      // sitemap matchs (9 873 au lieu de 3 291) sans apporter de valeur
+      // supplementaire — dilution du budget de crawl sur un domaine jeune.
     });
   });
   return xml(urls);
@@ -1249,6 +1651,9 @@ async function pageTransferts() {
 
 // ── point d'entree ─────────────────────────────────────────────────────────
 export default async function handler(req, res) {
+  // Le module reste charge entre deux invocations « chaudes » : sans remise a
+  // zero, une panne survenue lors d'un rendu precedent contaminerait celui-ci.
+  apiReset();
   // Apres une reecriture, Vercel remplace req.url par la DESTINATION
   // (/api/seo) : le chemin d'origine est perdu. On le recoit donc via le
   // parametre `chemin` pose dans vercel.json.
@@ -1271,7 +1676,9 @@ export default async function handler(req, res) {
       if (quoi === 'pays') return res.status(200).send(sitemapPays(jour));
       if (quoi === 'competitions') return res.status(200).send(sitemapCompetitions(jour));
       if (quoi === 'equipes') return res.status(200).send(sitemapEquipes(jour));
+      if (quoi === 'joueurs') return res.status(200).send(sitemapJoueurs(jour));
       if (quoi === 'matchs') return res.status(200).send(await sitemapMatchs(jour));
+      if (quoi === 'pronostics') return res.status(200).send(await sitemapPronostics(jour, String(req.query.lang || 'fr')));
       return res.status(404).send('<?xml version="1.0"?><urlset/>');
     }
 
@@ -1288,6 +1695,20 @@ export default async function handler(req, res) {
       }
       // le calendrier d'un club bouge lentement : cache long, revalidation
       // en arriere-plan, pour ne pas exposer le quota a un crawl soutenu
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=21600, stale-while-revalidate=604800');
+      return res.status(200).send(r.html);
+    }
+
+    if (q.joueur) {
+      const r = await pageJoueur(String(q.joueur));
+      if (!r) return introuvable(res);
+      const demande = '/football/joueur/' + String(q.joueur).replace(/\/+$/, '') + '/';
+      if (demande !== r.url) {
+        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=86400');
+        res.setHeader('Location', SITE + r.url);
+        return res.status(301).end();
+      }
+      // carriere/transferts bougent lentement : meme cache que la page equipe
       res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=21600, stale-while-revalidate=604800');
       return res.status(200).send(r.html);
     }
@@ -1323,7 +1744,10 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', stable
         ? 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
         : (r.fini ? 'public, max-age=0, s-maxage=21600, stale-while-revalidate=604800'
-                  : 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'));
+                  // 60 s etait absurde : un robot repassant toutes les
+                  // minutes refaisait les 8 appels API a chaque fois. Une cote
+                  // ou une compo probable ne bougent pas a cette cadence.
+                  : 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600'));
       return res.status(200).send(r.html);
     }
     if (q.transferts) {
@@ -1332,7 +1756,7 @@ export default async function handler(req, res) {
       return res.status(200).send(await pageTransferts());
     }
 
-    if (bouts.length === 1) return res.status(200).send(pageRacine());
+    if (bouts.length === 1) return res.status(200).send(await pageRacine());
 
     const p = paysParSlug(bouts[1]);
     if (!p) return introuvable(res);
@@ -1356,7 +1780,27 @@ export default async function handler(req, res) {
 }
 
 function introuvable(res) {
-  res.setHeader('Cache-Control', 'no-store');
+  // Panne API : la page existe peut-etre tres bien, on n'a simplement pas pu
+  // le verifier. Un 404 ferait desindexer ; un 503 avec Retry-After dit a
+  // Google de repasser plus tard et preserve l'URL.
+  if (apiIndispo()) {
+    // s-maxage : pendant une panne de quota, les robots repassent en boucle
+    // sur des milliers d'URL. no-store transformait chaque passage en pages
+    // SSR completes (jusqu'a 8 appels API chacune) — la panne s'alimentait
+    // elle-meme. 10 min d'absorption CDN par URL suffisent a casser la boucle
+    // sans retarder le retour a la normale.
+    res.setHeader('Cache-Control', 'public, s-maxage=600');
+    res.setHeader('Retry-After', '3600');
+    return res.status(503).send('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+      + '<title>Service momentanement indisponible | NinjaScores</title>'
+      + '<meta name="robots" content="noindex">'
+      + '</head><body><h1>Service momentanement indisponible</h1>'
+      + '<p>Les données ne sont pas accessibles pour le moment. Merci de réessayer dans quelques minutes.</p>'
+      + '<p><a href="/football/">Voir tous les championnats</a> · <a href="/">Accueil</a></p></body></html>');
+  }
+  // Une page reellement introuvable le reste : cache court pour absorber les
+  // crawlers sans figer une 404 qui pourrait devenir une vraie page demain.
+  res.setHeader('Cache-Control', 'public, s-maxage=600');
   return res.status(404).send('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
     + '<title>Page introuvable | NinjaScores</title><meta name="robots" content="noindex">'
     + '</head><body><h1>Page introuvable</h1>'
