@@ -63,6 +63,10 @@ export default async function handler(req, res) {
   const resume = { cibles: 0, appels: 0, sansCotes: [], compos: 0, tronque: false };
 
   try {
+    // L'agrégat des cotes du jour (calendrier client, TTL 900 s) : le chauffer
+    // ici garantit que le premier visiteur du quart d'heure ne paie jamais
+    // l'assemblage complet.
+    await via('cotes-jour&date=' + jourUTC());
     const cal = await via('fixtures&date=' + jourUTC());
     const tous = (cal && cal.response) || [];
     const maintenant = Date.now();

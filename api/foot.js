@@ -109,9 +109,15 @@ function decompresser(stocke) {
   catch (e) { return null; }
 }
 
+// Quota de commandes Upstash epuise (limite mensuelle du plan gratuit) : on
+// coupe Redis 15 min pour ne pas payer deux allers-retours inutiles par
+// requete. Le proxy fonctionne alors comme avant Redis : CDN + amont.
+let redisMortJusqua = 0;
+
 async function redisPipeline(commandes) {
   const url = process.env.KV_REST_API_URL, token = process.env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
+  if (Date.now() < redisMortJusqua) return null;
   try {
     const r = await fetch(url + '/pipeline', {
       method: 'POST',
@@ -120,7 +126,12 @@ async function redisPipeline(commandes) {
       signal: AbortSignal.timeout(REDIS_TIMEOUT_MS),
     });
     if (!r.ok) return null;
-    return await r.json();
+    const rep = await r.json();
+    if (Array.isArray(rep) && rep.some((x) => x && typeof x.error === 'string' && x.error.includes('max requests limit'))) {
+      redisMortJusqua = Date.now() + 900000;
+      return null;
+    }
+    return rep;
   } catch (e) { return null; }
 }
 
@@ -142,9 +153,31 @@ export default async function handler(req, res) {
   // Tableau de bord du quota : /api/foot/?path=compteurs
   // Par jour et par endpoint — `recues` (requetes arrivees au proxy) et
   // `amont` (appels reellement partis vers API-Football). Rien de sensible.
+  // Auto-test Redis : /api/foot/?path=compteurs&test=1 — ecrit une grosse et
+  // une petite valeur puis les relit, en remontant les erreurs PAR COMMANDE
+  // qu'Upstash renvoie (le pipeline repond 200 meme quand une commande echoue,
+  // et on les ignorait silencieusement).
+  if (path === 'compteurs' && 'test' in params) {
+    const grosse = 'x'.repeat(30000);
+    const rep = await redisPipeline([
+      ['SETEX', 'foottest:grosse', 120, grosse],
+      ['GET', 'foottest:grosse'],
+      ['SETEX', 'foottest:petite', 120, 'ok'],
+      ['GET', 'foottest:petite'],
+    ]);
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json({
+      pipelineOk: !!rep,
+      resultats: (rep || []).map((r) => r && r.error ? { error: r.error } :
+        { result: typeof (r && r.result) === 'string' && r.result.length > 40 ? r.result.slice(0, 20) + '…(' + r.result.length + ')' : (r && r.result) }),
+    });
+    return;
+  }
+
   if (path === 'compteurs') {
     const jours = [0, 1, 2].map((n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10));
     const eps = Object.keys(ENDPOINTS).concat([
+      'cotes-jour',
       'direct-push-goals', 'direct-capture-mt', 'direct-archive-matches',
       'direct-stats-mt', 'direct-transferts',
     ]);
@@ -167,6 +200,103 @@ export default async function handler(req, res) {
     });
     res.setHeader('Cache-Control', 'public, s-maxage=60');
     res.status(200).json(sortie);
+    return;
+  }
+
+  // ── Agrégat des cotes 1/N/2 d'une journée : ?path=cotes-jour&date=AAAA-MM-JJ
+  // Le calendrier faisait ce travail DANS LE NAVIGATEUR : 1 appel odds&date
+  // paginé par 10 (jusqu'à 24 pages) + un rattrapage par championnat (jusqu'à
+  // 40 appels, moitié en 502) — 60 à 90 allers-retours à ~400 ms depuis
+  // l'Asie = les 5-8 s de chargement constatées le 31/08. Ici le même
+  // assemblage se fait une fois, à côté de Redis, et le client ne paie plus
+  // qu'UNE requête. On ne garde que le marché Match Winner des bookmakers que
+  // les préférences GEO du client connaissent (s6.js) : le choix final par
+  // pays reste côté client, la donnée voyage compacte.
+  if (path === 'cotes-jour') {
+    const date = String(params.date || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { res.status(400).json({ error: 'date invalide (AAAA-MM-JJ)' }); return; }
+    const TTL_AGREGAT = 900;                     // aligné sur la TTL odds
+    const cle = 'foot:cotes-jour?' + date;
+    const jour = jourUTC();
+    const lu = await redisPipeline([
+      ['GET', cle],
+      ['INCR', `footcnt:${jour}:cotes-jour`],
+      ['EXPIRE', `footcnt:${jour}:cotes-jour`, 604800],
+    ]);
+    const stocke = decompresser(lu && lu[0] && lu[0].result);
+    if (stocke) {
+      res.setHeader('Cache-Control', `public, s-maxage=${TTL_AGREGAT}, stale-while-revalidate=3600`);
+      res.setHeader('X-Cache-Foot', 'redis');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.status(200).send(stocke);
+      return;
+    }
+
+    // Appels internes via le proxy lui-même (recursion HTTP profondeur 1,
+    // même mécanique que api/prechauffe.js) : chaque page profite du cache
+    // Redis/CDN existant et des compteurs.
+    const interne = async (chemin) => {
+      try {
+        const r = await fetch('https://ninjascores.com/api/foot/?path=' + chemin, { signal: AbortSignal.timeout(20000) });
+        if (!r.ok) return null;
+        return await r.json();
+      } catch (e) { return null; }
+    };
+    const enFile = async (taches, largeur) => {
+      const sortie = new Array(taches.length); let i = 0;
+      const fil = async () => { while (i < taches.length) { const k = i++; sortie[k] = await taches[k](); } };
+      await Promise.all(Array.from({ length: Math.min(largeur, taches.length) || 1 }, fil));
+      return sortie;
+    };
+    const GARDES = new Set([8, 11, 7, 2, 32, 1]);   // union des préférences GEO de s6.js
+    const matchs = {};
+    const absorber = (rep) => (rep && rep.response || []).forEach((o) => {
+      if (!o || !o.fixture || matchs[o.fixture.id]) return;
+      const bks = (o.bookmakers || []).filter((b) => GARDES.has(b.id));
+      const lots = (bks.length ? bks : (o.bookmakers || []).slice(0, 1)).map((b) => {
+        const mw = (b.bets || []).find((x) => x.name === 'Match Winner');
+        if (!mw) return null;
+        const v = {};
+        (mw.values || []).forEach((x) => { v[x.value] = x.odd; });
+        return v.Home && v.Away ? { id: b.id, nom: b.name, c1: v.Home, cN: v.Draw || null, c2: v.Away } : null;
+      }).filter(Boolean);
+      if (lots.length) matchs[o.fixture.id] = lots;
+    });
+
+    const FINIS_AGG = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
+    const [premiere, jourCal] = await Promise.all([
+      interne('odds&date=' + date),
+      interne('fixtures&date=' + date),
+    ]);
+    absorber(premiere);
+    const totalPages = (premiere && premiere.paging && premiere.paging.total) || 1;
+    const suite = [];
+    for (let p = 2; p <= Math.min(totalPages, 25); p++) suite.push(() => interne('odds&date=' + date + '&page=' + p));
+    (await enFile(suite, 8)).forEach(absorber);
+
+    // Rattrapage par championnat : l'appel par date est incomplet (constat du
+    // 22/07 côté client). Seulement pour les championnats dont il reste un
+    // match NON JOUÉ sans cote — les matchs finis n'ont plus de cotes chez le
+    // fournisseur, les redemander ne produisait que des 502.
+    const parLigue = new Map();
+    ((jourCal && jourCal.response) || []).forEach((f) => {
+      if (matchs[f.fixture.id]) return;
+      if (FINIS_AGG.has(f.fixture.status.short)) return;
+      const k = f.league.id + ':' + f.league.season;
+      if (!parLigue.has(k)) parLigue.set(k, { id: f.league.id, season: f.league.season });
+    });
+    const rattrapage = [...parLigue.values()].map((l) => () => interne('odds&date=' + date + '&league=' + l.id + '&season=' + l.season));
+    (await enFile(rattrapage, 8)).forEach(absorber);
+
+    const corps = JSON.stringify({ date, matchs });
+    const serialise = compresser(corps);
+    if (serialise.length < REDIS_VAL_MAX) {
+      await redisPipeline([['SETEX', cle, TTL_AGREGAT, serialise]]);
+    }
+    res.setHeader('Cache-Control', `public, s-maxage=${TTL_AGREGAT}, stale-while-revalidate=3600`);
+    res.setHeader('X-Cache-Foot', 'agrege');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.status(200).send(corps);
     return;
   }
 

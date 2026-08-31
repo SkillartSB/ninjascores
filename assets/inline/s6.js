@@ -662,13 +662,44 @@
     return Promise.all(fils).then(function () { return res; });
   }
 
-  // Deux passes, parce que l'appel par date est INCOMPLET : le 22/07 il
-  // ignorait 5 des 9 matchs de Ligue des champions et de Conference League,
-  // alors qu'un appel cible sur le championnat les renvoyait tous.
+  // Depuis le 31/08, le serveur pré-assemble les cotes de la journée
+  // (/api/foot/?path=cotes-jour&date=) : UNE requête au lieu de 60-90 —
+  // c'était la cause des 5-8 s de chargement du calendrier. Le serveur
+  // renvoie, par match, le marché 1/N/2 des bookmakers connus des
+  // préférences GEO ; le choix du bookmaker selon le pays reste fait ici.
+  function cotesJour(cle, ligues) {
+    return appel('path=cotes-jour&date=' + cle).then(function (j) {
+      // Repli sur l'ancienne mécanique seulement si la réponse est malformée
+      // (vieux déploiement, erreur) — un jour SANS cotes (journée passée) est
+      // une réponse valide : rejouer 60 appels n'y changerait rien.
+      if (!j || typeof j.matchs !== 'object' || j.matchs === null) return cotesJourLegacy(cle, ligues);
+      var par = {};
+      var _prefs = (window.NS_GEO && NS_GEO.actif().cotes) || PREFERES;
+      Object.keys(j.matchs).forEach(function (fid) {
+        var lots = j.matchs[fid] || [];
+        var choisi = null;
+        for (var i = 0; i < _prefs.length && !choisi; i++) {
+          for (var k = 0; k < lots.length; k++) {
+            if (lots[k] && lots[k].id === _prefs[i]) { choisi = lots[k]; break; }
+          }
+        }
+        if (!choisi) choisi = lots[0];
+        if (choisi && choisi.c1 && choisi.c2) {
+          par[fid] = { c1: choisi.c1, cN: choisi.cN || null, c2: choisi.c2, source: choisi.nom };
+        }
+      });
+      return par;
+    }).catch(function () { return cotesJourLegacy(cle, ligues); });
+  }
+
+  // Ancienne mécanique, conservée en repli. Deux passes, parce que l'appel
+  // par date est INCOMPLET : le 22/07 il ignorait 5 des 9 matchs de Ligue des
+  // champions et de Conference League, alors qu'un appel cible sur le
+  // championnat les renvoyait tous.
   //   1. odds?date=      — pagine par 10, couvre l'essentiel en ~12 appels
   //   2. odds?date&league&season — rattrapage, seulement pour les championnats
   //      dont il reste au moins un match sans cote
-  function cotesJour(cle, ligues) {
+  function cotesJourLegacy(cle, ligues) {
     return appel('path=odds&date=' + cle).then(function (j) {
       var par = {};
       extraire(j.response, par);
