@@ -39,18 +39,25 @@ const ENDPOINTS = {
 // Le direct doit rester frais : on écrase la TTL quand ?live= est présent.
 const TTL_LIVE = 20;
 
-// ── Coupe-circuit quota ──────────────────────────────────────────────────────
+// ── Coupe-circuit quota (partage entre toutes les instances via Redis) ─────
 // Quand API-Football signale le quota epuise, CHAQUE requete continuait de
 // partir vers l'amont pour recevoir la meme erreur — et la reponse etait
-// no-store, donc jamais absorbee par le CDN. Les robots qui crawlent les pages
-// SSR transformaient la panne en tempete : des centaines d'appels/minute pour
-// rien, et le quota du lendemain brule des minuit.
-// La variable de module survit tant que l'instance serverless reste chaude :
-// ce n'est pas un verrou global parfait, c'est un amortisseur — suffisant pour
-// diviser la tempete par le nombre de requetes qu'une instance voit passer.
-let quotaMortJusqua = 0;
-const QUOTA_PAUSE_MS = 120000;   // 2 min sans appel amont apres un refus quota
+// no-store, donc jamais absorbee par le CDN. Une variable de module ne survit
+// qu'a l'instance serverless qui la porte : avec 50 instances concurrentes,
+// chaque instance dilapide un appel pour decouvrir que le quota est mort. Le
+// 03/09 on a mesure 200 000+ appels amont sur un quota de 150 000 — la moitie
+// du sur-tir venait de ce trou.
+// La version Redis partage l'etat : une seule instance decouvre le quota
+// mort, ecrit la cle, et toutes les autres la lisent en meme temps que le
+// cache principal (pipeline unique, zero aller-retour supplementaire dans le
+// chemin chaud). La cle expire d'elle-meme au bout de la pause.
+const CLE_QUOTA_MORT = 'foot:quota-mort';
+const QUOTA_PAUSE_MS = 120000;   // 2 min pour un refus JOUR
+const QUOTA_MINUTE_MS = 8000;    // 8 s pour un refus MINUTE
 const TTL_ERREUR = 60;           // le CDN absorbe les erreurs 60 s
+// Filet de securite local : si Redis est indisponible, l'instance retient
+// quand meme sa derniere connaissance du quota mort pour son propre trafic.
+let quotaMortLocal = 0;
 
 function erreurQuota(erreurs) {
   const texte = JSON.stringify(erreurs || '');
@@ -64,8 +71,19 @@ function erreurQuota(erreurs) {
 // epuise » servi alors qu'il restait 109 000 appels.
 function pauseQuota(erreurs) {
   const texte = JSON.stringify(erreurs || '');
-  if (/per minute|rate ?limit/i.test(texte)) return 8000;
+  if (/per minute|rate ?limit/i.test(texte)) return QUOTA_MINUTE_MS;
   return QUOTA_PAUSE_MS;
+}
+// Duree de vie de la cle Redis foot:quota-mort en SECONDES. Pour un refus
+// JOUR on tient jusqu'au reset UTC : la limite est fixe, la relever avant
+// minuit ne servira qu'a redepiler les memes 502.
+function ttlQuotaMortSec(erreurs) {
+  const texte = JSON.stringify(erreurs || '');
+  if (/per minute|rate ?limit/i.test(texte)) return Math.ceil(QUOTA_MINUTE_MS / 1000);
+  const maintenant = new Date();
+  const minuit = new Date(maintenant);
+  minuit.setUTCHours(24, 0, 0, 0);
+  return Math.max(60, Math.ceil((minuit - maintenant) / 1000));
 }
 
 function repondreQuotaMort(res, details) {
@@ -333,8 +351,9 @@ export default async function handler(req, res) {
 
   // `status` reste exempte : c'est le thermometre du quota (1 appel/min au
   // pire, TTL 60 s) — le couper rendrait la panne invisible au moment precis
-  // ou on a besoin de la voir.
-  if (path !== 'status' && Date.now() < quotaMortJusqua) return repondreQuotaMort(res);
+  // ou on a besoin de la voir. Le check Redis vient plus bas, dans le
+  // pipeline principal, pour n'ajouter aucun aller-retour au chemin chaud.
+  if (path !== 'status' && Date.now() < quotaMortLocal) return repondreQuotaMort(res);
 
   // Cle stable : les parametres sont tries pour que ?team=1&last=8 et
   // ?last=8&team=1 partagent la meme entree.
@@ -358,7 +377,11 @@ export default async function handler(req, res) {
   }
 
   if (path !== 'status') {
+    // Ordre du pipeline : (0) verrou quota partage, (1) cache principal, puis
+    // les compteurs. Un seul aller-retour Redis pour l'ensemble — le verrou
+    // ne coute rien de plus.
     const cmdsGet = [
+      ['GET', CLE_QUOTA_MORT],
       ['GET', cleRedis],
       ['INCR', `footcnt:${jour}:${path}`],
       ['EXPIRE', `footcnt:${jour}:${path}`, 604800],
@@ -368,12 +391,20 @@ export default async function handler(req, res) {
       cmdsGet.push(['EXPIRE', `footcnt:${jour}:${sousCompteur}`, 604800]);
     }
     const lu = await redisPipeline(cmdsGet);
-    const stocke = decompresser(lu && lu[0] && lu[0].result);
+    const stocke = decompresser(lu && lu[1] && lu[1].result);
     if (stocke) {
       res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
       res.setHeader('X-Cache-Foot', 'redis');
       res.status(200).send(stocke);
       return;
+    }
+    // Quota mort partage : si une autre instance a decouvert la panne, on
+    // s'arrete ici sans depenser un aller-retour amont pour re-decouvrir.
+    // La cle expire d'elle-meme au reset UTC (ou apres 8 s pour un refus
+    // minute).
+    if (lu && lu[0] && lu[0].result) {
+      quotaMortLocal = Date.now() + 60000;   // filet local si Redis retombe
+      return repondreQuotaMort(res);
     }
   }
 
@@ -398,7 +429,12 @@ export default async function handler(req, res) {
 
     if (enErreur) {
       if (erreurQuota(erreurs)) {
-        quotaMortJusqua = Date.now() + pauseQuota(erreurs);
+        // Verrou partage via Redis : toutes les instances savent que le
+        // quota est mort a partir du prochain pipeline (donc quasi-immediat).
+        // La cle s'auto-detruit apres la duree calculee (jusqu'au reset UTC
+        // pour un refus JOUR, 8 s pour un refus MINUTE).
+        quotaMortLocal = Date.now() + pauseQuota(erreurs);
+        await redisPipeline([['SETEX', CLE_QUOTA_MORT, ttlQuotaMortSec(erreurs), '1']]);
         return repondreQuotaMort(res, erreurs);
       }
       // Erreur metier ponctuelle (mauvais parametre…) : courte absorption CDN
@@ -449,7 +485,12 @@ export default async function handler(req, res) {
     res.status(200).json(json);
   } catch (e) {
     console.error('[foot]', path, e.message);
-    if (/HTTP 429/.test(e.message)) quotaMortJusqua = Date.now() + 8000;   // 429 = limite minute, pas le quota du jour
+    if (/HTTP 429/.test(e.message)) {
+      // 429 = limite minute, pas le quota du jour. Verrou partage 8 s pour
+      // qu'aucune instance ne repique sur le meme mur.
+      quotaMortLocal = Date.now() + QUOTA_MINUTE_MS;
+      await redisPipeline([['SETEX', CLE_QUOTA_MORT, Math.ceil(QUOTA_MINUTE_MS / 1000), '1']]);
+    }
     res.setHeader('Cache-Control', `public, s-maxage=${TTL_ERREUR}`);
     res.status(502).json({ error: 'Appel API-Football échoué' });
   }
