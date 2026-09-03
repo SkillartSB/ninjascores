@@ -409,6 +409,24 @@ export default async function handler(req, res) {
       return;
     }
 
+    // TTL adaptative sur `fixtures?id=` : un match TERMINE ne changera plus
+    // jamais, on peut le cacher tres longtemps (30 jours). Un match LIVE
+    // change chaque minute, on baisse la TTL. Un match a venir garde 1 h.
+    // Mesure du 03/09 : fixtures:id = 85 % du quota fixtures, cache hit 4 %
+    // — les bots crawlent en boucle les fiches match, chaque URL n'etant
+    // touchee qu'une fois par cycle > TTL. Constate : ~90 000 appels/jour
+    // rien que la-dessus. Avec 30j de TTL sur les matchs finis, la memoire
+    // Redis absorbe la longue traine des historiques (ancien 1 h → 24 fetch/
+    // URL/jour vs nouveau 30j → 1 fetch/URL/mois).
+    const FINIS_LIVE = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
+    const EN_JEU = new Set(['1H', 'HT', '2H', 'ET', 'P', 'BT', 'LIVE']);
+    if (path === 'fixtures' && 'id' in params) {
+      const f = json && json.response && json.response[0];
+      const st = f && f.fixture && f.fixture.status && f.fixture.status.short;
+      if (FINIS_LIVE.has(st)) ttl = 30 * 86400;      // 30 jours — donnee figee
+      else if (EN_JEU.has(st)) ttl = 60;             // 1 min pendant le match
+    }
+
     // Reponse valide : on la range dans Redis pour la duree de la TTL, et on
     // compte l'appel amont. Une reponse en erreur n'arrive jamais ici (voir
     // plus haut) — on ne fige donc jamais une panne dans le cache.
