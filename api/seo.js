@@ -1738,16 +1738,16 @@ export default async function handler(req, res) {
         return res.status(301).end();
       }
       // Les compositions et les cotes bougent jusqu'au coup d'envoi ; le
-      // classement et les confrontations, non.
-      const stable = r.fini && (r.onglet.id === 'tat' || r.onglet.id === 'tableau'
-        || r.onglet.id === 'stats' || r.onglet.id === 'resume');
-      res.setHeader('Cache-Control', stable
-        ? 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
-        : (r.fini ? 'public, max-age=0, s-maxage=21600, stale-while-revalidate=604800'
-                  // 60 s etait absurde : un robot repassant toutes les
-                  // minutes refaisait les 8 appels API a chaque fois. Une cote
-                  // ou une compo probable ne bougent pas a cette cadence.
-                  : 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600'));
+      // classement et les confrontations, non. Une fois le match FINI, les
+      // huit onglets sont figes : on cache 30 jours au CDN pour barrer le
+      // trafic bots avant meme d'atteindre la fonction (constate le 03/09 :
+      // fixtures:id brulait 100 % du quota API par re-crawl des historiques).
+      res.setHeader('Cache-Control', r.fini
+        ? 'public, max-age=0, s-maxage=2592000, stale-while-revalidate=2592000'
+                    // 60 s etait absurde : un robot repassant toutes les
+                    // minutes refaisait les 8 appels API a chaque fois. Une cote
+                    // ou une compo probable ne bougent pas a cette cadence.
+        : 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600');
       return res.status(200).send(r.html);
     }
     if (q.transferts) {
