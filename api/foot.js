@@ -178,6 +178,12 @@ export default async function handler(req, res) {
     const jours = [0, 1, 2].map((n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10));
     const eps = Object.keys(ENDPOINTS).concat([
       'cotes-jour',
+      // Sous-compteurs `fixtures` (voir bloc `sousCompteur` plus bas) : le
+      // meme endpoint sert quatre usages tres differents et il faut savoir
+      // lequel bruit le quota (constate le 03/09 : fixtures = 63 % sans
+      // savoir lequel).
+      'fixtures:date', 'fixtures:id', 'fixtures:team', 'fixtures:live',
+      'fixtures:league', 'fixtures:autre',
       'direct-push-goals', 'direct-capture-mt', 'direct-archive-matches',
       'direct-stats-mt', 'direct-transferts',
     ]);
@@ -336,12 +342,32 @@ export default async function handler(req, res) {
   const cleRedis = 'foot:' + path + '?' + qs.toString();
   const jour = jourUTC();
 
+  // Sous-compteur pour `fixtures` : cet endpoint sert TROIS usages tres
+  // differents (calendrier, page match, page equipe, direct) qui n'ont ni
+  // les memes TTL ni les memes volumes. Les agreger ensemble masquait
+  // lequel bruit le quota (constate le 03/09 : 63 % du quota sur fixtures
+  // sans savoir lequel). On ecrit UN compteur en plus du principal.
+  let sousCompteur = null;
+  if (path === 'fixtures') {
+    if ('live' in params)      sousCompteur = 'fixtures:live';
+    else if ('id' in params)   sousCompteur = 'fixtures:id';
+    else if ('team' in params) sousCompteur = 'fixtures:team';
+    else if ('date' in params) sousCompteur = 'fixtures:date';
+    else if ('league' in params) sousCompteur = 'fixtures:league';
+    else                       sousCompteur = 'fixtures:autre';
+  }
+
   if (path !== 'status') {
-    const lu = await redisPipeline([
+    const cmdsGet = [
       ['GET', cleRedis],
       ['INCR', `footcnt:${jour}:${path}`],
       ['EXPIRE', `footcnt:${jour}:${path}`, 604800],
-    ]);
+    ];
+    if (sousCompteur) {
+      cmdsGet.push(['INCR', `footcnt:${jour}:${sousCompteur}`]);
+      cmdsGet.push(['EXPIRE', `footcnt:${jour}:${sousCompteur}`, 604800]);
+    }
+    const lu = await redisPipeline(cmdsGet);
     const stocke = decompresser(lu && lu[0] && lu[0].result);
     if (stocke) {
       res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
@@ -392,6 +418,10 @@ export default async function handler(req, res) {
         ['INCR', `footamont:${jour}:${path}`],
         ['EXPIRE', `footamont:${jour}:${path}`, 604800],
       ];
+      if (sousCompteur) {
+        cmds.push(['INCR', `footamont:${jour}:${sousCompteur}`]);
+        cmds.push(['EXPIRE', `footamont:${jour}:${sousCompteur}`, 604800]);
+      }
       if (serialise.length < REDIS_VAL_MAX) cmds.push(['SETEX', cleRedis, ttl, serialise]);
       await redisPipeline(cmds);
     }
