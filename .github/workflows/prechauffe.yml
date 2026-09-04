@@ -33,4 +33,4 @@ jobs:
           # travailler jusqu'a ~280 s (maxDuration 300). Avec l'ancien -m 55,
           # curl abandonnait a 55 s et le job etait marque "failed" a chaque
           # passage alors que la chauffe continuait cote Vercel.
-          curl -sS -m 290 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"
+          curl -sS -m 790 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"

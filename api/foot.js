@@ -69,7 +69,12 @@ function erreurQuota(erreurs) {
 // meme pause de 2 minutes que le quota JOURNALIER — 2 minutes de pages vides
 // pour un embouteillage de quelques secondes. Constate le 30/08 : « quota
 // epuise » servi alors qu'il restait 109 000 appels.
-function pauseQuota(erreurs) {
+function pauseQuota(erreurs, resteJour) {
+  // Source de verite : le header x-ratelimit-requests-remaining donne le
+  // quota JOUR restant. S'il en reste, le refus vient forcement de la limite
+  // PAR MINUTE, quelle que soit la formulation du message.
+  const n = Number(resteJour);
+  if (Number.isFinite(n) && n > 0) return QUOTA_MINUTE_MS;
   const texte = JSON.stringify(erreurs || '');
   if (/per minute|rate ?limit/i.test(texte)) return QUOTA_MINUTE_MS;
   return QUOTA_PAUSE_MS;
@@ -77,13 +82,26 @@ function pauseQuota(erreurs) {
 // Duree de vie de la cle Redis foot:quota-mort en SECONDES. Pour un refus
 // JOUR on tient jusqu'au reset UTC : la limite est fixe, la relever avant
 // minuit ne servira qu'a redepiler les memes 502.
-function ttlQuotaMortSec(erreurs) {
+function ttlQuotaMortSec(erreurs, resteJour) {
+  // Meme logique que pauseQuota : le header prime sur le texte du message.
+  // Bug constate DEUX FOIS le 04/09 : un refus « Too Many Requests » (limite
+  // MINUTE) ne matchait ni « per minute » ni « rate limit », tombait dans le
+  // cas par defaut, et posait le drapeau jusqu'a minuit UTC alors qu'il
+  // restait 88 % du quota jour. Resultat : toute l'app en 502 pendant des
+  // heures, avec des matchs a moitie remplis selon ce qui etait deja en cache.
+  const n = Number(resteJour);
+  if (Number.isFinite(n) && n > 0) return Math.ceil(QUOTA_MINUTE_MS / 1000);
   const texte = JSON.stringify(erreurs || '');
   if (/per minute|rate ?limit/i.test(texte)) return Math.ceil(QUOTA_MINUTE_MS / 1000);
+  // Quota jour reellement epuise (ou header absent) : on tient jusqu'au reset
+  // UTC, PLAFONNE A 1 H. Ceinture de securite : si on se trompe encore de
+  // diagnostic, le drapeau se leve au bout d'une heure au lieu de geler la
+  // journee. Si le quota est vraiment mort, le premier appel apres expiration
+  // le repose — un appel gaspille par heure, contre une journee perdue.
   const maintenant = new Date();
   const minuit = new Date(maintenant);
   minuit.setUTCHours(24, 0, 0, 0);
-  return Math.max(60, Math.ceil((minuit - maintenant) / 1000));
+  return Math.min(3600, Math.max(60, Math.ceil((minuit - maintenant) / 1000)));
 }
 
 function repondreQuotaMort(res, details) {
@@ -458,8 +476,8 @@ export default async function handler(req, res) {
         // quota est mort a partir du prochain pipeline (donc quasi-immediat).
         // La cle s'auto-detruit apres la duree calculee (jusqu'au reset UTC
         // pour un refus JOUR, 8 s pour un refus MINUTE).
-        quotaMortLocal = Date.now() + pauseQuota(erreurs);
-        await redisPipeline([['SETEX', CLE_QUOTA_MORT, ttlQuotaMortSec(erreurs), '1']]);
+        quotaMortLocal = Date.now() + pauseQuota(erreurs, reste);
+        await redisPipeline([['SETEX', CLE_QUOTA_MORT, ttlQuotaMortSec(erreurs, reste), '1']]);
         return repondreQuotaMort(res, erreurs);
       }
       // Erreur metier ponctuelle (mauvais parametre…) : courte absorption CDN

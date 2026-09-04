@@ -41,8 +41,16 @@ const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 // Fenêtre de chauffe : matchs qui commencent d'ici 2 h 30 (ou déjà en cours,
 // pour les compos officielles qui tombent après le coup d'envoi).
 const FENETRE_MS = 2.5 * 3600 * 1000;
-const BUDGET_MS = 280000;         // maxDuration 300 s, marge de sécurité
-const PAUSE_MS = 250;             // 4 appels/s — loin de la limite minute amont
+const BUDGET_MS = 700000;         // maxDuration 800 s, marge de sécurité
+// Les appels d'un meme match sont independants : on les tire EN PARALLELE
+// puis on marque une pause. 4 appels par vague / 600 ms ≈ 6,7 appels/s, sous
+// la limite minute amont (~450/min = 7,5/s) avec de la marge pour le trafic
+// concurrent. En sequentiel pur (ancien code) chaque match coutait ~1,8 s :
+// 121 matchs ne rentraient pas dans le budget et la chauffe tronquait au
+// milieu de la Ligue 1 — PSG-Monaco chauffe, Lyon-Auxerre non (constat du
+// 04/09, l'utilisateur voyait deux matchs de la meme journee inegalement
+// remplis).
+const PAUSE_MS = 400;
 
 function jourUTC() { return new Date().toISOString().slice(0, 10); }
 
@@ -91,10 +99,13 @@ export default async function handler(req, res) {
       const a = f.teams.home.id, b = f.teams.away.id;
       equipes.add(a); equipes.add(b);
 
-      const cotes = await via('odds&fixture=' + fid); await dormir(PAUSE_MS);
-      const compo = await via('fixtures/lineups&fixture=' + fid); await dormir(PAUSE_MS);
-      await via('injuries&fixture=' + fid); await dormir(PAUSE_MS);
-      await via('fixtures/headtohead&h2h=' + a + '-' + b + '&last=20'); await dormir(PAUSE_MS);
+      const [cotes, compo] = await Promise.all([
+        via('odds&fixture=' + fid),
+        via('fixtures/lineups&fixture=' + fid),
+        via('injuries&fixture=' + fid),
+        via('fixtures/headtohead&h2h=' + a + '-' + b + '&last=20'),
+      ]);
+      await dormir(PAUSE_MS);
       resume.appels += 4;
 
       if (!(cotes && cotes.response && cotes.response.length)) {
@@ -108,11 +119,14 @@ export default async function handler(req, res) {
 
     for (const t of equipes) {
       if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
-      await via('fixtures&team=' + t + '&last=10'); await dormir(PAUSE_MS);
       // Chemin « compo probable » de NS_LINEUP : le dernier match joue, puis
       // sa feuille de match. Cles distinctes de last=10 — les chauffer aussi,
       // sinon l'onglet Compo reste au placeholder avant l'heure officielle.
-      const dernier = await via('fixtures&team=' + t + '&last=1'); await dormir(PAUSE_MS);
+      const [, dernier] = await Promise.all([
+        via('fixtures&team=' + t + '&last=10'),
+        via('fixtures&team=' + t + '&last=1'),
+      ]);
+      await dormir(PAUSE_MS);
       const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
       if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await dormir(PAUSE_MS); }
       resume.appels += fidDernier ? 3 : 2;
