@@ -1,11 +1,14 @@
-# Préchauffage du cache des pages match, toutes les 30 minutes.
+# Préchauffage du cache des pages match, puis audit de couverture.
 #
-# Même mécanique que capture-mt : le plan Vercel limite les crons à 1/jour,
-# GitHub Actions sert d'horloge. L'endpoint /api/prechauffe (Vercel) chauffe
-# le cache Redis du proxy pour les matchs des compétitions couvertes qui
-# démarrent dans les 3 heures : cotes, confrontations, forme, compos,
-# blessés. Idempotent — une clé encore en cache ne coûte aucun appel amont,
-# chaque passage ne repaye que ce qui a expiré.
+# Deux étapes volontairement séparées :
+#   1. /api/prechauffe/  remplit le cache Redis (cotes, compos, blessés,
+#      confrontations, forme) pour les matchs qui démarrent bientôt.
+#   2. /api/couverture/  vérifie le résultat et fait ÉCHOUER le job si la
+#      complétude des ligues prioritaires passe sous le seuil.
+#
+# L'étape 2 est le vrai apport : jusqu'au 04/09 c'est l'utilisateur qui
+# découvrait les trous en ouvrant l'app. Maintenant un job rouge (donc un
+# mail GitHub) le signale tout seul, avec la liste des matchs concernés.
 #
 # Pourquoi 30 min : la TTL la plus courte des blocs chauffés est 30 min
 # (cotes, compos). Plus fréquent ne rafraîchirait rien de plus ; moins
@@ -29,8 +32,20 @@ jobs:
       - name: Declencher le prechauffage
         run: |
           echo "Appel de l'endpoint de prechauffage…"
-          # -m 290 : depuis l'extension a toutes les ligues, l'endpoint peut
-          # travailler jusqu'a ~280 s (maxDuration 300). Avec l'ancien -m 55,
-          # curl abandonnait a 55 s et le job etait marque "failed" a chaque
-          # passage alors que la chauffe continuait cote Vercel.
+          # -m 790 : depuis la parallelisation du 04/09 l'endpoint travaille
+          # jusqu'a ~700 s (maxDuration 800). Un timeout curl plus court
+          # marquerait le job en echec alors que la chauffe continue cote
+          # Vercel — c'est ce qui arrivait avec l'ancien -m 55.
           curl -sS -m 790 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"
+
+      - name: Auditer la couverture
+        run: |
+          echo "Audit de la couverture des donnees…"
+          REP=$(curl -sS -m 60 "https://ninjascores.com/api/couverture/")
+          echo "$REP" | python3 -m json.tool || echo "$REP"
+          SANTE=$(echo "$REP" | python3 -c "import sys,json;print(json.load(sys.stdin).get('sante','inconnu'))")
+          if [ "$SANTE" = "degrade" ]; then
+            echo "::error::Couverture degradee — des matchs de ligues prioritaires n'ont pas leurs donnees. Voir le detail ci-dessus."
+            exit 1
+          fi
+          echo "Couverture OK ($SANTE)."

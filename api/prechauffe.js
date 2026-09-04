@@ -54,20 +54,27 @@ const PAUSE_MS = 400;
 
 function jourUTC() { return new Date().toISOString().slice(0, 10); }
 
-async function via(chemin) {
+async function via(chemin, rejeu) {
   // Barre finale obligatoire côté /api/foot/ (redirection 308 sinon).
   try {
     const r = await fetch(SITE + '/api/foot/?path=' + chemin, { signal: AbortSignal.timeout(25000) });
-    if (!r.ok) return null;
+    if (!r.ok) { if (!rejeu) echecs.push(chemin); return null; }
     return await r.json();
-  } catch (e) { return null; }
+  } catch (e) { if (!rejeu) echecs.push(chemin); return null; }
 }
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Chemins dont l'appel a rendu null (502 amont, timeout, limite minute). Ils
+// sont rejoues en fin de run — voir « seconde passe » plus bas.
+let echecs = [];
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const t0 = Date.now();
+  // Variable de module : une instance serverless reutilisee garderait les
+  // echecs du run precedent et rejouerait des appels deja reussis.
+  echecs = [];
   const resume = { cibles: 0, appels: 0, sansCotes: [], compos: 0, tronque: false };
 
   try {
@@ -130,6 +137,29 @@ export default async function handler(req, res) {
       const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
       if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await dormir(PAUSE_MS); }
       resume.appels += fidDernier ? 3 : 2;
+    }
+
+    // ── Seconde passe : rattrapage des echecs ────────────────────────────
+    // `via()` avale ses erreurs en renvoyant null : une rafale amont, un 502
+    // transitoire ou une seconde de limite-minute laissait un trou definitif
+    // jusqu'au prochain cron (30 min plus tard). On garde donc la trace des
+    // appels qui ont rendu null et on les rejoue une fois, apres une pause
+    // plus longue. C'est ce qui manquait pour que la chauffe soit fiable
+    // sans qu'un humain vienne constater le trou (demande du 04/09).
+    if (echecs.length && Date.now() - t0 < BUDGET_MS) {
+      resume.echecs1rePasse = echecs.length;
+      await dormir(2000);            // laisse retomber une eventuelle rafale
+      const restants = [];
+      for (const chemin of echecs) {
+        if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
+        const r = await via(chemin, true);
+        if (r == null) restants.push(chemin);
+        await dormir(PAUSE_MS);
+        resume.appels++;
+      }
+      resume.echecsPersistants = restants.length;
+      // Plafonne : on veut un signal, pas un dump.
+      if (restants.length) resume.exemplesEchecs = restants.slice(0, 10);
     }
 
     res.status(200).json(resume);
