@@ -45,6 +45,10 @@ const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 // matchs du soir plus tôt pour qu'un visiteur de fin d'après-midi trouve
 // déjà une fiche pleine.
 const FENETRE_MS = 4 * 3600 * 1000;
+// Dans cette fenetre, ce qui demarre dans moins de 2 h 30 est URGENT : c'est
+// ce que les visiteurs ouvrent maintenant. Le reste (2 h 30 -> 4 h) est du
+// bonus, rattrape au cron suivant si le budget manque.
+const URGENT_MS = 2.5 * 3600 * 1000;
 const BUDGET_MS = 700000;         // maxDuration 800 s, marge de sécurité
 // Les appels d'un meme match sont independants : on les tire EN PARALLELE
 // puis on marque une pause. 4 appels par vague / 600 ms ≈ 6,7 appels/s, sous
@@ -94,8 +98,17 @@ export default async function handler(req, res) {
       const debut = new Date(f.fixture.date).getTime();
       return debut - maintenant < FENETRE_MS;   // inclut les matchs en cours
     });
-    // Grandes competitions d'abord, puis coup d'envoi le plus proche.
+    // Tri en deux etages. L'URGENCE prime sur la taille de la competition :
+    // l'ancien tri mettait les grandes ligues en tete toutes heures
+    // confondues, donc un match de Ligue 1 a 21 h passait avant un match de
+    // CAF a 15 h — alors que c'est celui de 15 h que les visiteurs ouvrent
+    // maintenant. Quand la chauffe tronque, elle doit sacrifier les matchs
+    // lointains (rattrapes au cron suivant), jamais les imminents.
     cibles.sort((x, y) => {
+      const ux = (new Date(x.fixture.date).getTime() - maintenant) < URGENT_MS ? 0 : 1;
+      const uy = (new Date(y.fixture.date).getTime() - maintenant) < URGENT_MS ? 0 : 1;
+      if (ux !== uy) return ux - uy;
+      // A urgence egale, les grandes competitions d'abord.
       const px = PRIORITAIRES.has(x.league.id) ? 0 : 1;
       const py = PRIORITAIRES.has(y.league.id) ? 0 : 1;
       if (px !== py) return px - py;
@@ -108,7 +121,15 @@ export default async function handler(req, res) {
       if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
       const fid = f.fixture.id;
       const a = f.teams.home.id, b = f.teams.away.id;
-      equipes.add(a); equipes.add(b);
+      // La forme et la compo probable ne sont chauffees que pour les matchs
+      // IMMINENTS : 3 appels par equipe, c'est le poste le plus lourd de la
+      // chauffe (614 equipes sur une fenetre de 4 h = 1 842 appels, plus de
+      // la moitie du total). Les matchs lointains se contentent des blocs
+      // par match ; leurs equipes seront chauffees quand ils deviendront
+      // urgents.
+      if (new Date(f.fixture.date).getTime() - maintenant < URGENT_MS) {
+        equipes.add(a); equipes.add(b);
+      }
 
       // `predictions` etait ABSENT de cette liste jusqu'au 04/09 : l'onglet
       // Pronostics de la fiche match l'appelle pourtant a chaque ouverture.
