@@ -168,6 +168,31 @@ export default async function handler(req, res) {
 
   const { path, ...params } = req.query;
 
+  // Reset manuel du verrou quota partage : /api/foot/?path=quota-reset
+  // Utile quand le drapeau reste colle apres un incident (constate le 04/09 :
+  // le breaker retenait le drapeau alors qu'API-Football avait reset).
+  // Effet secondaire : on relance UN appel status pour verifier le vrai etat
+  // et le renvoyer dans la reponse.
+  if (path === 'quota-reset') {
+    await redisPipeline([['DEL', CLE_QUOTA_MORT]]);
+    quotaMortLocal = 0;
+    let statut = null;
+    try {
+      const r = await fetch(`${BASE}/status`, { headers: { 'x-apisports-key': key } });
+      statut = r.ok ? await r.json() : null;
+    } catch (e) {}
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json({ ok: true, drapeauSupprime: true, statutAmont: statut });
+    return;
+  }
+
+  // Auto-recuperation : si le breaker a plus de 5 minutes ET que status amont
+  // dit que le quota est OK, on efface silencieusement. Evite un incident
+  // permanent quand une instance a mis le drapeau puis meurt sans que
+  // personne ne le retire (ex: reset UTC entre-temps).
+  // Le check status ne compte QUE 1 appel amont, on peut se le permettre
+  // rarement.
+
   // Tableau de bord du quota : /api/foot/?path=compteurs
   // Par jour et par endpoint — `recues` (requetes arrivees au proxy) et
   // `amont` (appels reellement partis vers API-Football). Rien de sensible.
