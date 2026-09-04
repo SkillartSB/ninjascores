@@ -354,6 +354,19 @@
       c.competition = c.ligue + ' · ' + c.pays;
       c.matches.sort(function (a, b) { return new Date(a.startDate) - new Date(b.startDate); });
     });
+    // Tri final par hierarchie : grands championnats en premier, coupes
+    // mineures en fin (constat utilisateur du 04/09 — le calendrier sortait
+    // dans l'ordre d'insertion API, cad chronologique tout melange, donc les
+    // matchs de Ligue 1 apparaissaient apres des Coupe du Bhoutan). `rang`
+    // est calcule par ligue dans rangCompet() : 0 pour C1, 29 pour Ligue 1,
+    // 90 pour l'inconnu. En cas d'egalite on prend le premier coup d'envoi
+    // pour donner priorite aux matchs qui commencent d'abord.
+    out.sort(function (a, b) {
+      if (a.rang !== b.rang) return a.rang - b.rang;
+      var ta = a.matches[0] ? new Date(a.matches[0].startDate).getTime() : 0;
+      var tb = b.matches[0] ? new Date(b.matches[0].startDate).getTime() : 0;
+      return ta - tb;
+    });
     return out;
   }
 
