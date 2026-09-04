@@ -671,7 +671,7 @@ html.ns-twa-boot #ns-native-splash.ns-splash-hide{opacity:0;pointer-events:none}
 <script src="/assets/inline/s1.js?v=1"></script>
 
 <!-- ══ BOOKMAKERS PANEL ══ -->
-<div class="bk-overlay" id="bk-overlay" onclick="if(event.target===this)closeBk()">
+<div class="bk-overlay ns-pari" id="bk-overlay" onclick="if(event.target===this)closeBk()">
   <div class="bk-panel">
     <div class="bk-handle"></div>
     <div class="bk-header">
@@ -695,7 +695,7 @@ html.ns-twa-boot #ns-native-splash.ns-splash-hide{opacity:0;pointer-events:none}
 </div>
 
 <!-- ══ MONEY / CREATOR PANEL ══ -->
-<div class="mn-overlay" id="mn-overlay" onclick="if(event.target===this)closeMoney()">
+<div class="mn-overlay ns-pari" id="mn-overlay" onclick="if(event.target===this)closeMoney()">
   <div class="mn-panel">
     <div class="mn-handle"></div>
     <div class="mn-header">
@@ -1039,7 +1039,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s8.js?v=1"></script>
 
 <!-- ══ NAV INTERACTIONS ══ -->
-<script src="/assets/inline/s9.js?v=5"></script>
+<script src="/assets/inline/s9.js?v=6"></script>
 <script>
   // Enregistrement du service worker (PWA / TWA). Silencieux en cas d'échec.
   if ('serviceWorker' in navigator) {
@@ -1164,9 +1164,18 @@ window.NS_pulse = function(x, y){
       }
       // Entrees textuelles vers la promotion des paris. Les deux boutons
       // ronds du header portent deja la classe ns-pari directement dans le
-      // bundle (ils n'ont pas de libelle, seulement une icone).
-      if (txt === 'Bonus du moment' || txt === 'Bonus de paris sportifs'
-          || txt === 'Gagne avec NinjaScores' || txt === 'Bonus du jour 🎁') {
+      // bundle (ils n'ont pas de libelle, seulement une icone), et les deux
+      // panneaux overlay la portent dans le HTML statique.
+      //
+      // Comparaison NORMALISEE : les libelles reels sont prefixes d'un emoji
+      // (« 💰 Gagne avec NinjaScores », « 🎁 Bonus & Bookmakers ») et parfois
+      // mis en majuscules par CSS. Une egalite stricte les ratait tous.
+      var norm = txt.toLowerCase()
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F]/gu, '')
+        .replace(/\s+/g, ' ').trim();
+      if (norm === 'bonus du moment' || norm === 'bonus de paris sportifs'
+          || norm === 'gagne avec ninjascores' || norm === 'bonus du jour'
+          || norm === 'bonus & bookmakers') {
         el.classList.add('ns-pari');
       }
     });
