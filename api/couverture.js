@@ -107,12 +107,29 @@ export default async function handler(req, res) {
   try {
     // Le calendrier passe par le proxy : s'il est en cache, l'audit ne coûte
     // rien du tout. S'il ne l'est pas, c'est UN appel amont — acceptable.
-    const rCal = await fetch(SITE + '/api/foot/?path=fixtures&date=' + jourUTC(),
-                             { signal: AbortSignal.timeout(20000) });
-    if (!rCal.ok) {
-      return res.status(503).json({ sante: 'inconnu', raison: 'calendrier indisponible (proxy ' + rCal.status + ')' });
+    //
+    // Trois tentatives espacées : depuis que le coupe-circuit quota distingue
+    // la limite MINUTE (blocage 8 s) du quota JOUR, un 502 isolé ne veut plus
+    // rien dire — il se résorbe tout seul. Abandonner au premier échec
+    // ferait rapporter « inconnu » pour un hoquet de huit secondes, et le
+    // workflow crierait au loup. Constaté le 04/09 : essai 1 en 502, essai 2
+    // en 200 dix secondes plus tard.
+    let tous = null;
+    for (let essai = 0; essai < 3 && tous === null; essai++) {
+      if (essai) await new Promise((r) => setTimeout(r, 6000));
+      try {
+        const rCal = await fetch(SITE + '/api/foot/?path=fixtures&date=' + jourUTC(),
+                                 { signal: AbortSignal.timeout(20000) });
+        if (rCal.ok) tous = ((await rCal.json()).response) || [];
+      } catch (e) { /* on retente */ }
     }
-    const tous = ((await rCal.json()).response) || [];
+    if (tous === null) {
+      // Trois échecs d'affilée sur 12 s : là c'est une vraie panne, pas une
+      // rafale. On répond « inconnu » et non « degrade » : on ne sait pas
+      // dire si la donnée est complète, ce n'est pas la même chose que
+      // savoir qu'elle ne l'est pas.
+      return res.status(503).json({ sante: 'inconnu', raison: 'calendrier indisponible apres 3 tentatives' });
+    }
 
     // On n'audite que ce que le préchauffage est censé avoir couvert :
     //  - ligues prioritaires (auditer le Bhoutan produirait des « manquant »
