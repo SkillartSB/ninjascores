@@ -48,7 +48,7 @@ const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 // que la chauffe etait censee avoir traites : un match a 21 h vu a 10 h du
 // matin n'a aucune raison d'etre en cache, le signaler ferait hurler
 // l'alerte toute la journee pour rien.
-const FENETRE_MS = 4 * 3600 * 1000;
+const FENETRE_MS = 3 * 3600 * 1000;
 // Marge : on laisse un cycle de cron (30 min) au prechauffage pour faire son
 // travail avant de considerer qu'un match aurait du etre couvert.
 const GRACE_MS = 30 * 60 * 1000;

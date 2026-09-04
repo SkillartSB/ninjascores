@@ -53,27 +53,33 @@ const rang = (id) => (RANG[id] != null ? RANG[id] : RANG_INCONNU);
 const PRIORITAIRES = new Set(Object.keys(RANG).map(Number));
 const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 
-// Fenêtre de chauffe : matchs qui commencent d'ici 4 h (ou déjà en cours,
-// pour les compos officielles qui tombent après le coup d'envoi). Élargie de
-// 2 h 30 à 4 h le 04/09 : depuis la parallélisation la chauffe ne consomme
-// plus tout son budget (337 s sur 700 pour 154 matchs), autant couvrir les
-// matchs du soir plus tôt pour qu'un visiteur de fin d'après-midi trouve
-// déjà une fiche pleine.
-const FENETRE_MS = 4 * 3600 * 1000;
+// Fenêtre de chauffe : matchs qui commencent d'ici 3 h (ou déjà en cours,
+// pour les compos officielles qui tombent après le coup d'envoi).
+// Historique : 2 h 30 à l'origine, élargie à 4 h le 04/09 après la
+// parallélisation — ce qui a fait passer les cibles de 154 à 342 et remis la
+// chauffe en troncature. 3 h est le compromis : assez large pour qu'un
+// visiteur de fin d'après-midi trouve une fiche pleine, assez étroit pour que
+// la chauffe finisse son travail à la cadence sûre de 6,7 appels/s.
+const FENETRE_MS = 3 * 3600 * 1000;
 // Dans cette fenetre, ce qui demarre dans moins de 2 h 30 est URGENT : c'est
 // ce que les visiteurs ouvrent maintenant. Le reste (2 h 30 -> 4 h) est du
 // bonus, rattrape au cron suivant si le budget manque.
 const URGENT_MS = 2.5 * 3600 * 1000;
 const BUDGET_MS = 700000;         // maxDuration 800 s, marge de sécurité
 // Les appels d'un meme match sont independants : on les tire EN PARALLELE
-// puis on marque une pause. 4 appels par vague / 600 ms ≈ 6,7 appels/s, sous
-// la limite minute amont (~450/min = 7,5/s) avec de la marge pour le trafic
-// concurrent. En sequentiel pur (ancien code) chaque match coutait ~1,8 s :
-// 121 matchs ne rentraient pas dans le budget et la chauffe tronquait au
-// milieu de la Ligue 1 — PSG-Monaco chauffe, Lyon-Auxerre non (constat du
-// 04/09, l'utilisateur voyait deux matchs de la meme journee inegalement
-// remplis).
-const PAUSE_MS = 400;
+// puis on marque une pause. En sequentiel pur (code d'avant le 04/09) chaque
+// match coutait ~1,8 s : 121 matchs ne rentraient pas dans le budget et la
+// chauffe tronquait au milieu de la Ligue 1 — PSG-Monaco chauffe,
+// Lyon-Auxerre non.
+//
+// CADENCE : 5 appels par vague / 750 ms ≈ 6,7 appels/s, soit 400/min, sous
+// la limite minute amont (~450/min) avec de la marge pour le trafic
+// concurrent. La valeur precedente (400 ms) datait d'une vague de 4 appels ;
+// en ajoutant `predictions` sans reajuster on est passe a 12,5 appels/s, et
+// la chauffe du 04/09 a encaisse 893 echecs sur 3 311 appels (27 %). Le
+// rattrapage les a presque tous repris (19 persistants), mais taper le mur
+// pour reparer derriere gaspille du quota et du temps.
+const PAUSE_MS = 750;
 
 function jourUTC() { return new Date().toISOString().slice(0, 10); }
 
