@@ -38,9 +38,13 @@ const PRIORITAIRES = new Set([
 ]);
 const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 
-// Fenêtre de chauffe : matchs qui commencent d'ici 2 h 30 (ou déjà en cours,
-// pour les compos officielles qui tombent après le coup d'envoi).
-const FENETRE_MS = 2.5 * 3600 * 1000;
+// Fenêtre de chauffe : matchs qui commencent d'ici 4 h (ou déjà en cours,
+// pour les compos officielles qui tombent après le coup d'envoi). Élargie de
+// 2 h 30 à 4 h le 04/09 : depuis la parallélisation la chauffe ne consomme
+// plus tout son budget (337 s sur 700 pour 154 matchs), autant couvrir les
+// matchs du soir plus tôt pour qu'un visiteur de fin d'après-midi trouve
+// déjà une fiche pleine.
+const FENETRE_MS = 4 * 3600 * 1000;
 const BUDGET_MS = 700000;         // maxDuration 800 s, marge de sécurité
 // Les appels d'un meme match sont independants : on les tire EN PARALLELE
 // puis on marque une pause. 4 appels par vague / 600 ms ≈ 6,7 appels/s, sous
@@ -106,14 +110,21 @@ export default async function handler(req, res) {
       const a = f.teams.home.id, b = f.teams.away.id;
       equipes.add(a); equipes.add(b);
 
+      // `predictions` etait ABSENT de cette liste jusqu'au 04/09 : l'onglet
+      // Pronostics de la fiche match l'appelle pourtant a chaque ouverture.
+      // Resultat, il n'etait jamais en cache — chaque visiteur payait un
+      // appel a froid, et au moindre hoquet amont l'onglet tombait en 502.
+      // C'est l'audit /api/couverture/ qui l'a revele (100 % de « manquant »
+      // sur ce bloc des sa premiere execution).
       const [cotes, compo] = await Promise.all([
         via('odds&fixture=' + fid),
         via('fixtures/lineups&fixture=' + fid),
         via('injuries&fixture=' + fid),
         via('fixtures/headtohead&h2h=' + a + '-' + b + '&last=20'),
+        via('predictions&fixture=' + fid),
       ]);
       await dormir(PAUSE_MS);
-      resume.appels += 4;
+      resume.appels += 5;
 
       if (!(cotes && cotes.response && cotes.response.length)) {
         // Compte complet mais exemples plafonnes : sur 900 matchs toutes
