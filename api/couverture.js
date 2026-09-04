@@ -52,6 +52,12 @@ const FENETRE_MS = 4 * 3600 * 1000;
 // Marge : on laisse un cycle de cron (30 min) au prechauffage pour faire son
 // travail avant de considerer qu'un match aurait du etre couvert.
 const GRACE_MS = 30 * 60 * 1000;
+// MEME seuil d'urgence que api/prechauffe.js. La chauffe ne traite la forme
+// des equipes (3 appels chacune, le poste le plus lourd) que pour les matchs
+// imminents ; l'audit ne doit donc juger ces deux blocs QUE sur ces matchs-la.
+// Sans cet alignement il reproche a la chauffe un travail qu'elle ne fait
+// volontairement pas, et l'alerte se declenche pour rien.
+const URGENT_MS = 2.5 * 3600 * 1000;
 
 // Seuil d'alerte : sous ce taux de complétude sur les ligues prioritaires,
 // l'endpoint répond sante:"degrade" et le workflow GitHub échoue (donc mail).
@@ -159,6 +165,7 @@ export default async function handler(req, res) {
       blocs.push(
         { fid, nom: f.teams.home.name + ' - ' + f.teams.away.name, ligue: f.league.name,
           coupEnvoi: f.fixture.date,
+          urgent: new Date(f.fixture.date).getTime() - maintenant < URGENT_MS,
           cles: {
             cotes: cle('odds', { fixture: fid }),
             compos: cle('fixtures/lineups', { fixture: fid }),
@@ -182,32 +189,38 @@ export default async function handler(req, res) {
       lot.forEach((k, j) => { valeurs[k] = arr[j]; });
     }
 
-    const CHAMPS = ['cotes', 'compos', 'pronostics', 'tat', 'formeDom', 'formeExt'];
+    // Deux familles de blocs, jugees sur des perimetres differents :
+    //  - PAR MATCH : chauffes sur toute la fenetre (4 h)
+    //  - PAR EQUIPE : chauffes seulement pour les matchs imminents (2 h 30)
+    const CHAMPS_MATCH = ['cotes', 'compos', 'pronostics', 'tat'];
+    const CHAMPS_EQUIPE = ['formeDom', 'formeExt'];
     const totaux = {};
-    CHAMPS.forEach((c) => { totaux[c] = { present: 0, vide: 0, manquant: 0 }; });
+    CHAMPS_MATCH.concat(CHAMPS_EQUIPE).forEach((c) => {
+      totaux[c] = { present: 0, vide: 0, manquant: 0, horsPerimetre: 0 };
+    });
 
+    let attendus = 0, manquantsTotal = 0;
     const incomplets = [];
     for (const b of blocs) {
-      const etats = {};
-      let manquants = 0;
-      for (const c of CHAMPS) {
+      const champs = b.urgent ? CHAMPS_MATCH.concat(CHAMPS_EQUIPE) : CHAMPS_MATCH;
+      if (!b.urgent) CHAMPS_EQUIPE.forEach((c) => { totaux[c].horsPerimetre++; });
+      const manque = [];
+      for (const c of champs) {
         const e = etat(valeurs[b.cles[c]]);
-        etats[c] = e;
         totaux[c][e]++;
-        if (e === 'manquant') manquants++;
+        attendus++;
+        if (e === 'manquant') { manquantsTotal++; manque.push(c); }
       }
-      if (manquants) {
+      if (manque.length) {
         incomplets.push({ fixture: b.fid, match: b.nom, ligue: b.ligue,
-                          coupEnvoi: b.coupEnvoi,
-                          manque: CHAMPS.filter((c) => etats[c] === 'manquant') });
+                          coupEnvoi: b.coupEnvoi, urgent: b.urgent, manque });
       }
     }
 
-    // Taux de complétude : sur l'ensemble des blocs attendus, la part qui
-    // n'est PAS manquante. Un bloc « vide » compte comme couvert : on a bien
-    // interrogé l'API, elle n'avait rien, il n'y a rien à corriger.
-    const attendus = blocs.length * CHAMPS.length;
-    const manquantsTotal = CHAMPS.reduce((a, c) => a + totaux[c].manquant, 0);
+    // Taux de complétude : sur l'ensemble des blocs ATTENDUS (donc hors blocs
+    // par équipe des matchs non imminents), la part qui n'est PAS manquante.
+    // Un bloc « vide » compte comme couvert : on a bien interrogé l'API, elle
+    // n'avait rien, il n'y a rien à corriger de notre côté.
     const complet = attendus ? (attendus - manquantsTotal) / attendus : 1;
 
     const sante = complet >= SEUIL_ALERTE ? 'ok' : 'degrade';
