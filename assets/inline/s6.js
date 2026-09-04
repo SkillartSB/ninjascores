@@ -306,15 +306,41 @@
   // traduction en francais l'a rendu inoperant (la Ligue des champions
   // tombait en 999, tout en bas). Il confondait aussi "Premier League"
   // d'Angleterre et du Ghana, faute de tenir compte du pays.
+  // Barème refait le 04/09 : l'ancien plaçait TOUTES les coupes continentales
+  // (Libertadores, CAF, AFC, CONCACAF) aux rangs 5-10, donc AU-DESSUS des cinq
+  // grands championnats qui étaient à 25-29. Résultat concret : la Ligue des
+  // Champions de la CAF et la Coupe de la Confédération s'affichaient en tête
+  // du calendrier, devant la Premier League et la Ligue 1.
+  //
+  // Nouvel ordre, du plus attendu au plus confidentiel :
+  //   0-3   sélections majeures (rares, mais elles écrasent tout quand elles
+  //         ont lieu : un Mondial passe avant un match de Ligue 1)
+  //   5-9   coupes d'Europe des clubs — le rendez-vous hebdomadaire
+  //   10-14 LES CINQ GRANDS CHAMPIONNATS — le pain quotidien de l'app
+  //   15-22 autres grandes ligues européennes
+  //   23-26 grandes ligues hors Europe
+  //   32-37 coupes continentales hors Europe (dont la CAF)
+  //   38-42 sélections secondaires et qualifications
+  //   46-50 deuxièmes divisions des grands pays
   var RANG_COMPET = {
-    2: 0, 3: 1, 848: 2, 531: 3, 15: 4,          // C1, C3, Conference, Supercoupe, Mondial des clubs
-    13: 5, 11: 6, 12: 7, 20: 8, 17: 9, 16: 10,  // Libertadores, Sudamericana, CAF, AFC, CONCACAF
-    1: 12, 4: 13, 6: 14, 9: 15, 7: 16, 5: 17,   // Mondial, Euro, CAN, Copa America, Asie, Nations
-    29: 18, 30: 18, 31: 18, 32: 18, 33: 18, 34: 18, 37: 18, 960: 19, 36: 20, 22: 21,
-    39: 25, 140: 26, 135: 27, 78: 28, 61: 29,   // les cinq grands championnats
-    94: 30, 88: 31, 203: 32, 144: 33, 71: 34, 128: 35, 262: 36, 253: 37,
-    307: 38, 98: 39, 292: 40, 179: 41,
-    40: 46, 62: 47, 136: 48, 79: 49, 141: 50,   // deuxiemes divisions des grands pays
+    // sélections majeures
+    1: 0, 4: 1, 9: 2, 6: 3,                     // Mondial, Euro, Copa America, CAN
+    // coupes d'Europe des clubs
+    2: 5, 3: 6, 848: 7, 531: 8, 15: 9,          // C1, C3, Conference, Supercoupe, Mondial des clubs
+    // les cinq grands championnats
+    39: 10, 140: 11, 135: 12, 78: 13, 61: 14,   // Premier League, Liga, Serie A, Bundesliga, Ligue 1
+    // autres grandes ligues européennes
+    94: 15, 88: 16, 203: 17, 144: 18, 179: 19,  // Portugal, Pays-Bas, Turquie, Belgique, Écosse
+    // grandes ligues hors Europe
+    71: 23, 128: 24, 253: 25, 262: 26,          // Brésil, Argentine, MLS, Mexique
+    307: 27, 98: 28, 292: 29,                   // Arabie saoudite, Japon, Corée
+    // coupes continentales hors Europe — sous les championnats, pas au-dessus
+    13: 32, 11: 33, 12: 34, 20: 35, 17: 36, 16: 37, // Libertadores, Sudamericana, CAF C1, CAF C2, AFC, CONCACAF
+    // sélections secondaires et qualifications
+    5: 38, 7: 39, 22: 42,                       // Nations League, Coupe d'Asie, Gold Cup
+    29: 40, 30: 40, 31: 40, 32: 40, 33: 40, 34: 40, 37: 40, 960: 41, 36: 41,
+    // deuxièmes divisions des grands pays
+    40: 46, 62: 47, 136: 48, 79: 49, 141: 50,
   };
   function rangCompet(f) {
     var id = f.league.id;

@@ -31,11 +31,26 @@ const SITE = 'https://ninjascores.com';
 // affiche, tronque les ligues exotiques et jamais la Liga.
 // (RANG_COMPET de assets/inline/s6.js — copie assumée, importer un fichier
 // navigateur d'ici est impossible.)
-const PRIORITAIRES = new Set([
-  2, 3, 848, 531, 15, 13, 11, 12, 20, 17, 16, 1, 4, 6, 9, 7, 5,
-  29, 30, 31, 32, 33, 34, 37, 960, 36, 22, 39, 140, 135, 78, 61,
-  94, 88, 203, 144, 71, 128, 262, 253, 307, 98, 292, 179, 40, 62, 136, 79, 141,
-]);
+// Copie du RANG_COMPET de assets/inline/s6.js (importer un fichier navigateur
+// d'ici est impossible). Un rang plus bas = chauffe plus tot a urgence egale.
+// Refait le 04/09 en meme temps que celui du calendrier : les coupes
+// continentales hors Europe passaient avant les cinq grands championnats.
+const RANG = {
+  1: 0, 4: 1, 9: 2, 6: 3,
+  2: 5, 3: 6, 848: 7, 531: 8, 15: 9,
+  39: 10, 140: 11, 135: 12, 78: 13, 61: 14,
+  94: 15, 88: 16, 203: 17, 144: 18, 179: 19,
+  71: 23, 128: 24, 253: 25, 262: 26, 307: 27, 98: 28, 292: 29,
+  13: 32, 11: 33, 12: 34, 20: 35, 17: 36, 16: 37,
+  5: 38, 7: 39, 22: 42,
+  29: 40, 30: 40, 31: 40, 32: 40, 33: 40, 34: 40, 37: 40, 960: 41, 36: 41,
+  40: 46, 62: 47, 136: 48, 79: 49, 141: 50,
+};
+const RANG_INCONNU = 90;
+const rang = (id) => (RANG[id] != null ? RANG[id] : RANG_INCONNU);
+// « Prioritaire » = present au bareme. Sert a l'audit de couverture, qui ne
+// juge que ces ligues-la.
+const PRIORITAIRES = new Set(Object.keys(RANG).map(Number));
 const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 
 // Fenêtre de chauffe : matchs qui commencent d'ici 4 h (ou déjà en cours,
@@ -108,10 +123,11 @@ export default async function handler(req, res) {
       const ux = (new Date(x.fixture.date).getTime() - maintenant) < URGENT_MS ? 0 : 1;
       const uy = (new Date(y.fixture.date).getTime() - maintenant) < URGENT_MS ? 0 : 1;
       if (ux !== uy) return ux - uy;
-      // A urgence egale, les grandes competitions d'abord.
-      const px = PRIORITAIRES.has(x.league.id) ? 0 : 1;
-      const py = PRIORITAIRES.has(y.league.id) ? 0 : 1;
-      if (px !== py) return px - py;
+      // A urgence egale, les grandes competitions d'abord — bareme fin, pas
+      // un simple booleen prioritaire/non : la Premier League doit passer
+      // avant la Ligue des Champions de la CAF.
+      const rx = rang(x.league.id), ry = rang(y.league.id);
+      if (rx !== ry) return rx - ry;
       return new Date(x.fixture.date) - new Date(y.fixture.date);
     });
     resume.cibles = cibles.length;
