@@ -79,7 +79,21 @@ const BUDGET_MS = 700000;         // maxDuration 800 s, marge de sécurité
 // la chauffe du 04/09 a encaisse 893 echecs sur 3 311 appels (27 %). Le
 // rattrapage les a presque tous repris (19 persistants), mais taper le mur
 // pour reparer derriere gaspille du quota et du temps.
-const PAUSE_MS = 750;
+// 900 ms depuis le 05/09 : le refresh-ahead (10:09) a transforme les hits Redis
+// de la chauffe en appels amont REELS. A 750 ms, 5 appels/vague = 400/min vers
+// API-Football, plus le trafic de fond : on depassait les ~450/min et la chauffe
+// s'infligeait un flux de 502 a chaque passage (logs Vercel 05/09, 11:01-11:02).
+// 900 ms = 333/min, ~120/min de marge pour les visiteurs.
+const PAUSE_MS = 900;
+// Backoff adaptatif : apres un echec (502, timeout, ecriture ratee), la vague
+// suivante attend 3 s au lieu de 900 ms — le temps que la fenetre minute d'API-
+// Football retombe. Sans ca une rafale de 502 s'auto-entretient.
+const PAUSE_APRES_ECHEC_MS = 3000;
+const FENETRE_ECHEC_MS = 8000;
+let dernierEchecMs = 0;
+async function respirer() {
+  await dormir(Date.now() - dernierEchecMs < FENETRE_ECHEC_MS ? PAUSE_APRES_ECHEC_MS : PAUSE_MS);
+}
 
 function jourUTC() { return new Date().toISOString().slice(0, 10); }
 
@@ -92,14 +106,14 @@ async function via(chemin, rejeu) {
     // quelle. Sans ca la chauffe ne prolongeait jamais rien (voir foot.js,
     // REFRESH_AHEAD_S). Le proxy ne transmet pas ce parametre a API-Football.
     const r = await fetch(SITE + '/api/foot/?path=' + chemin + '&_prechauffe=1', { signal: AbortSignal.timeout(25000) });
-    if (!r.ok) { if (!rejeu) echecs.push(chemin); return null; }
+    if (!r.ok) { dernierEchecMs = Date.now(); if (!rejeu) echecs.push(chemin); return null; }
     // 200 mais ecriture Redis ratee (X-Cache-Write: failed) : la donnee est
     // dans la reponse, pas dans le cache. Pour la chauffe c'est un echec —
     // on la rejoue en seconde passe, sinon l'audit la trouve « manquante »
     // alors que le rapport de chauffe annonce 0 % d'echec (05/09).
-    if (r.headers.get('x-cache-write') === 'failed') { if (!rejeu) echecs.push(chemin); resume.ecrituresRatees = (resume.ecrituresRatees || 0) + 1; }
+    if (r.headers.get('x-cache-write') === 'failed') { dernierEchecMs = Date.now(); if (!rejeu) echecs.push(chemin); resume.ecrituresRatees = (resume.ecrituresRatees || 0) + 1; }
     return await r.json();
-  } catch (e) { if (!rejeu) echecs.push(chemin); return null; }
+  } catch (e) { dernierEchecMs = Date.now(); if (!rejeu) echecs.push(chemin); return null; }
 }
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -116,7 +130,7 @@ export default async function handler(req, res) {
   const t0 = Date.now();
   // Variable de module : une instance serverless reutilisee garderait les
   // echecs du run precedent et rejouerait des appels deja reussis.
-  echecs = [];
+  echecs = []; dernierEchecMs = 0;
   resume = { cibles: 0, appels: 0, sansCotes: [], compos: 0, tronque: false };
 
   try {
@@ -125,6 +139,10 @@ export default async function handler(req, res) {
     // l'assemblage complet.
     await via('cotes-jour&date=' + jourUTC());
     const cal = await via('fixtures&date=' + jourUTC());
+    // cotes-jour peut declencher ~25 appels amont d'un coup (agregat non cache).
+    // Enchainer aussitot les vagues de 5 faisait deborder la minute des les
+    // premiers matchs — les grandes ligues, en tete de file. On souffle.
+    await dormir(3000);
     const tous = (cal && cal.response) || [];
     const maintenant = Date.now();
     const cibles = tous.filter((f) => {
@@ -152,8 +170,9 @@ export default async function handler(req, res) {
     resume.cibles = cibles.length;
 
     const equipes = new Set();
-    for (const f of cibles) {
-      if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
+    // Le corps de boucle est une fonction pour etre applique a deux lots
+    // (urgents puis autres) avec un rattrapage entre les deux.
+    const chaufferMatch = async (f) => {
       const fid = f.fixture.id;
       const a = f.teams.home.id, b = f.teams.away.id;
       // La forme et la compo probable ne sont chauffees que pour les matchs
@@ -179,7 +198,7 @@ export default async function handler(req, res) {
         via('fixtures/headtohead&h2h=' + a + '-' + b + '&last=20'),
         via('predictions&fixture=' + fid),
       ]);
-      await dormir(PAUSE_MS);
+      await respirer();
       resume.appels += 5;
 
       if (!(cotes && cotes.response && cotes.response.length)) {
@@ -189,6 +208,36 @@ export default async function handler(req, res) {
         if (resume.sansCotes.length < 15) resume.sansCotes.push(f.teams.home.name + ' - ' + f.teams.away.name);
       }
       if (compo && compo.response && compo.response.length) resume.compos++;
+    };
+
+    // Deux lots. Les URGENTS (< 2 h 30) d'abord, puis un rattrapage immediat de
+    // leurs echecs, puis seulement les autres. Avant le 05/09 le rattrapage
+    // etait en fin de run, apres le tier C : un samedi a 530 cibles le budget
+    // etait mort avant qu'il demarre, et les grandes ligues en tete de file —
+    // les premieres a encaisser la rafale de demarrage — restaient vides.
+    const urgents = cibles.filter((f) => new Date(f.fixture.date).getTime() - maintenant < URGENT_MS);
+    const autres  = cibles.filter((f) => new Date(f.fixture.date).getTime() - maintenant >= URGENT_MS);
+    resume.urgents = urgents.length;
+
+    for (const f of urgents) {
+      if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
+      await chaufferMatch(f);
+    }
+    if (echecs.length && Date.now() - t0 < BUDGET_MS) {
+      const aRejouer = echecs.splice(0);        // vide la liste, on la reconstitue
+      resume.rattrapageUrgent = { tentes: aRejouer.length, persistants: 0 };
+      await dormir(5000);                       // la fenetre minute retombe
+      for (const chemin of aRejouer) {
+        if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
+        const r = await via(chemin, true);
+        if (r == null) { resume.rattrapageUrgent.persistants++; echecs.push(chemin); }  // 3e chance en fin de run
+        await respirer();
+        resume.appels++;
+      }
+    }
+    for (const f of autres) {
+      if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
+      await chaufferMatch(f);
     }
 
     for (const t of equipes) {
@@ -205,9 +254,9 @@ export default async function handler(req, res) {
         via('fixtures&team=' + t + '&last=20'),
         via('fixtures&team=' + t + '&last=1'),
       ]);
-      await dormir(PAUSE_MS);
+      await respirer();
       const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
-      if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await dormir(PAUSE_MS); }
+      if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await respirer(); }
       resume.appels += fidDernier ? 3 : 2;
     }
 
@@ -220,13 +269,13 @@ export default async function handler(req, res) {
     // sans qu'un humain vienne constater le trou (demande du 04/09).
     if (echecs.length && Date.now() - t0 < BUDGET_MS) {
       resume.echecs1rePasse = echecs.length;
-      await dormir(2000);            // laisse retomber une eventuelle rafale
+      await dormir(5000);            // laisse retomber la fenetre minute
       const restants = [];
       for (const chemin of echecs) {
         if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
         const r = await via(chemin, true);
         if (r == null) restants.push(chemin);
-        await dormir(PAUSE_MS);
+        await respirer();
         resume.appels++;
       }
       resume.echecsPersistants = restants.length;
