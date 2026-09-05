@@ -93,11 +93,19 @@ async function via(chemin, rejeu) {
     // REFRESH_AHEAD_S). Le proxy ne transmet pas ce parametre a API-Football.
     const r = await fetch(SITE + '/api/foot/?path=' + chemin + '&_prechauffe=1', { signal: AbortSignal.timeout(25000) });
     if (!r.ok) { if (!rejeu) echecs.push(chemin); return null; }
+    // 200 mais ecriture Redis ratee (X-Cache-Write: failed) : la donnee est
+    // dans la reponse, pas dans le cache. Pour la chauffe c'est un echec —
+    // on la rejoue en seconde passe, sinon l'audit la trouve « manquante »
+    // alors que le rapport de chauffe annonce 0 % d'echec (05/09).
+    if (r.headers.get('x-cache-write') === 'failed') { if (!rejeu) echecs.push(chemin); resume.ecrituresRatees = (resume.ecrituresRatees || 0) + 1; }
     return await r.json();
   } catch (e) { if (!rejeu) echecs.push(chemin); return null; }
 }
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+// Rapport du run courant, hisse au module pour que via() puisse y compter
+// les ecritures Redis ratees. Reinitialise a chaque invocation du handler.
+let resume = {};
 
 // Chemins dont l'appel a rendu null (502 amont, timeout, limite minute). Ils
 // sont rejoues en fin de run — voir « seconde passe » plus bas.
@@ -109,7 +117,7 @@ export default async function handler(req, res) {
   // Variable de module : une instance serverless reutilisee garderait les
   // echecs du run precedent et rejouerait des appels deja reussis.
   echecs = [];
-  const resume = { cibles: 0, appels: 0, sansCotes: [], compos: 0, tronque: false };
+  resume = { cibles: 0, appels: 0, sansCotes: [], compos: 0, tronque: false };
 
   try {
     // L'agrégat des cotes du jour (calendrier client, TTL 900 s) : le chauffer

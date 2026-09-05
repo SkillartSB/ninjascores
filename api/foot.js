@@ -467,7 +467,13 @@ export default async function handler(req, res) {
     const ttlRestante = lu && lu[4] && typeof lu[4].result === 'number' ? lu[4].result : -2;
     const bientotExpire = modeChauffe && ttlRestante >= 0 && ttlRestante < REFRESH_AHEAD_S;
     if (stocke && !bientotExpire) {
-      res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
+      // Mode chauffe : no-store ICI AUSSI. Constate le 05/09 : un hit Redis
+      // en mode chauffe repondait public+s-maxage, le CDN gardait l'URL
+      // ?_prechauffe=1, et le passage suivant de la chauffe etait servi par
+      // le CDN sans atteindre la fonction — donc sans evaluer le
+      // refresh-ahead. Le trou de 30 min revenait par la porte du CDN.
+      res.setHeader('Cache-Control', modeChauffe ? 'no-store'
+        : `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
       res.setHeader('X-Cache-Foot', 'redis');
       res.status(200).send(stocke);
       return;
@@ -551,8 +557,13 @@ export default async function handler(req, res) {
         cmds.push(['INCR', `footamont:${jour}:${sousCompteur}`]);
         cmds.push(['EXPIRE', `footamont:${jour}:${sousCompteur}`, 604800]);
       }
-      if (serialise.length < REDIS_VAL_MAX) cmds.push(['SETEX', cleRedis, ttl, serialise]);
-      await redisPipeline(cmds);
+      const avecSetex = serialise.length < REDIS_VAL_MAX;
+      if (avecSetex) cmds.push(['SETEX', cleRedis, ttl, serialise]);
+      const ecrit = await redisPipeline(cmds);
+      // La SETEX est la DERNIERE commande. Null = pipeline entier perdu
+      // (timeout 1,5 s, Upstash injoignable) ; {error} = commande refusee.
+      const setexKo = avecSetex && (!ecrit || (ecrit[ecrit.length - 1] && ecrit[ecrit.length - 1].error));
+      if (setexKo || !avecSetex) res.setHeader('X-Cache-Write', setexKo ? 'failed' : 'skipped-too-large');
     }
 
     // En mode chauffe : no-store. Si le CDN gardait cette reponse, le prochain
