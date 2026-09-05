@@ -388,8 +388,13 @@ export default async function handler(req, res) {
   // d'une equipe ou la fiche d'un match a venir ne bougent pas en 5 minutes.
   if (!('live' in params)) {
     if (path === 'fixtures' && ('team' in params || 'id' in params || 'h2h' in params)) ttl = 3600;
-    if (path === 'fixtures/lineups') ttl = 1800;   // compos probables : quasi figees avant l'heure d'avant-match
-    if (path === 'odds') ttl = 1800;
+    // TTL calees sur la periode du cron de chauffe (30 min, Vercel Cron) AVEC
+    // une marge : a TTL = periode exactement, la donnee expire a l'instant ou
+    // le cron suivant demarre et il y a un trou de quelques secondes a chaque
+    // cycle. Constate le 05/09 avec GitHub Actions en retard de 2 a 5 h : tout
+    // expirait entre deux passages, 10 % de completude au reveil.
+    if (path === 'fixtures/lineups') ttl = 2100;   // 35 min — les compos officielles tombent ~1 h avant, la fraicheur compte
+    if (path === 'odds') ttl = 2700;               // 45 min — les cotes bougent lentement
   }
 
   // `status` reste exempte : c'est le thermometre du quota (1 appel/min au

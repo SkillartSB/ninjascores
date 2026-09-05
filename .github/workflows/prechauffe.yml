@@ -1,51 +1,41 @@
-# Préchauffage du cache des pages match, puis audit de couverture.
+# Audit de couverture des données match — la CHAUFFE n'est plus ici.
 #
-# Deux étapes volontairement séparées :
-#   1. /api/prechauffe/  remplit le cache Redis (cotes, compos, blessés,
-#      confrontations, forme) pour les matchs qui démarrent bientôt.
-#   2. /api/couverture/  vérifie le résultat et fait ÉCHOUER le job si la
-#      complétude des ligues prioritaires passe sous le seuil.
+# Depuis le 05/09/2026 la chauffe (/api/prechauffe/) tourne sur Vercel Cron
+# (vercel.json, */30 * * * *). GitHub Actions ne garantit pas ses schedules :
+# mesuré sur la nuit du 04 au 05/09, un cron déclaré toutes les 30 min a
+# tourné à 07:00, 02:07, 23:44, 21:57, 19:43, 17:16 — des trous de 2 à 5 h.
+# Avec des TTL de 30 min sur les cotes et les compos, tout expirait entre deux
+# passages : 10 % de complétude au réveil. Vercel Cron tient la minute (la
+# preuve : /api/push-goals/ y tourne toutes les minutes sans rater).
 #
-# L'étape 2 est le vrai apport : jusqu'au 04/09 c'est l'utilisateur qui
-# découvrait les trous en ouvrant l'app. Maintenant un job rouge (donc un
-# mail GitHub) le signale tout seul, avec la liste des matchs concernés.
-#
-# Pourquoi 30 min : la TTL la plus courte des blocs chauffés est 30 min
-# (cotes, compos). Plus fréquent ne rafraîchirait rien de plus ; moins
-# fréquent laisserait des trous.
+# Ce workflow ne fait plus que l'AUDIT + l'ALERTE. Son retard n'a plus
+# d'importance : il constate un état que Vercel maintient. S'il trouve des
+# trous, c'est un vrai problème, pas un cron en retard — et le job rouge
+# envoie un mail.
 
-name: Prechauffage pages match
+name: Audit couverture donnees match
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '15,45 * * * *'
   workflow_dispatch:
 
 concurrency:
-  group: prechauffe
+  group: audit-couverture
   cancel-in-progress: true
 
 jobs:
-  ping:
+  audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Declencher le prechauffage
-        run: |
-          echo "Appel de l'endpoint de prechauffage…"
-          # -m 790 : depuis la parallelisation du 04/09 l'endpoint travaille
-          # jusqu'a ~700 s (maxDuration 800). Un timeout curl plus court
-          # marquerait le job en echec alors que la chauffe continue cote
-          # Vercel — c'est ce qui arrivait avec l'ancien -m 55.
-          curl -sS -m 790 "https://ninjascores.com/api/prechauffe/" -w "\nHTTP %{http_code}\n"
-
       - name: Auditer la couverture
         run: |
           echo "Audit de la couverture des donnees…"
-          REP=$(curl -sS -m 60 "https://ninjascores.com/api/couverture/")
+          REP=$(curl -sS -m 90 "https://ninjascores.com/api/couverture/")
           echo "$REP" | python3 -m json.tool || echo "$REP"
           SANTE=$(echo "$REP" | python3 -c "import sys,json;print(json.load(sys.stdin).get('sante','inconnu'))")
           if [ "$SANTE" = "degrade" ]; then
-            echo "::error::Couverture degradee — des matchs de ligues prioritaires n'ont pas leurs donnees. Voir le detail ci-dessus."
+            echo "::error::Couverture degradee — des matchs de ligues prioritaires n'ont pas leurs donnees alors que la chauffe Vercel devrait tourner toutes les 30 min. Voir le detail ci-dessus."
             exit 1
           fi
           echo "Couverture OK ($SANTE)."
