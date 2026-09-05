@@ -24,13 +24,13 @@
 
 const SITE = 'https://ninjascores.com';
 
-// TOUTES les ligues sont chauffées (demande utilisateur du 30/08 : « toutes
-// les ligues où API-Football a de la donnée », pas seulement les grandes).
-// La liste ci-dessous ne sert plus qu'à PRIORISER : grandes compétitions
-// d'abord, pour que le budget temps, s'il est dépassé un soir de grosse
-// affiche, tronque les ligues exotiques et jamais la Liga.
-// (RANG_COMPET de assets/inline/s6.js — copie assumée, importer un fichier
-// navigateur d'ici est impossible.)
+// PERIMETRE : les ligues du bareme ci-dessous, et elles seules (decision du
+// 05/09 sur la matrice quota : le « tier C » — toutes les autres ligues —
+// est servi a la demande, jamais pousse). Du 30/08 au 05/09 la chauffe
+// traitait TOUTES les ligues : un samedi, 821 a 1 333 matchs par run, le
+// budget de 700 s epuise a chaque fois, la boucle « forme des equipes »
+// jamais atteinte, et ~1 500 appels par demi-heure pour du Kenya que
+// personne n'ouvre. L'audit /api/couverture/ juge exactement ce perimetre.
 // Copie du RANG_COMPET de assets/inline/s6.js (importer un fichier navigateur
 // d'ici est impossible). Un rang plus bas = chauffe plus tot a urgence egale.
 // Refait le 04/09 en meme temps que celui du calendrier : les coupes
@@ -48,8 +48,8 @@ const RANG = {
 };
 const RANG_INCONNU = 90;
 const rang = (id) => (RANG[id] != null ? RANG[id] : RANG_INCONNU);
-// « Prioritaire » = present au bareme. Sert a l'audit de couverture, qui ne
-// juge que ces ligues-la.
+// « Prioritaire » = present au bareme. C'est le filtre des cibles ET le
+// perimetre de l'audit de couverture.
 const PRIORITAIRES = new Set(Object.keys(RANG).map(Number));
 const FINIS = new Set(['FT', 'AET', 'PEN', 'CANC', 'ABD', 'PST', 'WO']);
 
@@ -146,6 +146,7 @@ export default async function handler(req, res) {
     const tous = (cal && cal.response) || [];
     const maintenant = Date.now();
     const cibles = tous.filter((f) => {
+      if (!PRIORITAIRES.has(f.league.id)) return false;
       if (FINIS.has(f.fixture.status.short)) return false;
       const debut = new Date(f.fixture.date).getTime();
       return debut - maintenant < FENETRE_MS;   // inclut les matchs en cours
@@ -181,9 +182,7 @@ export default async function handler(req, res) {
       // la moitie du total). Les matchs lointains se contentent des blocs
       // par match ; leurs equipes seront chauffees quand ils deviendront
       // urgents.
-      if (new Date(f.fixture.date).getTime() - maintenant < URGENT_MS) {
-        equipes.add(a); equipes.add(b);
-      }
+      const urgent = new Date(f.fixture.date).getTime() - maintenant < URGENT_MS;
 
       // `predictions` etait ABSENT de cette liste jusqu'au 04/09 : l'onglet
       // Pronostics de la fiche match l'appelle pourtant a chaque ouverture.
@@ -208,6 +207,33 @@ export default async function handler(req, res) {
         if (resume.sansCotes.length < 15) resume.sansCotes.push(f.teams.home.name + ' - ' + f.teams.away.name);
       }
       if (compo && compo.response && compo.response.length) resume.compos++;
+
+      // Forme et compo probable des deux equipes, DANS la foulee du match
+      // urgent. Jusqu'au 05/09 c'etait une boucle separee en fin de run,
+      // apres tous les matchs : des que le budget tronquait, elle n'etait
+      // jamais atteinte — 46 formes manquantes sur 48 a l'audit de 12:14.
+      if (urgent) {
+        for (const t of [a, b]) {
+          if (equipes.has(t)) continue;          // deja chauffee via un autre match
+          equipes.add(t);
+          await chaufferEquipe(t);
+        }
+      }
+    };
+
+    // 3 appels par equipe. `last=20` : c'est la cle que LIT la fiche match
+    // (s6.js NS_FORME, defaut n=20). `last=1` + sa feuille de match : chemin
+    // « compo probable » de NS_LINEUP, cles distinctes, a chauffer aussi
+    // sinon l'onglet Compo reste au placeholder avant l'heure officielle.
+    const chaufferEquipe = async (t) => {
+      const [, dernier] = await Promise.all([
+        via('fixtures&team=' + t + '&last=20'),
+        via('fixtures&team=' + t + '&last=1'),
+      ]);
+      await respirer();
+      const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
+      if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await respirer(); }
+      resume.appels += fidDernier ? 3 : 2;
     };
 
     // Deux lots. Les URGENTS (< 2 h 30) d'abord, puis un rattrapage immediat de
@@ -240,25 +266,7 @@ export default async function handler(req, res) {
       await chaufferMatch(f);
     }
 
-    for (const t of equipes) {
-      if (Date.now() - t0 > BUDGET_MS) { resume.tronque = true; break; }
-      // Chemin « compo probable » de NS_LINEUP : le dernier match joue, puis
-      // sa feuille de match. Cles distinctes de last=10 — les chauffer aussi,
-      // sinon l'onglet Compo reste au placeholder avant l'heure officielle.
-      const [, dernier] = await Promise.all([
-        // last=20 : c'est la cle que LIT la fiche match (s6.js NS_FORME, defaut
-        // n=20). Jusqu'au 05/09 la chauffe ecrivait last=10 — une cle que le
-        // client ne demandait jamais. Resultat : forme jamais chauffee, 2 appels
-        // amont a chaque ouverture de fiche, et 'Forme recente' vide pendant
-        // les rafales (Bournemouth absent sur Newcastle-Bournemouth, 05/09).
-        via('fixtures&team=' + t + '&last=20'),
-        via('fixtures&team=' + t + '&last=1'),
-      ]);
-      await respirer();
-      const fidDernier = dernier && dernier.response && dernier.response[0] && dernier.response[0].fixture.id;
-      if (fidDernier) { await via('fixtures/lineups&fixture=' + fidDernier + '&team=' + t); await respirer(); }
-      resume.appels += fidDernier ? 3 : 2;
-    }
+    resume.equipes = equipes.size;
 
     // ── Seconde passe : rattrapage des echecs ────────────────────────────
     // `via()` avale ses erreurs en renvoyant null : une rafale amont, un 502

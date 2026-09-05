@@ -113,9 +113,12 @@ function ttlQuotaMortSec(erreurs, resteJour) {
   return Math.min(3600, Math.max(60, Math.ceil((minuit - maintenant) / 1000)));
 }
 
-function repondreQuotaMort(res, details) {
-  // s-maxage : c'est le CDN qui encaisse les robots, pas l'API.
-  res.setHeader('Cache-Control', `public, s-maxage=${TTL_ERREUR}`);
+function repondreQuotaMort(res, details, noStore) {
+  // s-maxage : c'est le CDN qui encaisse les robots, pas l'API. Sauf en mode
+  // chauffe : JAMAIS de 502 gele au CDN, sinon les trois tentatives du
+  // calendrier recoivent la meme reponse pendant 60 s et le run meurt en
+  // 19 s alors que le verrou minute n'a dure que 8 s (05/09, cron de 12:00).
+  res.setHeader('Cache-Control', noStore ? 'no-store' : `public, s-maxage=${TTL_ERREUR}`);
   res.status(502).json({ error: 'Quota API-Football épuisé', retry: true, details: details || null });
 }
 
@@ -422,7 +425,7 @@ export default async function handler(req, res) {
   // pire, TTL 60 s) — le couper rendrait la panne invisible au moment precis
   // ou on a besoin de la voir. Le check Redis vient plus bas, dans le
   // pipeline principal, pour n'ajouter aucun aller-retour au chemin chaud.
-  if (path !== 'status' && Date.now() < quotaMortLocal) return repondreQuotaMort(res);
+  if (path !== 'status' && Date.now() < quotaMortLocal) return repondreQuotaMort(res, null, modeChauffe);
 
   // Cle stable : les parametres sont tries pour que ?team=1&last=8 et
   // ?last=8&team=1 partagent la meme entree.
@@ -484,8 +487,11 @@ export default async function handler(req, res) {
     // La cle expire d'elle-meme au reset UTC (ou apres 8 s pour un refus
     // minute).
     if (lu && lu[0] && lu[0].result) {
-      quotaMortLocal = Date.now() + 60000;   // filet local si Redis retombe
-      return repondreQuotaMort(res);
+      // Filet local si Redis retombe : la duree du verrou MINUTE, pas 60 s —
+      // sinon chaque instance qui a vu la cle restait sourde une minute
+      // entiere apres un embouteillage de 8 s (12:00:03 -> 12:01:02 le 05/09).
+      quotaMortLocal = Date.now() + QUOTA_MINUTE_MS;
+      return repondreQuotaMort(res, null, modeChauffe);
     }
   }
 
@@ -516,12 +522,12 @@ export default async function handler(req, res) {
         // pour un refus JOUR, 8 s pour un refus MINUTE).
         quotaMortLocal = Date.now() + pauseQuota(erreurs, reste);
         await redisPipeline([['SETEX', CLE_QUOTA_MORT, ttlQuotaMortSec(erreurs, reste), '1']]);
-        return repondreQuotaMort(res, erreurs);
+        return repondreQuotaMort(res, erreurs, modeChauffe);
       }
       // Erreur metier ponctuelle (mauvais parametre…) : courte absorption CDN
       // plutot que no-store — un robot qui boucle sur une URL cassee ne doit
       // pas se traduire en appels amont en boucle.
-      res.setHeader('Cache-Control', `public, s-maxage=${TTL_ERREUR}`);
+      res.setHeader('Cache-Control', modeChauffe ? 'no-store' : `public, s-maxage=${TTL_ERREUR}`);
       res.status(502).json({ error: 'Erreur API-Football', details: erreurs });
       return;
     }
@@ -581,7 +587,7 @@ export default async function handler(req, res) {
       quotaMortLocal = Date.now() + QUOTA_MINUTE_MS;
       await redisPipeline([['SETEX', CLE_QUOTA_MORT, Math.ceil(QUOTA_MINUTE_MS / 1000), '1']]);
     }
-    res.setHeader('Cache-Control', `public, s-maxage=${TTL_ERREUR}`);
+    res.setHeader('Cache-Control', modeChauffe ? 'no-store' : `public, s-maxage=${TTL_ERREUR}`);
     res.status(502).json({ error: 'Appel API-Football échoué' });
   }
 }
