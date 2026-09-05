@@ -86,7 +86,12 @@ function jourUTC() { return new Date().toISOString().slice(0, 10); }
 async function via(chemin, rejeu) {
   // Barre finale obligatoire côté /api/foot/ (redirection 308 sinon).
   try {
-    const r = await fetch(SITE + '/api/foot/?path=' + chemin, { signal: AbortSignal.timeout(25000) });
+    // _prechauffe=1 : (a) le proxy repond no-store, donc chaque passage atteint
+    // la fonction au lieu d'etre servi par le CDN ; (b) une cle a moins de
+    // 30 min de vie est rafraichie en amont au lieu d'etre servie telle
+    // quelle. Sans ca la chauffe ne prolongeait jamais rien (voir foot.js,
+    // REFRESH_AHEAD_S). Le proxy ne transmet pas ce parametre a API-Football.
+    const r = await fetch(SITE + '/api/foot/?path=' + chemin + '&_prechauffe=1', { signal: AbortSignal.timeout(25000) });
     if (!r.ok) { if (!rejeu) echecs.push(chemin); return null; }
     return await r.json();
   } catch (e) { if (!rejeu) echecs.push(chemin); return null; }

@@ -55,6 +55,15 @@ const CLE_QUOTA_MORT = 'foot:quota-mort';
 const QUOTA_PAUSE_MS = 120000;   // 2 min pour un refus JOUR
 const QUOTA_MINUTE_MS = 8000;    // 8 s pour un refus MINUTE
 const TTL_ERREUR = 60;           // le CDN absorbe les erreurs 60 s
+// Refresh-ahead pour la chauffe. Le prechauffage passe par ce proxy et est
+// idempotent : une cle encore en cache n'est PAS reecrite, donc sa TTL n'est
+// jamais prolongee. Constate le 05/09 : cotes ecrites a 09:16 (TTL 45 min,
+// expiration 10:01), cron de 09:30 -> en cache, rien ; cron de 10:00 -> encore
+// en cache une minute, rien ; 10:01 tout expire ; prochain cron 10:30. Trou de
+// 30 min STRUCTUREL, meme avec un cron parfait. Quand la requete vient de la
+// chauffe (?_prechauffe=1) et qu'il reste moins que ceci a la cle, on va la
+// rechercher en amont et on la reecrit avec sa TTL pleine.
+const REFRESH_AHEAD_S = 1800;
 // Filet de securite local : si Redis est indisponible, l'instance retient
 // quand meme sa derniere connaissance du quota mort pour son propre trafic.
 let quotaMortLocal = 0;
@@ -375,8 +384,14 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Les parametres prefixes « _ » sont a nous (cache-buster, mode chauffe) :
+  // ils ne partent JAMAIS en amont. API-Football rejette tout champ inconnu
+  // (« The S field do not exist ») — un ?&s=1 ajoute pour contourner le CDN
+  // faisait tomber la requete en 502, constate le 05/09.
+  const modeChauffe = '_prechauffe' in params;
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
+    if (k.startsWith('_')) continue;
     if (v !== undefined && v !== '') qs.append(k, Array.isArray(v) ? v[0] : v);
   }
 
@@ -433,6 +448,7 @@ export default async function handler(req, res) {
       ['GET', cleRedis],
       ['INCR', `footcnt:${jour}:${path}`],
       ['EXPIRE', `footcnt:${jour}:${path}`, 604800],
+      ['TTL', cleRedis],          // secondes restantes (-2 absente, -1 sans TTL)
     ];
     if (sousCompteur) {
       cmdsGet.push(['INCR', `footcnt:${jour}:${sousCompteur}`]);
@@ -440,12 +456,17 @@ export default async function handler(req, res) {
     }
     const lu = await redisPipeline(cmdsGet);
     const stocke = decompresser(lu && lu[1] && lu[1].result);
-    if (stocke) {
+    // Index 4 = TTL (apres GET, GET, INCR, EXPIRE ; le sous-compteur, s'il
+    // existe, est ajoute APRES et ne decale rien).
+    const ttlRestante = lu && lu[4] && typeof lu[4].result === 'number' ? lu[4].result : -2;
+    const bientotExpire = modeChauffe && ttlRestante >= 0 && ttlRestante < REFRESH_AHEAD_S;
+    if (stocke && !bientotExpire) {
       res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
       res.setHeader('X-Cache-Foot', 'redis');
       res.status(200).send(stocke);
       return;
     }
+    if (bientotExpire) res.setHeader('X-Cache-Foot', 'refresh-ahead');
     // Quota mort partage : si une autre instance a decouvert la panne, on
     // s'arrete ici sans depenser un aller-retour amont pour re-decouvrir.
     // La cle expire d'elle-meme au reset UTC (ou apres 8 s pour un refus
@@ -528,8 +549,12 @@ export default async function handler(req, res) {
       await redisPipeline(cmds);
     }
 
-    res.setHeader('Cache-Control',
-      `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
+    // En mode chauffe : no-store. Si le CDN gardait cette reponse, le prochain
+    // passage de la chauffe serait servi par le CDN sans atteindre la fonction,
+    // et le refresh-ahead ne se declencherait jamais. Le trafic normal (sans
+    // _prechauffe) garde son s-maxage.
+    res.setHeader('Cache-Control', modeChauffe ? 'no-store'
+      : `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
     res.status(200).json(json);
   } catch (e) {
     console.error('[foot]', path, e.message);
