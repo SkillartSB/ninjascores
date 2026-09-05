@@ -117,6 +117,16 @@ async function via(chemin, rejeu) {
 }
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Calendrier du jour SANS _prechauffe : servi par Redis/CDN comme pour un
+// visiteur. Voir l'appelant pour le pourquoi.
+async function calendrier(date) {
+  try {
+    const r = await fetch(SITE + '/api/foot/?path=fixtures&date=' + date, { signal: AbortSignal.timeout(25000) });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) { return null; }
+}
 // Rapport du run courant, hisse au module pour que via() puisse y compter
 // les ecritures Redis ratees. Reinitialise a chaque invocation du handler.
 let resume = {};
@@ -138,7 +148,18 @@ export default async function handler(req, res) {
     // ici garantit que le premier visiteur du quart d'heure ne paie jamais
     // l'assemblage complet.
     await via('cotes-jour&date=' + jourUTC());
-    const cal = await via('fixtures&date=' + jourUTC());
+    // Le calendrier est la colonne vertebrale du run : s'il manque, il n'y a
+    // AUCUNE cible et le run se termine en 15 s sans rien chauffer (crons de
+    // 12:00 et 13:00 le 05/09, un seul 502 a chaque fois). Donc : pas de mode
+    // chauffe pour lui (TTL 300 s < seuil refresh-ahead, chaque passage
+    // repartait en amont chercher 1,5 Mo pour rien — la clientele le
+    // rafraichit deja toutes les 5 min), et trois tentatives espacees.
+    let cal = null;
+    for (let essai = 0; essai < 3 && !(cal && cal.response); essai++) {
+      if (essai) await dormir(4000);
+      cal = await calendrier(jourUTC());
+    }
+    if (!(cal && cal.response)) resume.calendrierIndisponible = true;
     // cotes-jour peut declencher ~25 appels amont d'un coup (agregat non cache).
     // Enchainer aussitot les vagues de 5 faisait deborder la minute des les
     // premiers matchs — les grandes ligues, en tete de file. On souffle.
