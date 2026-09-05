@@ -402,7 +402,13 @@ export default async function handler(req, res) {
   // se joue que sur le calendrier du jour et le direct : la liste des matchs
   // d'une equipe ou la fiche d'un match a venir ne bougent pas en 5 minutes.
   if (!('live' in params)) {
-    if (path === 'fixtures' && ('team' in params || 'id' in params || 'h2h' in params)) ttl = 3600;
+    if (path === 'fixtures' && ('id' in params || 'h2h' in params)) ttl = 3600;
+    // La forme d'une equipe (fixtures?team=X&last=N) ne change que quand elle
+    // joue, environ une fois par semaine. Elle etait pourtant cachee 1 h : le
+    // 05/09 c'etait 14 % du quota (9 493 appels amont a 10:17), essentiellement
+    // le crawl SEO des pages equipe et des blocs forme des pages match. 3 h
+    // divise ce poste par trois sans effet visible pour l'utilisateur.
+    if (path === 'fixtures' && 'team' in params) ttl = 10800;
     // TTL calees sur la periode du cron de chauffe (30 min, Vercel Cron) AVEC
     // une marge : a TTL = periode exactement, la donnee expire a l'instant ou
     // le cron suivant demarre et il y a un trou de quelques secondes a chaque
