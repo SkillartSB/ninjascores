@@ -171,8 +171,10 @@ export default async function handler(req, res) {
             compos: cle('fixtures/lineups', { fixture: fid }),
             pronostics: cle('predictions', { fixture: fid }),
             tat: cle('fixtures/headtohead', { h2h: a + '-' + b, last: '20' }),
-            formeDom: cle('fixtures', { team: a, last: '10' }),
-            formeExt: cle('fixtures', { team: b, last: '10' }),
+            // last=20 = la cle lue par le client (s6.js:90). Verifier last=10
+            // disait « present » sur une cle que personne ne lisait.
+            formeDom: cle('fixtures', { team: a, last: '20' }),
+            formeExt: cle('fixtures', { team: b, last: '20' }),
           } },
       );
     }

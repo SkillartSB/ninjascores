@@ -197,7 +197,12 @@ export default async function handler(req, res) {
       // sa feuille de match. Cles distinctes de last=10 — les chauffer aussi,
       // sinon l'onglet Compo reste au placeholder avant l'heure officielle.
       const [, dernier] = await Promise.all([
-        via('fixtures&team=' + t + '&last=10'),
+        // last=20 : c'est la cle que LIT la fiche match (s6.js NS_FORME, defaut
+        // n=20). Jusqu'au 05/09 la chauffe ecrivait last=10 — une cle que le
+        // client ne demandait jamais. Resultat : forme jamais chauffee, 2 appels
+        // amont a chaque ouverture de fiche, et 'Forme recente' vide pendant
+        // les rafales (Bournemouth absent sur Newcastle-Bournemouth, 05/09).
+        via('fixtures&team=' + t + '&last=20'),
         via('fixtures&team=' + t + '&last=1'),
       ]);
       await dormir(PAUSE_MS);
