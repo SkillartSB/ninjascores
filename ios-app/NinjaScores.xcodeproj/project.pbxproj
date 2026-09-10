@@ -1,0 +1,482 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02BC49DE1C308A324AA02AD8 /* NinjaScoresWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB8BF109DC292241D1B3F3D /* NinjaScoresWidgetBundle.swift */; };
+		072A06E8F37E945378B2AFD5 /* NinjaScoresWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6291E434A71C2025055E0E37 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74185B9693C9CD7C8D43159 /* ContentView.swift */; };
+		662A8BEF51D015DAFAB36C67 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */; };
+		8DF40788BBF648A1B2A0F27D /* PushNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */; };
+		949BC28DDF9DBE9096A4E6AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9A39CE57AC9BC4A7AE9D4FCB /* Assets.xcassets */; };
+		B40044B1DE7F702B0E0B558D /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */; };
+		BE76521F8035DFF0D20C7328 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED21331FF4C7169331640772 /* SplashView.swift */; };
+		D1EF4E729A18D8A461544BFD /* NinjaScoresApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59633857A5D7E38D111458BC /* NinjaScoresApp.swift */; };
+		DFFD729ED3BC0949EF74877D /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D2E2BEB8951362842B2B1 /* MatchLiveActivity.swift */; };
+		E80FD6B780844FB776268087 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1857A8AE59B6B29410700AC5 /* LiveActivityManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9286A4CA39F9AE5657EBF668 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B159D3D37413F2C9941EF311 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B4F34B8427E475D2EFCA2FF3;
+			remoteInfo = NinjaScoresWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		16D261D961334794BFCB8348 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				072A06E8F37E945378B2AFD5 /* NinjaScoresWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1857A8AE59B6B29410700AC5 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
+		3E7D2E2BEB8951362842B2B1 /* MatchLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
+		59633857A5D7E38D111458BC /* NinjaScoresApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjaScoresApp.swift; sourceTree = "<group>"; };
+		5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotifications.swift; sourceTree = "<group>"; };
+		7BB8BF109DC292241D1B3F3D /* NinjaScoresWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjaScoresWidgetBundle.swift; sourceTree = "<group>"; };
+		9A39CE57AC9BC4A7AE9D4FCB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A74185B9693C9CD7C8D43159 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C89BD4EC2E3A048ABD011681 /* NinjaScores.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NinjaScores.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchActivityAttributes.swift; sourceTree = "<group>"; };
+		DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NinjaScoresWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED21331FF4C7169331640772 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		018016EFD963CFB94AFF56A1 /* NinjaScoresWidget */ = {
+			isa = PBXGroup;
+			children = (
+				91DFAD854B722DD33D9A0F82 /* Sources */,
+			);
+			path = NinjaScoresWidget;
+			sourceTree = "<group>";
+		};
+		3B59E281CB144EECAEFF5B46 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		80B9B036DE9A894F5F8A8708 /* NinjaScores */ = {
+			isa = PBXGroup;
+			children = (
+				9A39CE57AC9BC4A7AE9D4FCB /* Assets.xcassets */,
+				B54A1BF78A264AFF4BD5417B /* Sources */,
+			);
+			path = NinjaScores;
+			sourceTree = "<group>";
+		};
+		91DFAD854B722DD33D9A0F82 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				3E7D2E2BEB8951362842B2B1 /* MatchLiveActivity.swift */,
+				7BB8BF109DC292241D1B3F3D /* NinjaScoresWidgetBundle.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		B54A1BF78A264AFF4BD5417B /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A74185B9693C9CD7C8D43159 /* ContentView.swift */,
+				1857A8AE59B6B29410700AC5 /* LiveActivityManager.swift */,
+				59633857A5D7E38D111458BC /* NinjaScoresApp.swift */,
+				5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */,
+				ED21331FF4C7169331640772 /* SplashView.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		E2AF07C6CD3C1EE437901627 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C89BD4EC2E3A048ABD011681 /* NinjaScores.app */,
+				DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EF1AC7DB19780233482475D9 = {
+			isa = PBXGroup;
+			children = (
+				80B9B036DE9A894F5F8A8708 /* NinjaScores */,
+				018016EFD963CFB94AFF56A1 /* NinjaScoresWidget */,
+				3B59E281CB144EECAEFF5B46 /* Shared */,
+				E2AF07C6CD3C1EE437901627 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B4F34B8427E475D2EFCA2FF3 /* NinjaScoresWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4E9BC103F59F9C0EC6BD3D0F /* Build configuration list for PBXNativeTarget "NinjaScoresWidgetExtension" */;
+			buildPhases = (
+				5E49B1BBE571EEF042A95DD3 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NinjaScoresWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = NinjaScoresWidgetExtension;
+			productReference = DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B71857B5939DCBC4909E39A4 /* NinjaScores */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87C444F001F3F7BF000BB526 /* Build configuration list for PBXNativeTarget "NinjaScores" */;
+			buildPhases = (
+				D7E77C6681943EEED1779068 /* Sources */,
+				D630E45DBBDD803D455F3FCB /* Resources */,
+				16D261D961334794BFCB8348 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F9111E045EAB32270E8D754 /* PBXTargetDependency */,
+			);
+			name = NinjaScores;
+			packageProductDependencies = (
+			);
+			productName = NinjaScores;
+			productReference = C89BD4EC2E3A048ABD011681 /* NinjaScores.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B159D3D37413F2C9941EF311 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					B4F34B8427E475D2EFCA2FF3 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					B71857B5939DCBC4909E39A4 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 760C90FD0CD8AA05D62D27BD /* Build configuration list for PBXProject "NinjaScores" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = EF1AC7DB19780233482475D9;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E2AF07C6CD3C1EE437901627 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B71857B5939DCBC4909E39A4 /* NinjaScores */,
+				B4F34B8427E475D2EFCA2FF3 /* NinjaScoresWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D630E45DBBDD803D455F3FCB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				949BC28DDF9DBE9096A4E6AA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5E49B1BBE571EEF042A95DD3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				662A8BEF51D015DAFAB36C67 /* MatchActivityAttributes.swift in Sources */,
+				DFFD729ED3BC0949EF74877D /* MatchLiveActivity.swift in Sources */,
+				02BC49DE1C308A324AA02AD8 /* NinjaScoresWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7E77C6681943EEED1779068 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6291E434A71C2025055E0E37 /* ContentView.swift in Sources */,
+				E80FD6B780844FB776268087 /* LiveActivityManager.swift in Sources */,
+				B40044B1DE7F702B0E0B558D /* MatchActivityAttributes.swift in Sources */,
+				D1EF4E729A18D8A461544BFD /* NinjaScoresApp.swift in Sources */,
+				8DF40788BBF648A1B2A0F27D /* PushNotifications.swift in Sources */,
+				BE76521F8035DFF0D20C7328 /* SplashView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4F9111E045EAB32270E8D754 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B4F34B8427E475D2EFCA2FF3 /* NinjaScoresWidgetExtension */;
+			targetProxy = 9286A4CA39F9AE5657EBF668 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4BCD572589619E8914E27535 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = NinjaScores/NinjaScores.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				INFOPLIST_FILE = NinjaScores/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ninjascores.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		67B8EA366F02E98F6EDA137B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = TQ2VKDKTRL;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MARKETING_VERSION = 1.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8FDAE0A3984596AAD0473EEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NinjaScoresWidget/NinjaScoresWidget.entitlements;
+				INFOPLIST_FILE = NinjaScoresWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ninjascores.app.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		E9CAC98FE1A8B2220937EE9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NinjaScoresWidget/NinjaScoresWidget.entitlements;
+				INFOPLIST_FILE = NinjaScoresWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ninjascores.app.widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		F76636AA099B20CAF33CD36B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = TQ2VKDKTRL;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MARKETING_VERSION = 1.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FA90DFB70853DE9BAE254FF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = NinjaScores/NinjaScores.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				INFOPLIST_FILE = NinjaScores/Info.plist;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ninjascores.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4E9BC103F59F9C0EC6BD3D0F /* Build configuration list for PBXNativeTarget "NinjaScoresWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9CAC98FE1A8B2220937EE9A /* Debug */,
+				8FDAE0A3984596AAD0473EEB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		760C90FD0CD8AA05D62D27BD /* Build configuration list for PBXProject "NinjaScores" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F76636AA099B20CAF33CD36B /* Debug */,
+				67B8EA366F02E98F6EDA137B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		87C444F001F3F7BF000BB526 /* Build configuration list for PBXNativeTarget "NinjaScores" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4BCD572589619E8914E27535 /* Debug */,
+				FA90DFB70853DE9BAE254FF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B159D3D37413F2C9941EF311 /* Project object */;
+}

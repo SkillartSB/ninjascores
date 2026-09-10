@@ -1,0 +1,79 @@
+name: NinjaScores
+options:
+  bundleIdPrefix: com.ninjascores
+  deploymentTarget:
+    iOS: "16.2"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "2"
+    DEVELOPMENT_TEAM: "TQ2VKDKTRL"
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  NinjaScores:
+    type: application
+    platform: iOS
+    sources:
+      - path: NinjaScores/Sources
+      - path: NinjaScores/Assets.xcassets
+      - path: Shared
+    info:
+      path: NinjaScores/Info.plist
+      properties:
+        CFBundleDisplayName: NinjaScores
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+        UIBackgroundModes:
+          - remote-notification
+        NSSupportsLiveActivities: true
+    entitlements:
+      path: NinjaScores/NinjaScores.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.ninjascores.app
+        # TestFlight et App Store exigent « production » : un build signe avec
+        # un profil de distribution et un entitlement « development » se voit
+        # refuser ses tokens par APNs. Le serveur doit suivre (APNS_ENV).
+        aps-environment: production
+        # Sign in with Apple (pont natif AppleSignInBridge, build 1.1). La
+        # capacite est activee sur l'App ID depuis le 10/09/2026.
+        com.apple.developer.applesignin:
+          - Default
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ninjascores.app
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - target: NinjaScoresWidgetExtension
+
+  NinjaScoresWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: NinjaScoresWidget/Sources
+      - path: Shared
+    info:
+      path: NinjaScoresWidget/Info.plist
+      properties:
+        CFBundleDisplayName: NinjaScoresWidget
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: NinjaScoresWidget/NinjaScoresWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.ninjascores.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ninjascores.app.widget
+        TARGETED_DEVICE_FAMILY: "1"
+        SKIP_INSTALL: "YES"
