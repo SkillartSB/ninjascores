@@ -7,3 +7,13 @@ Allow: /
 Disallow: /api/
 
 Sitemap: https://ninjascores.com/sitemap.xml
+
+# Crawlers IA / SEO commerciaux : 256 000 requetes par jour sur des pages de
+# matchs exotiques jamais en cache = le quota API-Football vide a midi
+# (constat du 05/09/2026, Firewall Vercel). Bloques ici ET par une regle
+# Firewall (deny sur le User-Agent), robots.txt seul n'etant pas contraignant.
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
