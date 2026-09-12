@@ -279,7 +279,8 @@
         style: { width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 17, color: estFav ? '#F59E0B' : t.textTer, flexShrink: 0, padding: 0, fontFamily: 'inherit' } }, estFav ? '★' : '☆'),
       h('div', { style: { flex: 1, minWidth: 0 } }, ligneNom(nomA, flagA, gagneA || (live && servA), servA), ligneNom(nomB, flagB, gagneB || (live && servB), servB)),
       live ? h('div', { style: { width: 26, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: '#EF4444' } }, setNum ? 'S' + setNum : 'LIVE')
-        : ended ? h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 600, color: t.textTer } }, 'Terminé')
+        : ended ? h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: /retired|walkover|w\.?o\.?|cancel|abandon|postpon/i.test(tx.statutBrut || '') ? '#EF4444' : t.textTer, lineHeight: 1.2 } },
+            /retired/i.test(tx.statutBrut || '') ? 'Abandon' : /walkover|w\.?o\.?/i.test(tx.statutBrut || '') ? 'Forfait' : /cancel/i.test(tx.statutBrut || '') ? 'Annulé' : /postpon/i.test(tx.statutBrut || '') ? 'Reporté' : 'Terminé')
         : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),
       live ? h('div', { style: { width: 16, flexShrink: 0 } }, balle(servA), balle(servB)) : null,
       (live && jeu && jeu.length === 2) ? col(jeu[0], jeu[1], { width: 26 }) : null,
