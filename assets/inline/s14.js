@@ -51,11 +51,26 @@
   // du pays, sinon balle. Les logos viennent de data/tennis-tournois.json (champ `logo`)
   // et sont heberges par nous (assets/logos/tennis/tournois, 96x96).
   window.NS_LOGO_TOURNOI = function (slug) { return slug ? '/assets/logos/tennis/tournois/' + slug + '.png' : null; };
+  // Badges de niveau officiels (logique demandee le 13/09 : pas un logo par tournoi, un logo
+  // par categorie). Les niveaux WTA 1000/500/250 sont composes depuis la marque WTA 125.
+  var BADGE_CAT = { 'ATP|M1000': 'atp_masters-1000', 'ATP|500': 'atp_500', 'ATP|250': 'atp_250', 'ATP|CH': 'atp_challenger',
+    'WTA|M1000': 'wta_1000', 'WTA|500': 'wta_500', 'WTA|250': 'wta_250', 'WTA|CH': 'wta_125', 'WTA|GS': 'wta', 'WTA|FINALS': 'wta', 'WTA|TEAM': 'wta', 'WTA|OLY': 'wta' };
+  window.NS_BADGE_NIVEAU = function (circuit, cat) {
+    var c = String(circuit || '').indexOf('WTA') === 0 ? 'WTA' : 'ATP';
+    var f = BADGE_CAT[c + '|' + cat];
+    return f ? '/assets/logos/tennis/' + f + '.png' : null;
+  };
   window.NS_BadgeTournoi = function (props) {
     var taille = props.taille || 26, t = props.t || {}, tx = props.tennis || props;
-    var url = window.NS_LOGO_TOURNOI(tx.logo);
-    if (url) return h('span', { style: { width: taille, height: taille, borderRadius: Math.round(taille * 0.27), background: '#fff', border: '1px solid rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } },
-      h('img', { src: url, alt: '', loading: 'lazy', onError: function (e) { e.currentTarget.style.display = 'none'; }, style: { width: Math.round(taille * 0.82), height: Math.round(taille * 0.82), objectFit: 'contain', display: 'block' } }));
+    var tuile = function (url, large) {
+      var l = large ? Math.round(taille * 2.3) : taille;
+      return h('span', { style: { width: l, height: taille, borderRadius: Math.round(taille * 0.27), background: '#fff', border: '1px solid rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } },
+        h('img', { src: url, alt: '', loading: 'lazy', onError: function (e) { e.currentTarget.style.display = 'none'; }, style: { width: Math.round(l * 0.86), height: Math.round(taille * 0.78), objectFit: 'contain', display: 'block' } }));
+    };
+    var off = window.NS_LOGO_TOURNOI(tx.logo);
+    if (off) return tuile(off, false);
+    var niv = window.NS_BADGE_NIVEAU(tx.circuit, tx.cat);
+    if (niv) return tuile(niv, true);
     var d = tx.pays ? drapeau(tx.pays) : '';
     return h('span', { style: { fontSize: Math.round(taille * 0.78), lineHeight: 1, width: taille, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, d || '🎾');
   };
@@ -362,7 +377,7 @@
             return h('div', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
               style: { flex: '0 0 auto', width: 156, background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, padding: '12px 12px', cursor: 'pointer',
                 borderLeft: '4px solid ' + (g.circuit === 'WTA' ? '#EC4899' : (g.tier >= 5 ? '#F59E0B' : accent)) } },
-              h('div', { style: { marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, h(window.NS_BadgeTournoi, { tennis: g, t: t, taille: 34 }), (g.logo && g.pays) ? h('span', { style: { fontSize: 15, lineHeight: 1, fontFamily: EMOJI } }, drapeau(g.pays)) : null),
+              h('div', { style: { marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, height: 34 } }, h(window.NS_BadgeTournoi, { tennis: g, t: t, taille: 30 }), g.pays ? h('span', { style: { fontSize: 15, lineHeight: 1, fontFamily: EMOJI } }, drapeau(g.pays)) : null),
               h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, g.nom),
               h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [cat, surf].filter(Boolean).join(' · ')),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: g.live ? '#EF4444' : (g.enCours ? accent : t.textTer), marginTop: 6 } }, quand));

@@ -15,6 +15,15 @@ const COTE_MIN = 1.3, FREQ_MIN = 0.7, MAX_MATCHS = 16, TTL = 1800;
 const TIER = { GS: 1, FINALS: 1, OLY: 1, M1000: 2, '500': 3, TEAM: 3, '250': 4, CH: 5 };
 const CAT = { GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'Masters 1000', '500': '500', '250': '250', TEAM: 'Par équipes', CH: 'Challenger' };
 
+// Logo d'un groupe de pronostics : logo officiel du tournoi, sinon badge de niveau.
+const BADGE_CAT = { 'ATP|M1000': 'atp_masters-1000', 'ATP|500': 'atp_500', 'ATP|250': 'atp_250', 'ATP|CH': 'atp_challenger',
+  'WTA|M1000': 'wta_1000', 'WTA|500': 'wta_500', 'WTA|250': 'wta_250', 'WTA|CH': 'wta_125', 'WTA|GS': 'wta', 'WTA|FINALS': 'wta', 'WTA|TEAM': 'wta' };
+const RACINE_LOGOS = 'https://ninjascores.com/assets/logos/tennis/';
+function logoGroupe(m) {
+  if (m.t && m.t.logo) return RACINE_LOGOS + 'tournois/' + m.t.logo + '.png';
+  const f = BADGE_CAT[(m.circuit === 'WTA' ? 'WTA' : 'ATP') + '|' + (m.t && m.t.cat)];
+  return f ? RACINE_LOGOS + f + '.png' : null;
+}
 function drapeau(iso) {
   if (!iso || iso.length !== 2) return '🎾';
   return String.fromCodePoint(...iso.toUpperCase().split('').map((c) => 0x1F1E6 + c.charCodeAt(0) - 65));
@@ -114,7 +123,7 @@ export async function pronosTennis(cle, jour) {
     if (!retenus.length) return;
     const nomT = String(x.tournament_name || 'Tournoi').replace(/\s*\(.*?\)\s*/g, ' ').trim();
     const league = nomT + ' · ' + (m.t.cat === 'GS' ? 'Grand Chelem' : (m.circuit + ' ' + (m.t.cat === 'M1000' ? '1000' : (CAT[m.t.cat] || ''))).trim());
-    if (!par.has(league)) par.set(league, { lid: 'tn-' + x.tournament_key + '-' + m.circuit.toLowerCase(), league, emoji: drapeau(m.t.pays), compLogo: m.t.logo ? 'https://ninjascores.com/assets/logos/tennis/tournois/' + m.t.logo + '.png' : null, rang: m.tier, sport: 'tennis', picks: [] });
+    if (!par.has(league)) par.set(league, { lid: 'tn-' + x.tournament_key + '-' + m.circuit.toLowerCase(), league, emoji: drapeau(m.t.pays), compLogo: logoGroupe(m), compLarge: !m.t.logo, rang: m.tier, sport: 'tennis', picks: [] });
     retenus.forEach((c, j) => {
       const prob = Math.round(c.r * 100);
       par.get(league).picks.push({

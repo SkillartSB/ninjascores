@@ -87,7 +87,7 @@
       competition: circuit,
       // Champs a nous, pour la fiche match (etape 3) : cles joueurs, photos, tour.
       tennis: {
-        cle: x.event_key, tournoiCle: x.tournament_key, tournoi: nom, cat: cat, rang: t.rang || 5, logo: t.logo || null,
+        cle: x.event_key, tournoiCle: x.tournament_key, tournoi: nom, cat: cat, circuit: circuit, rang: t.rang || 5, logo: t.logo || null,
         surface: t.surface || null, surfaceFr: surf, pays: t.pays || null, paysNom: paysNom || null, tour: x.tournament_round || null,
         j1: { cle: x.first_player_key, nom: x.event_first_player, photo: x.event_first_player_logo || null, pays: poserDrapeau(x.first_player_key, x.event_first_player) },
         j2: { cle: x.second_player_key, nom: x.event_second_player, photo: x.event_second_player_logo || null, pays: poserDrapeau(x.second_player_key, x.event_second_player) },
