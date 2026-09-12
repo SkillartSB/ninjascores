@@ -283,7 +283,7 @@
         : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),
       live ? h('div', { style: { width: 16, flexShrink: 0 } }, balle(servA), balle(servB)) : null,
       (live && jeu && jeu.length === 2) ? col(jeu[0], jeu[1], { width: 26 }) : null,
-      (live || ended) ? col(gagnesA, gagnesB, { width: 22, rouge: live, fortA: true, fortB: true }) : null,
+      (live || (ended && sets.length)) ? col(gagnesA, gagnesB, { width: 22, rouge: live, fortA: true, fortB: true }) : null,
       sets.map(function (x, i) {
         var enCours = live && !x.fini;
         var c = col(x.a.j, x.b.j, { width: 20, fortA: x.fini && x.a.j > x.b.j, fortB: x.fini && x.b.j > x.a.j, sombre: enCours });
