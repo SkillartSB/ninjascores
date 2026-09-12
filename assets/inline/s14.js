@@ -186,7 +186,8 @@
     var etat = st[0], setEtat = st[1];
     R.useEffect(function () {
       var vif = true;
-      fetch('/api/news/?q=tennis&sport=tennis').then(function (r) { return r.ok ? r.json() : null; })
+      // « tennis » seul ramene du tennis de table et des clubs locaux : on cible le circuit.
+      fetch('/api/news/?sport=tennis&q=' + encodeURIComponent('tennis (ATP OR WTA OR "Grand Chelem" OR "Roland-Garros" OR "US Open" OR Wimbledon)')).then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) { if (vif) setEtat({ liste: (d && d.articles) || [], chargement: false }); })
         .catch(function () { if (vif) setEtat({ liste: [], chargement: false }); });
       return function () { vif = false; };
