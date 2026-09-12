@@ -354,7 +354,10 @@
     }, ['Fermer']);
     plusTard.addEventListener('click', quitterOnboarding);
 
-    wrap.append(sub, nameInput, inputWrap, pwdWrap, err, cta, lienCode, bascule, sepApple, btnApple, divGoogle, plusTard);
+    // Apple et Google EN PREMIER : un geste, zero e-mail a envoyer (le formulaire
+    // e-mail consomme un code Resend par inscription, plafonne a 100/jour en
+    // gratuit). Le separateur « ou » passe donc entre les deux blocs.
+    wrap.append(sub, btnApple, divGoogle, sepApple, nameInput, inputWrap, pwdWrap, err, cta, lienCode, bascule, plusTard);
     setBody('Crée ton compte', '', wrap, 0, true);
     // setBody ecrit le titre : on applique le mode APRES, sinon « Connecte-toi
     // a » serait aussitot ecrase par « Cree ton compte ». Appele dans les deux
