@@ -266,6 +266,19 @@
     });
     btnApple.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.365 1.43c0 1.14-.46 2.23-1.2 3.05-.8.87-2.1 1.55-3.17 1.46-.14-1.1.4-2.26 1.13-3.03.8-.85 2.18-1.5 3.24-1.48zM20.6 17.3c-.6 1.37-.88 1.98-1.65 3.19-1.07 1.67-2.58 3.75-4.45 3.77-1.66.02-2.09-1.09-4.34-1.08-2.25.01-2.72 1.1-4.39 1.08-1.87-.02-3.3-1.9-4.37-3.57C-1.7 15.76-2 10.5.42 7.7c1.72-1.98 4.43-2.25 6.06-2.25 1.66 0 2.7 1.14 4.07 1.14 1.33 0 2.14-1.14 4.06-1.14 1.45 0 3.03.79 4.14 2.16-3.64 2-3.05 7.2.85 8.69-.36.9-.6 1.48-1 2z"/></svg><span>Continuer avec Apple</span>';
 
+    // ── Google (web seulement) ──────────────────────────────────────────────
+    // Google Identity Services rendu SUR ninjascores.com : le jeton d'identite
+    // arrive a la page, Supabase ne fait que le verifier (signInWithIdToken).
+    // L'ecran Google dit donc « continuer vers ninjascores.com » — plus jamais
+    // l'adresse technique Supabase qui avait fait retirer Google en juillet
+    // (commit 63a672b), et sans domaine personnalise Supabase payant.
+    // Pas dans la coque iOS : Google refuse ses ecrans dans une WKWebView, et
+    // Apple y est deja en natif.
+    var divGoogle = el('div', { style: { width: '100%', minHeight: '0px', display: 'flex', justifyContent: 'center' } });
+    if (window.NS_GOOGLE_CLIENT_ID && window.NS_IS_NATIVE && window.NS_IS_NATIVE() !== 'ios') {
+      monterBoutonGoogle(divGoogle, err);
+    }
+
     // Extrait du bouton pour servir aussi au lien « recevoir un code », que le
     // mode connexion propose en secours.
     function envoyerCode(email) {
@@ -341,7 +354,7 @@
     }, ['Fermer']);
     plusTard.addEventListener('click', quitterOnboarding);
 
-    wrap.append(sub, nameInput, inputWrap, pwdWrap, err, cta, lienCode, bascule, sepApple, btnApple, plusTard);
+    wrap.append(sub, nameInput, inputWrap, pwdWrap, err, cta, lienCode, bascule, sepApple, btnApple, divGoogle, plusTard);
     setBody('Crée ton compte', '', wrap, 0, true);
     // setBody ecrit le titre : on applique le mode APRES, sinon « Connecte-toi
     // a » serait aussitot ecrase par « Cree ton compte ». Appele dans les deux
@@ -491,6 +504,43 @@
     SB.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: retour } }).then(function (r) {
       if (r && r.error) { retablir(); err.textContent = r.error.message; err.style.display = 'block'; }
     }).catch(function () { retablir(); err.textContent = 'Erreur réseau, réessaie.'; err.style.display = 'block'; });
+  }
+
+  var gisPret = null;
+  function chargerGIS() {
+    if (gisPret) return gisPret;
+    gisPret = new Promise(function (ok, ko) {
+      if (window.google && window.google.accounts) return ok();
+      var sc = document.createElement('script');
+      sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.defer = true;
+      sc.onload = function () { ok(); }; sc.onerror = function () { gisPret = null; ko(new Error('gsi')); };
+      document.head.appendChild(sc);
+    });
+    return gisPret;
+  }
+
+  function monterBoutonGoogle(conteneur, err) {
+    chargerGIS().then(function () {
+      window.google.accounts.id.initialize({
+        client_id: window.NS_GOOGLE_CLIENT_ID,
+        ux_mode: 'popup',
+        auto_select: false,
+        callback: function (rep) {
+          err.style.display = 'none';
+          if (!rep || !rep.credential) return;
+          SB.auth.signInWithIdToken({ provider: 'google', token: rep.credential }).then(function (r) {
+            if (r.error) { err.textContent = r.error.message; err.style.display = 'block'; return; }
+            poursuivreApresApple(r.data.session);   // meme reprise que pour Apple
+          }).catch(function () { err.textContent = 'Erreur réseau, réessaie.'; err.style.display = 'block'; });
+        }
+      });
+      // Bouton officiel Google (charte respectee), pleine largeur, en francais.
+      window.google.accounts.id.renderButton(conteneur, {
+        type: 'standard', theme: 'outline', size: 'large', shape: 'pill',
+        text: 'continue_with', locale: 'fr', logo_alignment: 'left',
+        width: Math.min(400, Math.max(200, conteneur.clientWidth || 320))
+      });
+    }).catch(function () { /* script bloque (adblock) : pas de bouton, rien d'autre ne casse */ });
   }
 
   // ── Step 2: Date of birth ──────────────────────────────────────────────────

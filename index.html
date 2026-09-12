@@ -1005,6 +1005,9 @@ window.NS_FAV_TEAMS = (function () {
   );
   // Verifie la session AVANT de monter l'app React, pour que l'ecran Profil
   // affiche le bon etat (connecte / non connecte) des le premier rendu.
+  // Client OAuth Google (Google Identity Services, bouton rendu sur notre
+  // domaine). Vide = pas de bouton Google. Voir s11.js monterBoutonGoogle.
+  window.NS_GOOGLE_CLIENT_ID = '';
   window.NS_AUTH_READY = window.NS_SUPABASE.auth.getSession().then(function (r) {
     window.NS_AUTH_SESSION = (r && r.data && r.data.session) || null;
   }).catch(function () { window.NS_AUTH_SESSION = null; });
@@ -1051,7 +1054,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s10.js?v=1"></script>
 
 <!-- ══ ONBOARDING (apps natives uniquement) ══ -->
-<script src="/assets/inline/s11.js?v=103"></script>
+<script src="/assets/inline/s11.js?v=104"></script>
 <script>
   // Déclenche l'onboarding sur iOS/Android si l'utilisateur n'a pas
   // encore complété le flow (email + âge + favoris + notifs).
