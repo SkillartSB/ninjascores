@@ -157,9 +157,9 @@ export async function pronosCalcules(dejaFixtures) {
     // Sans cote, pas de ligne : l'ecran fait `odds.toFixed(2)` et plantait
     // sur null (bouton Pronostics mort le 12/09), et « 0.00 » n'aide personne.
     if (!(prob >= PROBA_MIN) || !(odds >= COTE_MIN)) return;
-    const score = p.win_or_draw
-      ? (prob >= 80 ? 4 : prob >= 70 ? 3 : 2)
-      : (prob >= 70 ? 5 : prob >= 60 ? 4 : 3);
+    // Note sur 10 = probabilite API arrondie a la dizaine (70 % -> 7/10),
+    // l'ecran affichant score*2.
+    const score = Math.max(0.5, Math.min(5, Math.round(prob / 10) / 2));
     sortie.push({
       ligue: NOM_PAR_ID[f.league.id],
       pick: {
@@ -205,7 +205,9 @@ export default async function handler(req, res) {
         match: `${dom} - ${ext}`,
         pick: traduire(p.libelle, p.cle, dom, ext),
         odds: p.cote,
-        score: Math.max(1, Math.round(p.fiabilite / 2)),
+        // L'ecran affiche score*2 « /10 » : on garde la demi-note pour que
+        // 7/10 s'affiche 7/10 (et pas 8/10 par arrondi).
+        score: Math.max(0.5, Number(p.fiabilite) / 2),
         prob: p.fiabilite * 10,
         slug: a.slug,
         heure: a.coup_envoi,
