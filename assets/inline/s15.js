@@ -266,7 +266,35 @@
       pbp.forEach(function (g) { var k = String(g.set_number || 'Set 1'); if (!parSet[k]) { parSet[k] = []; ordre.push(k); } parSet[k].push(g); });
       var courant = (setChoisi != null && parSet[setChoisi]) ? setChoisi : ordre[ordre.length - 1];
       var numSet = (/(\d+)/.exec(courant) || [])[1] || (ordre.indexOf(courant) + 1);
-      var jeux = parSet[courant];
+      var idxSet = ordre.indexOf(courant);
+      // L'API se trompe parfois sur le score d'un jeu (« 0 - 4 » renvoye pour le 6e jeu) et
+      // oublie des balles de break : on recalcule tout a partir des points et des vainqueurs.
+      var setsAvant = { a: 0, b: 0 };
+      ordre.slice(0, idxSet).forEach(function (k, i) { var sc = sets[i]; if (!sc) return; if (sc.a.j > sc.b.j) setsAvant.a++; else if (sc.b.j > sc.a.j) setsAvant.b++; });
+      var meilleurDe = (tx.cat === 'GS' && circuit === 'ATP') ? 3 : 2;   // sets a gagner
+      var jeuxA = 0, jeuxB = 0;
+      var jeux = parSet[courant].map(function (g) {
+        var servA = g.player_served === 'First Player';
+        var avant = { a: jeuxA, b: jeuxB };
+        var gagnant = g.serve_winner === 'First Player' ? 'a' : g.serve_winner === 'Second Player' ? 'b' : null;
+        var tb = avant.a >= 6 && avant.b >= 6;
+        var pts = (g.points || []).map(function (p) {
+          var sc = String(p.score || '').replace(/\s/g, '').split('-');
+          var pa = sc[0] || '', pb = sc[1] || '';
+          var val = function (v) { return v === 'A' ? 50 : (parseInt(v, 10) || 0); };
+          // Balle de jeu pour X : X a 40 (ou A) et mene d'un point, ou en tie-break X a >= 6 points et mene d'un point.
+          var balleA = tb ? (val(pa) >= 6 && val(pa) - val(pb) >= 1) : ((pa === 'A') || (pa === '40' && val(pb) < 40));
+          var balleB = tb ? (val(pb) >= 6 && val(pb) - val(pa) >= 1) : ((pb === 'A') || (pb === '40' && val(pa) < 40));
+          var bp = (balleA && !servA) || (balleB && servA);
+          var setPt = function (x) { var mine = x === 'a' ? avant.a + 1 : avant.b + 1, autre = x === 'a' ? avant.b : avant.a; return tb || (mine >= 6 && mine - autre >= 2); };
+          var sp = (balleA && setPt('a')) || (balleB && setPt('b'));
+          var mp = (balleA && setPt('a') && setsAvant.a + 1 >= meilleurDe) || (balleB && setPt('b') && setsAvant.b + 1 >= meilleurDe);
+          return { score: pa + ':' + pb, bp: bp || !!p.break_point, sp: sp || !!p.set_point, mp: mp || !!p.match_point };
+        });
+        if (gagnant === 'a') jeuxA++; else if (gagnant === 'b') jeuxB++;
+        var brk = gagnant ? ((servA && gagnant === 'b') || (!servA && gagnant === 'a')) : false;
+        return { servA: servA, brk: brk, enCours: !gagnant, apres: jeuxA + '-' + jeuxB, pts: pts };
+      });
       var badge = function (txt, fond, couleur) { return h('span', { style: { fontSize: 9, fontWeight: 900, letterSpacing: .6, textTransform: 'uppercase', color: couleur || '#fff', background: fond, borderRadius: 6, padding: '3px 7px', flexShrink: 0 } }, txt); };
       var balle = h('span', { style: { fontSize: 14, lineHeight: 1, fontFamily: EMOJI } }, '🎾');
       return h(R.Fragment, null,
@@ -274,23 +302,19 @@
         h(Carte, { t: t },
           h('div', { style: { padding: '10px 14px', fontSize: 14, fontWeight: 800, color: t.text, borderBottom: '1px solid ' + t.divider } }, 'Point par point · ' + numSet + '. set'),
           jeux.map(function (g, i) {
-            var servA = g.player_served === 'First Player';
-            var brk = !!g.serve_lost;
-            var sc = String(g.score || '').split('-').map(function (v) { return v.trim(); });
-            var pts = g.points || [];
-            return h('div', { key: i, style: { padding: '10px 12px', borderTop: i ? '1px solid ' + t.divider : 'none', background: brk ? (accent + '12') : 'transparent', borderLeft: brk ? '3px solid ' + accent : '3px solid transparent' } },
+            var sc = g.apres.split('-');
+            return h('div', { key: i, style: { padding: '10px 12px', borderTop: i ? '1px solid ' + t.divider : 'none', background: g.brk ? (accent + '12') : 'transparent', borderLeft: g.brk ? '3px solid ' + accent : '3px solid transparent' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 } },
-                servA ? (brk ? badge('Service perdu', accent) : null) : null,
-                servA ? balle : h('span', { style: { width: 14 } }),
-                h('span', { style: { fontSize: 20, fontWeight: 900, letterSpacing: 1, fontVariantNumeric: 'tabular-nums' } },
-                  h('span', { style: { color: servA ? '#EF4444' : t.text } }, sc[0] || ''), h('span', { style: { color: t.textTer } }, '-'), h('span', { style: { color: !servA ? '#EF4444' : t.text } }, sc[1] || '')),
-                !servA ? balle : h('span', { style: { width: 14 } }),
-                !servA ? (brk ? badge('Service perdu', accent) : null) : null),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 5 } }, pts.map(function (p, j) {
-                var special = p.match_point ? 'BM' : p.set_point ? 'BS' : p.break_point ? 'BB' : null;
+                g.servA ? (g.brk ? badge('Service perdu', accent) : null) : null,
+                g.servA ? balle : h('span', { style: { width: 14 } }),
+                g.enCours ? badge('En cours', t.cardAlt, t.textSec) : h('span', { style: { fontSize: 20, fontWeight: 900, letterSpacing: 1, fontVariantNumeric: 'tabular-nums' } },
+                  h('span', { style: { color: g.servA ? '#EF4444' : t.text } }, sc[0]), h('span', { style: { color: t.textTer } }, '-'), h('span', { style: { color: !g.servA ? '#EF4444' : t.text } }, sc[1])),
+                !g.servA ? balle : h('span', { style: { width: 14 } }),
+                !g.servA ? (g.brk ? badge('Service perdu', accent) : null) : null),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 5 } }, g.pts.map(function (p, j) {
+                var special = p.mp ? 'BM' : p.sp ? 'BS' : p.bp ? 'BB' : null;
                 return h('span', { key: j, style: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '4px 8px', borderRadius: 7, border: '1px solid ' + (special ? accent : t.border), background: special ? (accent + '14') : t.card, color: special ? accent : t.text, fontVariantNumeric: 'tabular-nums' } },
-                  String(p.score || '').replace(/\s/g, '').replace('-', ':'),
-                  special ? h('span', { style: { fontSize: 9, fontWeight: 900, background: accent, color: '#fff', borderRadius: 4, padding: '1px 4px' } }, special) : null);
+                  p.score, special ? h('span', { style: { fontSize: 9, fontWeight: 900, background: accent, color: '#fff', borderRadius: 4, padding: '1px 4px' } }, special) : null);
               })));
           })),
         h('div', { style: { fontSize: 10.5, color: t.textTer, padding: '0 4px 12px', lineHeight: 1.5 } }, 'La balle marque le serveur. BB balle de break, BS balle de set, BM balle de match.'));
