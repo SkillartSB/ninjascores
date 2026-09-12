@@ -278,19 +278,19 @@
             var brk = !!g.serve_lost;
             var sc = String(g.score || '').split('-').map(function (v) { return v.trim(); });
             var pts = g.points || [];
-            return h('div', { key: i, style: { padding: '10px 12px', borderTop: i ? '1px solid ' + t.divider : 'none' } },
+            return h('div', { key: i, style: { padding: '10px 12px', borderTop: i ? '1px solid ' + t.divider : 'none', background: brk ? (accent + '12') : 'transparent', borderLeft: brk ? '3px solid ' + accent : '3px solid transparent' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 } },
-                servA ? (brk ? badge('Service perdu', '#B91C1C') : null) : null,
+                servA ? (brk ? badge('Service perdu', accent) : null) : null,
                 servA ? balle : h('span', { style: { width: 14 } }),
                 h('span', { style: { fontSize: 20, fontWeight: 900, letterSpacing: 1, fontVariantNumeric: 'tabular-nums' } },
                   h('span', { style: { color: servA ? '#EF4444' : t.text } }, sc[0] || ''), h('span', { style: { color: t.textTer } }, '-'), h('span', { style: { color: !servA ? '#EF4444' : t.text } }, sc[1] || '')),
                 !servA ? balle : h('span', { style: { width: 14 } }),
-                !servA ? (brk ? badge('Service perdu', '#B91C1C') : null) : null),
+                !servA ? (brk ? badge('Service perdu', accent) : null) : null),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 5 } }, pts.map(function (p, j) {
                 var special = p.match_point ? 'BM' : p.set_point ? 'BS' : p.break_point ? 'BB' : null;
-                return h('span', { key: j, style: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '4px 8px', borderRadius: 7, border: '1px solid ' + t.border, background: t.card, color: t.text, fontVariantNumeric: 'tabular-nums' } },
+                return h('span', { key: j, style: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, padding: '4px 8px', borderRadius: 7, border: '1px solid ' + (special ? accent : t.border), background: special ? (accent + '14') : t.card, color: special ? accent : t.text, fontVariantNumeric: 'tabular-nums' } },
                   String(p.score || '').replace(/\s/g, '').replace('-', ':'),
-                  special ? h('span', { style: { fontSize: 9, fontWeight: 900, background: t.textSec, color: t.card, borderRadius: 4, padding: '1px 4px' } }, special) : null);
+                  special ? h('span', { style: { fontSize: 9, fontWeight: 900, background: accent, color: '#fff', borderRadius: 4, padding: '1px 4px' } }, special) : null);
               })));
           })),
         h('div', { style: { fontSize: 10.5, color: t.textTer, padding: '0 4px 12px', lineHeight: 1.5 } }, 'La balle marque le serveur. BB balle de break, BS balle de set, BM balle de match.'));
@@ -614,9 +614,15 @@
       var principal = br.filter(function (b) { return !b.qualification; })[0] || br[0];
       if (!principal || !principal.rounds || !principal.rounds.length) return h(Vide, { t: t }, 'Tableau indisponible pour ce tournoi.');
       var rondes = principal.rounds;
-      var idxMatch = -1;
-      rondes.forEach(function (r, i) { if ((r.matches || []).some(function (mm) { return String(mm.match_key) === String(cle); })) idxMatch = i; });
-      var idx = rondeSel != null ? rondeSel : (idxMatch >= 0 ? idxMatch : rondes.length - 1);
+      var estNousM = function (mm) { var a = mm.first_player && mm.first_player.player_key, b = mm.second_player && mm.second_player.player_key; return (String(a) === String(k1) && String(b) === String(k2)) || (String(a) === String(k2) && String(b) === String(k1)); };
+      var idxMatch = -1, idxJoue = -1;
+      rondes.forEach(function (r, i) {
+        var ms = r.matches || [];
+        if (ms.some(function (mm) { return String(mm.match_key) === String(cle) || estNousM(mm); })) idxMatch = i;
+        if (ms.some(function (mm) { return mm.live || (mm.result && mm.result !== '-') || (mm.first_player && mm.first_player.name && mm.second_player && mm.second_player.name); })) idxJoue = i;
+      });
+      // Par defaut : le tour de CE match ; sinon le dernier tour deja rempli (pas une finale vide).
+      var idx = rondeSel != null ? rondeSel : (idxMatch >= 0 ? idxMatch : (idxJoue >= 0 ? idxJoue : 0));
       var ronde = rondes[idx];
       var estNous = function (pk) { return String(pk) === String(k1) || String(pk) === String(k2); };
       return h(R.Fragment, null,
