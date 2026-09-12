@@ -93,6 +93,10 @@
     };
   }
 
+  // Lien profond : /calendrier/?sport=tennis ouvre directement l'onglet tennis
+  // (ScheduleScreen lit window._ninjaScheduleSport a l'initialisation).
+  try { if (/[?&]sport=tennis\b/.test(location.search)) window._ninjaScheduleSport = 'tennis'; } catch (e) {}
+
   window.NinjaTennisAPI = {
     fetchComps: function (sel) {
       var dl = dateDe(sel); var date = dl[0], live = dl[1];
