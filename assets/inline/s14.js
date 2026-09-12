@@ -29,6 +29,22 @@
     try { return String.fromCodePoint.apply(null, iso.toUpperCase().split('').map(function (c) { return 0x1F1E6 + c.charCodeAt(0) - 65; })); } catch (e) { return ''; }
   }
   function drapeauPays(nom) { return drapeau(PAYS_ISO[nom] || ''); }
+  // Libelles API-Tennis (anglais) -> francais, pour les classements.
+  var PAYS_FR = { 'Andorra': 'Andorre', 'Argentina': 'Argentine', 'Armenia': 'Arménie', 'Australia': 'Australie', 'Austria': 'Autriche', 'Belgium': 'Belgique', 'Bolivia': 'Bolivie',
+    'Bosnia and Herzegovina': 'Bosnie-Herzégovine', 'Brazil': 'Brésil', 'Bulgaria': 'Bulgarie', 'Burundi': 'Burundi', 'Canada': 'Canada', 'Chile': 'Chili', 'China': 'Chine', 'Colombia': 'Colombie',
+    'Croatia': 'Croatie', 'Cyprus': 'Chypre', 'Czech Republic': 'Tchéquie', 'Czechia': 'Tchéquie', 'Denmark': 'Danemark', 'Dominican Republic': 'République dominicaine', 'Ecuador': 'Équateur', 'Egypt': 'Égypte',
+    'Estonia': 'Estonie', 'Finland': 'Finlande', 'France': 'France', 'Georgia': 'Géorgie', 'Germany': 'Allemagne', 'Greece': 'Grèce', 'Hong Kong': 'Hong Kong', 'Hungary': 'Hongrie', 'India': 'Inde',
+    'Indonesia': 'Indonésie', 'Italy': 'Italie', 'Ivory Coast': 'Côte d’Ivoire', 'Jamaica': 'Jamaïque', 'Japan': 'Japon', 'Jordan': 'Jordanie', 'Kazakhstan': 'Kazakhstan', 'Latvia': 'Lettonie',
+    'Liechtenstein': 'Liechtenstein', 'Lithuania': 'Lituanie', 'Luxembourg': 'Luxembourg', 'Malta': 'Malte', 'Mexico': 'Mexique', 'Monaco': 'Monaco', 'Morocco': 'Maroc', 'Netherlands': 'Pays-Bas',
+    'New Zealand': 'Nouvelle-Zélande', 'North Macedonia': 'Macédoine du Nord', 'Norway': 'Norvège', 'Paraguay': 'Paraguay', 'Peru': 'Pérou', 'Philippines': 'Philippines', 'Poland': 'Pologne',
+    'Portugal': 'Portugal', 'Romania': 'Roumanie', 'Serbia': 'Serbie', 'Slovakia': 'Slovaquie', 'Slovenia': 'Slovénie', 'South Africa': 'Afrique du Sud', 'South Korea': 'Corée du Sud', 'Korea, Republic of': 'Corée du Sud',
+    'Spain': 'Espagne', 'Sweden': 'Suède', 'Switzerland': 'Suisse', 'Taiwan': 'Taïwan', 'Chinese Taipei': 'Taïwan', 'Thailand': 'Thaïlande', 'Tunisia': 'Tunisie', 'Turkey': 'Turquie', 'USA': 'États-Unis',
+    'United States': 'États-Unis', 'Ukraine': 'Ukraine', 'United Kingdom': 'Royaume-Uni', 'Great Britain': 'Royaume-Uni', 'Uruguay': 'Uruguay', 'Uzbekistan': 'Ouzbékistan', 'Russia': 'Russie', 'Belarus': 'Biélorussie',
+    'Israel': 'Israël', 'Ireland': 'Irlande', 'Moldova': 'Moldavie', 'Venezuela': 'Venezuela', 'Vietnam': 'Viêt Nam', 'Montenegro': 'Monténégro', 'Albania': 'Albanie', 'Kosovo': 'Kosovo', 'Nigeria': 'Nigeria',
+    'Kenya': 'Kenya', 'Zimbabwe': 'Zimbabwe', 'Pakistan': 'Pakistan', 'Malaysia': 'Malaisie', 'Costa Rica': 'Costa Rica', 'Guatemala': 'Guatemala', 'Barbados': 'Barbade', 'Puerto Rico': 'Porto Rico', 'Azerbaijan': 'Azerbaïdjan',
+    'World': 'Athlète neutre' };
+  function paysFr(nom) { return PAYS_FR[nom] || nom || ''; }
+  window.NS_TENNIS_UTIL_PAYS_FR = paysFr;
   window.NS_TENNIS_UTIL = { drapeau: drapeau, drapeauPays: drapeauPays, PAYS_ISO: PAYS_ISO };
 
   var CAT = { GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'Masters 1000', '500': 'ATP 500', TEAM: 'Par équipes', '250': 'ATP 250', CH: 'Challenger' };
@@ -355,7 +371,7 @@
               h('span', { style: { fontSize: 16, lineHeight: 1, width: 20, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, drapeauPays(j.country)),
               h('div', { style: { flex: 1, minWidth: 0 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, j.player),
-                h('div', { style: { fontSize: 10.5, fontWeight: 600, color: t.textTer } }, j.country || '')),
+                h('div', { style: { fontSize: 10.5, fontWeight: 600, color: t.textTer } }, paysFr(j.country))),
               h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, flexShrink: 0 } }, String(j.points || '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' pts'),
               h('div', { style: { width: 14, textAlign: 'center', fontSize: 11, flexShrink: 0 } }, fleche(j.movement)));
           })),
