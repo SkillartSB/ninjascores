@@ -147,6 +147,9 @@ export async function pronosCalcules(dejaFixtures) {
     // pari ; la double chance, plus sure, plafonne a 4/5 pour ne pas ecraser
     // les vrais coups de coeur des articles.
     if (!prob || (!p.win_or_draw && prob < 50)) return;
+    // Sans cote, pas de ligne : l'ecran fait `odds.toFixed(2)` et plantait
+    // sur null (bouton Pronostics mort le 12/09), et « 0.00 » n'aide personne.
+    if (!odds || !(odds > 1)) return;
     const score = p.win_or_draw
       ? (prob >= 80 ? 4 : prob >= 70 ? 3 : 2)
       : (prob >= 70 ? 5 : prob >= 60 ? 4 : 3);

@@ -356,44 +356,30 @@ export default async function handler(req, res) {
     for (let p = 2; p <= Math.min(totalPages, 40); p++) suite.push(() => interne('odds&date=' + date + '&page=' + p));
     (await enFile(suite, 8)).forEach(absorber);
 
-    // Rattrapage par championnat : l'appel par date est incomplet (constat du
-    // 22/07 côté client). Seulement pour les championnats dont il reste un
-    // match NON JOUÉ sans cote — les matchs finis n'ont plus de cotes chez le
-    // fournisseur, les redemander ne produisait que des 502.
-    const parLigue = new Map();
-    ((jourCal && jourCal.response) || []).forEach((f) => {
-      if (matchs[f.fixture.id]) return;
-      if (FINIS_AGG.has(f.fixture.status.short)) return;
-      const k = f.league.id + ':' + f.league.season;
-      if (!parLigue.has(k)) parLigue.set(k, { id: f.league.id, season: f.league.season });
-    });
-    // Grands championnats d'abord : si le fournisseur tousse, ce sont eux
-    // qu'il faut avoir. Puis 4 appels de front (pas 8 : chaque reponse est
-    // lourde, on debordait la minute et les timeouts), et UNE seconde chance
-    // par championnat rate. Un rattrapage qui echoue quand meme raccourcit la
-    // vie de l'agregat a 2 min au lieu de 15, pour que le trou se referme au
-    // prochain visiteur plutot qu'un quart d'heure plus tard.
+    // Rattrapage PAR MATCH pour les grands championnats : l'appel par date est
+    // incomplet (constat du 22/07), et le rattrapage par championnat
+    // (`odds&date&league`) rendait 1,3 Mo par ligue — au-dela de REDIS_VAL_MAX,
+    // donc jamais cache, refetche en amont a chaque reconstruction et en
+    // timeout une fois sur trois (Liga et Bundesliga absentes du calendrier
+    // le 12/09 a 10:54 malgre deux correctifs). `odds&fixture=` pese ~100 Ko,
+    // tient dans Redis 45 min, et la chauffe l'a deja tire pour les matchs a
+    // moins de 3 h : ici ce sont surtout des lectures Redis.
     const MAJEURES = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 144, 179, 1, 4, 9, 6, 13, 11, 12, 20, 17, 16, 15, 531, 71, 128, 253, 262, 307, 98, 292, 40, 62, 136, 79, 141];
     const rangL = (id) => { const i = MAJEURES.indexOf(id); return i < 0 ? 999 : i; };
-    // PERIMETRE du rattrapage : les grands championnats SEULEMENT. Un samedi,
-    // 249 championnats exotiques n'avaient aucune cote apres les pages par
-    // date ; les rappeler un par un coutait ~250 appels par reconstruction
-    // (toutes les 15 min = ~24 000 appels/jour) pour des ligues que personne
-    // n'ouvre — et la rafale declenchait la limite minute, donc le
-    // disjoncteur, donc un agregat troue... qui se reconstruisait 2 min plus
-    // tard (boucle constatee le 12/09). Les exotiques gardent ce que les
-    // pages par date leur donnent.
-    const ligues = [...parLigue.values()].filter((l) => rangL(l.id) < 999).sort((a, b) => rangL(a.id) - rangL(b.id));
+    const manquants = ((jourCal && jourCal.response) || [])
+      .filter((f) => !matchs[f.fixture.id] && !FINIS_AGG.has(f.fixture.status.short) && rangL(f.league.id) < 999)
+      .sort((a, b) => rangL(a.league.id) - rangL(b.league.id))
+      .slice(0, 80);
     let rattrapageRate = 0;
-    const rattrapage = ligues.map((l) => async () => {
-      const chemin = 'odds&date=' + date + '&league=' + l.id + '&season=' + l.season;
+    const rattrapage = manquants.map((f) => async () => {
+      const chemin = 'odds&fixture=' + f.fixture.id;
       let rep = await interne(chemin);
-      if (!rep) { await new Promise((r) => setTimeout(r, 2000)); rep = await interne(chemin); }
+      if (!rep) { await new Promise((r) => setTimeout(r, 1500)); rep = await interne(chemin); }
       if (!rep) rattrapageRate++;
       return rep;
     });
-    (await enFile(rattrapage, 3)).forEach(absorber);
-    // Un grand championnat manque encore : on reessaie dans 5 min, pas 15.
+    (await enFile(rattrapage, 4)).forEach(absorber);
+    // Un grand match manque encore : on reessaie dans 5 min, pas 15.
     const ttlAgg = rattrapageRate ? 300 : TTL_AGREGAT;
 
     const corps = JSON.stringify({ date, matchs, incomplet: rattrapageRate || undefined });
