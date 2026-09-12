@@ -161,11 +161,17 @@
     var tournoi = tx.tournoi || (x && x.tournament_name) || String(m.homeTeam || '').split(': ')[0];
     var tour = tourFr((x && x.tournament_round) || tx.tour);
 
-    var classement = useClassement(circuit);
-    var rangDe = function (k) { if (!classement || !k) return null; for (var i = 0; i < classement.length; i++) if (String(classement[i].player_key) === String(k)) return classement[i]; return null; };
+    // Classement : on cherche dans les deux circuits (un match ouvert depuis les favoris ou les
+    // pronostics n'a pas toujours son circuit renseigne) et on affiche celui ou le joueur figure.
+    var clATP = useClassement('ATP'), clWTA = useClassement('WTA');
+    var rangDe = function (k) {
+      if (!k) return null;
+      var cherche = function (l, c) { if (!l) return null; for (var i = 0; i < l.length; i++) if (String(l[i].player_key) === String(k)) return Object.assign({ circuit: c }, l[i]); return null; };
+      return (circuit === 'WTA' ? (cherche(clWTA, 'WTA') || cherche(clATP, 'ATP')) : (cherche(clATP, 'ATP') || cherche(clWTA, 'WTA')));
+    };
     var r1 = rangDe(k1), r2 = rangDe(k2);
 
-    var tabs = [['resume', 'Résumé'], ['cotes', 'Cotes'], ['pronostics', 'Pronostics'], ['tat', 'TàT'], ['tableau', 'Tableau']].filter(function (o) { return !(mineur && (o[0] === 'cotes' || o[0] === 'pronostics')); });
+    var tabs = [['resume', 'Résumé'], ['pbp', 'Point par point'], ['cotes', 'Cotes'], ['pronostics', 'Pronostics'], ['tat', 'TàT'], ['tableau', 'Tableau']].filter(function (o) { return !(mineur && (o[0] === 'cotes' || o[0] === 'pronostics')); });
     var tb = R.useState('resume'), tab = tb[0], setTab = tb[1];
 
     var h2h = useApi(k1 && k2 ? 'method=get_H2H&first_player_key=' + k1 + '&second_player_key=' + k2 : null, true);
@@ -188,7 +194,7 @@
         h('div', { style: { fontSize: 14, fontWeight: 800, color: t.text, textAlign: 'center', lineHeight: 1.2 } }, nom),
         h('div', { style: { fontSize: 11, fontWeight: 700, color: vainqueur ? '#10B981' : t.textSec, display: 'flex', gap: 4, alignItems: 'center' } },
           rang && rang.country ? h('span', { style: { fontFamily: EMOJI } }, U.drapeauPays(rang.country)) : null,
-          rang ? 'N°' + rang.place + ' ' + circuit : '',
+          rang ? 'N°' + rang.place + ' ' + (rang.circuit || circuit) : '',
           vainqueur ? ' · Vainqueur' : ''));
     };
     var centre = (function () {
@@ -252,33 +258,33 @@
               h('div', { style: { flex: 1, background: t.cardAlt, borderRadius: 3, overflow: 'hidden' } }, h('div', { style: { width: (nb / tot * 100) + '%', background: accent, opacity: !aMieux ? 1 : .35, height: '100%' } }))));
         })));
     };
-    var ouvertsInit = {};
-    var ov = R.useState(ouvertsInit), ouverts = ov[0], setOuverts = ov[1];
+    var sp = R.useState(null), setChoisi = sp[0], setSetChoisi = sp[1];
     var rendrePbp = function () {
       var pbp = (x && x.pointbypoint) || [];
-      if (!pbp.length) return null;
-      var parSet = {}, ordreSets = [];
-      pbp.forEach(function (g) { var k = g.set_number || 'Set'; if (!parSet[k]) { parSet[k] = []; ordreSets.push(k); } parSet[k].push(g); });
-      var dernier = ordreSets[ordreSets.length - 1];
-      return h(R.Fragment, null, h(Titre, { t: t }, 'Point par point'),
-        ordreSets.map(function (k) {
-          var ouvert = ouverts[k] != null ? ouverts[k] : (k === dernier);
-          var jeux = parSet[k].slice().reverse();
-          return h(Carte, { key: k, t: t },
-            h('div', { onClick: function () { var o = Object.assign({}, ouverts); o[k] = !ouvert; setOuverts(o); }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 800, color: t.text } },
-              h('span', null, k.replace('Set', 'Set ') .replace(/\s+/g, ' ') + ' · ' + parSet[k].length + ' jeux'), h('span', { style: { color: t.textTer, fontSize: 12 } }, ouvert ? '▲' : '▼')),
-            ouvert ? jeux.map(function (g, i) {
-              var serv = g.player_served === 'First Player' ? n1 : n2;
-              var brk = g.serve_lost && g.serve_lost !== null;
-              return h('div', { key: i, style: { padding: '8px 14px', borderTop: '1px solid ' + t.divider } },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 800, color: t.text, marginBottom: 4 } },
-                  h('span', null, 'Jeu ' + g.number_game + ' · ' + g.score), h('span', { style: { color: brk ? '#EF4444' : t.textSec, fontWeight: 700 } }, brk ? 'BREAK' : 'Service ' + serv)),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } }, (g.points || []).map(function (p, j) {
-                  var special = p.break_point ? 'BP' : p.set_point ? 'SP' : p.match_point ? 'MP' : null;
-                  return h('span', { key: j, style: { fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 6, background: special ? '#FEE2E2' : t.cardAlt, color: special ? '#B91C1C' : t.textSec } }, p.score + (special ? ' ' + special : ''));
-                })));
-            }) : null);
-        }));
+      if (!pbp.length) return h(Vide, { t: t }, statut === 'upcoming' ? 'Le point par point apparaîtra au coup d’envoi.' : (x ? 'Point par point indisponible pour ce match.' : 'Chargement…'));
+      var parSet = {}, ordre = [];
+      pbp.forEach(function (g) { var k = String(g.set_number || 'Set 1'); if (!parSet[k]) { parSet[k] = []; ordre.push(k); } parSet[k].push(g); });
+      var courant = (setChoisi != null && parSet[setChoisi]) ? setChoisi : ordre[ordre.length - 1];
+      var jeux = parSet[courant].slice().reverse();
+      var court = function (nom) { return String(nom || '').split(' ').pop(); };
+      return h(R.Fragment, null,
+        h(Chips, { t: t, accent: accent, valeur: courant, onChange: setSetChoisi, options: ordre.map(function (k, i) { var sc = sets[i]; return [k, k.replace(/set\s*/i, 'Set ') + (sc ? ' · ' + sc.a.j + '-' + sc.b.j : '')]; }) }),
+        h(Carte, { t: t }, jeux.map(function (g, i) {
+          var servA = g.player_served === 'First Player';
+          var brk = !!g.serve_lost;
+          var pts = g.points || [];
+          return h('div', { key: i, style: { padding: '10px 14px', borderTop: i ? '1px solid ' + t.divider : 'none', background: brk ? (accent + '0D') : 'transparent' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 13, fontFamily: EMOJI, flexShrink: 0 } }, '🎾'),
+              h('span', { style: { fontSize: 12.5, fontWeight: 700, color: t.text, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, 'Service ' + court(servA ? n1 : n2)),
+              brk ? h('span', { style: { fontSize: 9.5, fontWeight: 900, color: '#fff', background: '#EF4444', borderRadius: 6, padding: '2px 7px', letterSpacing: .5 } }, 'BREAK') : null,
+              h('span', { style: { fontSize: 15, fontWeight: 900, color: t.text, letterSpacing: 1, flexShrink: 0 } }, String(g.score || '').replace(/\s/g, ''))),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, pts.map(function (p, j) {
+              var special = p.match_point ? 'MP' : p.set_point ? 'SP' : p.break_point ? 'BP' : null;
+              return h('span', { key: j, style: { fontSize: 11, fontWeight: 700, padding: '3px 7px', borderRadius: 7, background: special ? '#FEE2E2' : t.cardAlt, color: special ? '#B91C1C' : t.textSec, letterSpacing: .3 } }, String(p.score || '').replace(/\s/g, '') + (special ? ' ' + special : ''));
+            })));
+        })),
+        h('div', { style: { fontSize: 10.5, color: t.textTer, padding: '0 4px 12px', lineHeight: 1.5 } }, 'Du jeu le plus récent au plus ancien. BP balle de break, SP balle de set, MP balle de match.'));
     };
     var bilanH2H = function () {
       var l = (h2h.d && h2h.d.H2H) || [];
@@ -295,7 +301,7 @@
           h('div', null, bh.n ? 'Tête-à-tête : ' + n1 + ' mène ' + bh.wa + ' - ' + bh.wb + '.' : (h2h.ok ? 'Première confrontation.' : 'Chargement du tête-à-tête…')),
           r1 && r2 ? h('div', null, 'Classement : n°' + r1.place + ' contre n°' + r2.place + '.') : null,
           h('div', null, 'Coup d’envoi ' + (x ? 'à ' + heureLocale(x.event_date, x.event_time) : (m.startDate ? 'à ' + new Date(m.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: window._NS_TZ || 'Europe/Paris' }) : '')) + '.'))) : null,
-        rendreStats(), rendrePbp(),
+        rendreStats(),
         !x ? h(Vide, { t: t }, 'Chargement…') : null);
     };
 
@@ -633,12 +639,12 @@
       h('div', { style: { padding: '0 16px' } },
         h(Carte, { t: t, style: { border: '2px solid ' + (statut === 'live' ? '#EF4444' : accent) } },
           h('div', { style: { display: 'flex', alignItems: 'center', padding: '16px 12px', gap: 6 } }, joueur(n1, photo1, r1, 'a'), centre, joueur(n2, photo2, r2, 'b'))),
-        h('div', { style: { display: 'flex', gap: 4, background: t.cardAlt, borderRadius: 12, padding: 3, marginBottom: 14 } },
+        h('div', { style: { display: 'flex', gap: 4, background: t.cardAlt, borderRadius: 12, padding: 3, marginBottom: 14, overflowX: 'auto', scrollbarWidth: 'none' } },
           tabs.map(function (o) {
             var on = o[0] === tab;
-            return h('button', { key: o[0], className: o[0] === 'cotes' ? 'ns-odds' : o[0] === 'pronostics' ? 'ns-prono' : undefined, onClick: function () { setTab(o[0]); }, style: { flex: 1, border: 'none', borderRadius: 10, padding: '7px 4px', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', background: on ? t.card : 'transparent', color: on ? accent : t.textSec, boxShadow: on ? t.shadowCard : 'none' } }, o[1]);
+            return h('button', { key: o[0], className: o[0] === 'cotes' ? 'ns-odds' : o[0] === 'pronostics' ? 'ns-prono' : undefined, onClick: function () { setTab(o[0]); }, style: { flex: '1 0 auto', border: 'none', borderRadius: 10, padding: '7px 10px', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', background: on ? t.card : 'transparent', color: on ? accent : t.textSec, boxShadow: on ? t.shadowCard : 'none' } }, o[1]);
           })),
-        tab === 'resume' ? rendreResume() : tab === 'cotes' ? rendreCotes() : tab === 'pronostics' ? rendrePronos() : tab === 'tat' ? rendreTaT() : rendreTableau(),
+        tab === 'resume' ? rendreResume() : tab === 'pbp' ? rendrePbp() : tab === 'cotes' ? rendreCotes() : tab === 'pronostics' ? rendrePronos() : tab === 'tat' ? rendreTaT() : rendreTableau(),
         h('div', { style: { height: 24 } })));
   };
 })();
