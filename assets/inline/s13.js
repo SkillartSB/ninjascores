@@ -182,6 +182,43 @@
     );
   };
 
+  // Favoris (13/09/2026) : etat des matchs tennis suivis, meme forme que NS_FAV_LIVE (foot)
+  // pour la carte « Match suivi » : status, homeScore/awayScore = sets gagnes, tennisPeriode.
+  function setsGagnes(x) {
+    var h = 0, a = 0;
+    (x.scores || []).forEach(function (s) {
+      var f = parseInt(s.score_first, 10), g = parseInt(s.score_second, 10);
+      if (isNaN(f) || isNaN(g)) return;
+      var fini = (Math.max(f, g) >= 6 && Math.abs(f - g) >= 2) || Math.max(f, g) === 7 || /\./.test(String(s.score_first) + String(s.score_second));
+      if (!fini) return;
+      if (f > g) h++; else if (g > f) a++;
+    });
+    return [h, a];
+  }
+  function entreeFavori(x) {
+    var st = statutDe(x), sg = setsGagnes(x);
+    return { sport: 'tennis', status: st, homeScore: sg[0], awayScore: sg[1], minute: null, apiScore: scoreDe(x),
+      tennisPeriode: st === 'live' ? (x.event_status + (x.event_game_result && x.event_game_result !== '-' ? ' \u00b7 ' + x.event_game_result : '')) : null,
+      homeTeam: x.event_first_player, awayTeam: x.event_second_player };
+  }
+  window.NS_FAV_LIVE_TENNIS = function (favoris) {
+    return api('method=live').then(function (live) {
+      var parCle = {}; (live || []).forEach(function (x) { parCle[String(x.event_key)] = x; });
+      var out = {}, aFaire = [];
+      (favoris || []).forEach(function (m) {
+        var k = String(m.eventId || (m.tennis && m.tennis.cle) || '');
+        if (!k) return;
+        if (parCle[k]) { out[m.eventId] = entreeFavori(parCle[k]); return; }
+        // Pas en direct : si le match a du commencer, on lit son etat (get_fixtures, cache 5 min).
+        var debut = m.startDate ? new Date(m.startDate).getTime() : 0;
+        if (debut && Date.now() > debut - 5 * 60000) aFaire.push([m, k]);
+      });
+      return Promise.all(aFaire.map(function (p) {
+        return api('method=get_fixtures&match_key=' + p[1]).then(function (r) { if (r && r[0]) out[p[0].eventId] = entreeFavori(r[0]); });
+      })).then(function () { return out; });
+    });
+  };
+
   window.NinjaTennisAPI = {
     fetchComps: function (sel) {
       var dl = dateDe(sel); var date = dl[0], live = dl[1];
