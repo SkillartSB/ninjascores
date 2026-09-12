@@ -10,8 +10,8 @@ const API_BASE = 'https://api.api-tennis.com/tennis/';
 // Methodes autorisees et duree de cache. Le direct n'est PAS servi d'ici (etape
 // 2 : WebSocket -> Redis), get_livescore ne sert qu'a la sonde/au calendrier.
 const METHODES = {
-  get_fixtures:   { ttl: 300,   params: ['date_start', 'date_stop', 'tournament_key', 'event_type_key'] },
-  get_livescore:  { ttl: 20,    params: [] },
+  get_fixtures:   { ttl: 300,   params: ['date_start', 'date_stop', 'tournament_key', 'event_type_key', 'match_key', 'player_key'] },
+  get_livescore:  { ttl: 20,    params: ['match_key'] },
   get_standings:  { ttl: 21600, params: ['event_type'] },
   get_players:    { ttl: 86400, params: ['player_key'] },
   get_H2H:        { ttl: 21600, params: ['first_player_key', 'second_player_key'] },

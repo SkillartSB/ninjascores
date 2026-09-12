@@ -29,6 +29,7 @@
     try { return String.fromCodePoint.apply(null, iso.toUpperCase().split('').map(function (c) { return 0x1F1E6 + c.charCodeAt(0) - 65; })); } catch (e) { return ''; }
   }
   function drapeauPays(nom) { return drapeau(PAYS_ISO[nom] || ''); }
+  window.NS_TENNIS_UTIL = { drapeau: drapeau, drapeauPays: drapeauPays, PAYS_ISO: PAYS_ISO };
 
   var CAT = { GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'Masters 1000', '500': 'ATP 500', TEAM: 'Par équipes', '250': 'ATP 250', CH: 'Challenger' };
   function catLabel(m) {
