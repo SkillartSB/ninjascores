@@ -97,6 +97,10 @@
   // Choisi dans le header de l'accueil (NS_SelecteurSport) ou dans le calendrier.
   // Memorise (localStorage ns_sport), lien profond ?sport=tennis, et expose via
   // window._ninjaScheduleSport que ScheduleScreen lit a l'initialisation.
+  // Police emoji explicite : dans l'app iOS (WKWebView), 'Plus Jakarta Sans' declare
+  // la plage U+0000-2FFF et affiche un « ? » a la place de U+26BD (ballon).
+  var POLICE_EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  window.NS_POLICE_EMOJI = POLICE_EMOJI;
   var SPORTS = [
     { id: 'football', emoji: '\u26bd', nom: 'Foot' },
     { id: 'tennis', emoji: '\ud83c\udfbe', nom: 'Tennis' }
@@ -155,7 +159,7 @@
           background: t.card || '#fff', color: t.text || '#111', boxShadow: t.shadowCard, display: 'flex', alignItems: 'center', gap: 6,
           fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }
       },
-        R.createElement('span', { style: { fontSize: 16, lineHeight: 1 } }, info.emoji),
+        R.createElement('span', { style: { fontSize: 16, lineHeight: 1, fontFamily: POLICE_EMOJI } }, info.emoji),
         !props.compact && R.createElement('span', null, info.nom),
         R.createElement('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round',
           style: { transform: ouvert ? 'rotate(180deg)' : 'none', transition: 'transform .15s', opacity: .7 } },
@@ -170,7 +174,7 @@
           return R.createElement('button', { key: sp.id, type: 'button', onClick: function () { choisir(sp.id); },
             style: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 10, border: 'none', textAlign: 'left',
               background: on ? accent : 'transparent', color: on ? '#fff' : (t.text || '#111'), fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
-            R.createElement('span', { style: { fontSize: 18, lineHeight: 1 } }, sp.emoji),
+            R.createElement('span', { style: { fontSize: 18, lineHeight: 1, fontFamily: POLICE_EMOJI } }, sp.emoji),
             R.createElement('span', { style: { flex: 1 } }, sp.nom),
             on && R.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' },
               R.createElement('polyline', { points: '20 6 9 17 4 12' })));
