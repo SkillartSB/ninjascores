@@ -152,7 +152,10 @@
     var t = props.t, accent = props.accent;
     var etat = useMatchsDuJour();
     var simples = etat.matchs.filter(function (m) { return !estDouble(m); }).sort(classer);
-    var vedette = simples.filter(function (m) { return m.status !== 'ended'; })[0] || simples[0] || null;
+    // Affiche du jour : le tournoi le plus haut d'abord (US Open avant un Challenger),
+    // puis le direct avant l'a-venir, puis l'heure.
+    var parNiveau = function (a, b) { return (a.apiTier - b.apiTier) || classer(a, b); };
+    var vedette = simples.filter(function (m) { return m.status !== 'ended'; }).sort(parNiveau)[0] || simples[0] || null;
     var aVenir = simples.filter(function (m) { return m.status === 'upcoming' && m !== vedette; }).slice(0, 6);
     var enDirect = simples.filter(function (m) { return m.status === 'live' && m !== vedette; }).slice(0, 6);
 

@@ -45,7 +45,10 @@
     var sets = (x.scores || []).map(function (s) {
       var a = s.score_first, b = s.score_second;
       if (a == null || b == null || a === '' || b === '') return null;
-      return a + '-' + b;
+      // Jeu decisif en cours ou joue : API-Tennis envoie « 6.1 » / « 6.4 »
+      // (jeux.points du tie-break) -> « 6(1)-6(4) », format compris par le rendu.
+      var tb = function (v) { return String(v).replace(/^(\d+)\.(\d+)$/, '$1($2)'); };
+      return tb(a) + '-' + tb(b);
     }).filter(Boolean);
     return sets.join(',');
   }
