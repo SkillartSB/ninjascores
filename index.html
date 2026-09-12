@@ -351,6 +351,11 @@ html.ns-twa-boot #ns-native-splash.ns-splash-hide{opacity:0;pointer-events:none}
   body.ns-web .ns-center div:has(> button[style*="margin-bottom: 4px"]) > *:not(button) { grid-column: 1 / -1; }
 
   /* ── Bandeau legal jeu responsable (ANJ) ── */
+  /* Effet de but sur la ligne du match (s16.js) : 6 s de pulsation + pastille BUT */
+  .ns-but-flash { position: relative; animation: nsButFlash 1.2s ease-in-out 5; }
+  @keyframes nsButFlash { 0%,100% { box-shadow: inset 0 0 0 0 rgba(97,51,224,0); } 50% { box-shadow: inset 0 0 0 999px rgba(97,51,224,.16); } }
+  .ns-but-flash::after { content: '\26BD BUT'; position: absolute; top: 6px; right: 8px; font-size: 9px; font-weight: 900; letter-spacing: .5px; color: #fff; background: #EF4444; border-radius: 6px; padding: 2px 6px; z-index: 2; animation: nsButPop .35s ease-out; }
+  @keyframes nsButPop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .anj-banner { background:#FFE24D; padding:12px 14px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
   .anj-banner p { flex:1 1 0; min-width:0; overflow-wrap:anywhere; margin:0; font-size:10.5px; line-height:1.42; font-weight:800;
     color:#111; text-transform:uppercase; letter-spacing:0.15px; }
@@ -997,6 +1002,7 @@ window.NS_FAV_TEAMS = (function () {
 <script src="/assets/inline/s13.js?v=9"></script>
 <script src="/assets/inline/s14.js?v=7"></script>
 <script src="/assets/inline/s15.js?v=6"></script>
+<script src="/assets/inline/s16.js?v=1"></script>
 <!-- ══ AUTH (Supabase) ══ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -1017,7 +1023,7 @@ window.NS_FAV_TEAMS = (function () {
 </script>
 <script>(function(){var m={FR:'Europe/Paris',CI:'Africa/Abidjan',CM:'Africa/Douala',SN:'Africa/Dakar',CD:'Africa/Kinshasa',ML:'Africa/Bamako'};var c;try{c=localStorage.getItem('ns_geo_pays');}catch(e){}window._NS_TZ=m[c]||'Europe/Paris';})();</script>
 <script src="/assets/inline/s12.js?v=2"></script>
-<script src="/app.compiled.js?v=779"></script>
+<script src="/app.compiled.js?v=780"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
