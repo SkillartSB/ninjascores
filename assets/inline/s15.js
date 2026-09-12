@@ -157,6 +157,7 @@
     var T = useTournois();
     var infoT = T[String(tx.tournoiCle)] || {};
     var surface = tx.surface || infoT.surface || null;
+    var logoT = tx.logo || infoT.logo || null;
     var pays = tx.pays || infoT.pays || null;
     var tournoi = tx.tournoi || (x && x.tournament_name) || String(m.homeTeam || '').split(': ')[0];
     var tour = tourFr((x && x.tournament_round) || tx.tour);
@@ -690,7 +691,7 @@
           h('button', { onClick: props.onBack, 'aria-label': 'Retour', style: { width: 36, height: 36, borderRadius: '50%', border: '1px solid ' + t.border, background: t.card, color: t.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: t.shadowCard } },
             h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('polyline', { points: '15 18 9 12 15 6' }))),
           h('div', { style: { minWidth: 0 } },
-            h('div', { style: { fontSize: 15, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, sousTitre[0] ? h('span', { style: { fontFamily: EMOJI, marginRight: 6 } }, sousTitre[0]) : null, sousTitre[1]),
+            h('div', { style: { fontSize: 15, fontWeight: 800, color: t.text, display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden' } }, (window.NS_BadgeTournoi ? h(window.NS_BadgeTournoi, { tennis: { logo: logoT, pays: pays }, t: t, taille: 24 }) : (sousTitre[0] ? h('span', { style: { fontFamily: EMOJI } }, sousTitre[0]) : null)), h('span', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, sousTitre[1])),
             h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec } }, [sousTitre[2], tx.cat ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: circuit === 'WTA' ? 'WTA 1000' : 'Masters 1000', '500': circuit + ' 500', TEAM: 'Par équipes', '250': circuit + ' 250', CH: circuit === 'WTA' ? 'WTA 125' : 'Challenger' })[tx.cat] : circuit].filter(Boolean).join(' · '))))),
       h('div', { style: { padding: '0 16px' } },
         h(Carte, { t: t, style: { border: '2px solid ' + (statut === 'live' ? '#EF4444' : accent) } },

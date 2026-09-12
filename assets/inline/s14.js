@@ -47,6 +47,19 @@
   window.NS_TENNIS_UTIL_PAYS_FR = paysFr;
   window.NS_TENNIS_UTIL = { drapeau: drapeau, drapeauPays: drapeauPays, PAYS_ISO: PAYS_ISO };
 
+  // Badge d'un tournoi : logo officiel sur tuile blanche (comme Flashscore), sinon drapeau
+  // du pays, sinon balle. Les logos viennent de data/tennis-tournois.json (champ `logo`)
+  // et sont heberges par nous (assets/logos/tennis/tournois, 96x96).
+  window.NS_LOGO_TOURNOI = function (slug) { return slug ? '/assets/logos/tennis/tournois/' + slug + '.png' : null; };
+  window.NS_BadgeTournoi = function (props) {
+    var taille = props.taille || 26, t = props.t || {}, tx = props.tennis || props;
+    var url = window.NS_LOGO_TOURNOI(tx.logo);
+    if (url) return h('span', { style: { width: taille, height: taille, borderRadius: Math.round(taille * 0.27), background: '#fff', border: '1px solid rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' } },
+      h('img', { src: url, alt: '', loading: 'lazy', onError: function (e) { e.currentTarget.style.display = 'none'; }, style: { width: Math.round(taille * 0.82), height: Math.round(taille * 0.82), objectFit: 'contain', display: 'block' } }));
+    var d = tx.pays ? drapeau(tx.pays) : '';
+    return h('span', { style: { fontSize: Math.round(taille * 0.78), lineHeight: 1, width: taille, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, d || '🎾');
+  };
+
   var CAT = { GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'Masters 1000', '500': 'ATP 500', TEAM: 'Par équipes', '250': 'ATP 250', CH: 'Challenger' };
   function catLabel(m) {
     var tx = m.tennis || {}; var w = m.competition === 'WTA';
@@ -118,7 +131,7 @@
     var m = props.m, t = props.t, tx = m.tennis || {};
     var sous = [tx.paysNom, surfaceLabel(m), catLabel(m)].filter(Boolean).join(' · ');
     return h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderBottom: '1px solid ' + t.divider } },
-      tx.pays ? h('span', { style: { fontSize: 20, lineHeight: 1, fontFamily: EMOJI } }, drapeau(tx.pays)) : null,
+      h(window.NS_BadgeTournoi, { tennis: tx, t: t, taille: 26 }),
       h('div', { style: { minWidth: 0 } },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text } }, tournoiDe(m) + (props.tour ? ' · ' + props.tour : '')),
         sous ? h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec } }, sous) : null));
@@ -185,7 +198,7 @@
             var t = T[String(x.cle)] || {};
             var circuit = /wta|women/i.test(x.type) ? 'WTA' : 'ATP';
             var cat = t.cat || (/Challenger/i.test(x.type) ? 'CH' : '250');
-            return { cle: x.cle, nom: String(x.nom || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim(),
+            return { cle: x.cle, logo: t.logo || null, nom: String(x.nom || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim(),
               circuit: circuit, cat: cat, tier: TIER[cat] || 4, surface: t.surface || null, pays: t.pays || null, debut: x.debut, fin: x.fin, n: x.n, live: x.live,
               enCours: x.debut <= auj };
           })
@@ -349,7 +362,7 @@
             return h('div', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
               style: { flex: '0 0 auto', width: 156, background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, padding: '12px 12px', cursor: 'pointer',
                 borderLeft: '4px solid ' + (g.circuit === 'WTA' ? '#EC4899' : (g.tier >= 5 ? '#F59E0B' : accent)) } },
-              h('div', { style: { fontSize: 26, lineHeight: 1, marginBottom: 8, fontFamily: EMOJI } }, g.pays ? drapeau(g.pays) : '🎾'),
+              h('div', { style: { marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, h(window.NS_BadgeTournoi, { tennis: g, t: t, taille: 34 }), (g.logo && g.pays) ? h('span', { style: { fontSize: 15, lineHeight: 1, fontFamily: EMOJI } }, drapeau(g.pays)) : null),
               h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, g.nom),
               h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [cat, surf].filter(Boolean).join(' · ')),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: g.live ? '#EF4444' : (g.enCours ? accent : t.textTer), marginTop: 6 } }, quand));

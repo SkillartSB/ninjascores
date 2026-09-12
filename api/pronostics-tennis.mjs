@@ -114,7 +114,7 @@ export async function pronosTennis(cle, jour) {
     if (!retenus.length) return;
     const nomT = String(x.tournament_name || 'Tournoi').replace(/\s*\(.*?\)\s*/g, ' ').trim();
     const league = nomT + ' · ' + (m.t.cat === 'GS' ? 'Grand Chelem' : (m.circuit + ' ' + (m.t.cat === 'M1000' ? '1000' : (CAT[m.t.cat] || ''))).trim());
-    if (!par.has(league)) par.set(league, { lid: 'tn-' + x.tournament_key + '-' + m.circuit.toLowerCase(), league, emoji: drapeau(m.t.pays), compLogo: null, rang: m.tier, sport: 'tennis', picks: [] });
+    if (!par.has(league)) par.set(league, { lid: 'tn-' + x.tournament_key + '-' + m.circuit.toLowerCase(), league, emoji: drapeau(m.t.pays), compLogo: m.t.logo ? 'https://ninjascores.com/assets/logos/tennis/tournois/' + m.t.logo + '.png' : null, rang: m.tier, sport: 'tennis', picks: [] });
     retenus.forEach((c, j) => {
       const prob = Math.round(c.r * 100);
       par.get(league).picks.push({
