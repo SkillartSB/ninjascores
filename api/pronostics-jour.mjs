@@ -47,6 +47,14 @@ function traduire(libelle, cle, dom, ext) {
 
 // Priorite d'affichage et logo par competition. Plus le rang est bas, plus la
 // ligue apparait haut. Les logos API-Football suivent un schema fixe.
+// Regle editoriale (utilisateur, 12/09/2026) : on ne montre que les pronostics
+// a cote >= 1,30 ET a frequence >= 7/10 (articles : fiabilite ; calcules :
+// probabilite API >= 70 %). Une cote a 1,05 n'interesse personne, et un
+// scenario a 5/10 n'est pas un pronostic.
+const COTE_MIN = 1.30;
+const FIABILITE_MIN = 7;     // sur 10
+const PROBA_MIN = 70;        // en %
+
 const logo = (id) => `https://media.api-sports.io/football/leagues/${id}.png`;
 const COMP = {
   'Ligue des Champions':      { rang: 1,  id: 2 },
@@ -146,10 +154,9 @@ export async function pronosCalcules(dejaFixtures) {
     // Une victoire seche a moins de 50 % n'est pas un pronostic, c'est un
     // pari ; la double chance, plus sure, plafonne a 4/5 pour ne pas ecraser
     // les vrais coups de coeur des articles.
-    if (!prob || (!p.win_or_draw && prob < 50)) return;
     // Sans cote, pas de ligne : l'ecran fait `odds.toFixed(2)` et plantait
     // sur null (bouton Pronostics mort le 12/09), et « 0.00 » n'aide personne.
-    if (!odds || !(odds > 1)) return;
+    if (!(prob >= PROBA_MIN) || !(odds >= COTE_MIN)) return;
     const score = p.win_or_draw
       ? (prob >= 80 ? 4 : prob >= 70 ? 3 : 2)
       : (prob >= 70 ? 5 : prob >= 60 ? 4 : 3);
@@ -190,6 +197,7 @@ export default async function handler(req, res) {
       const dom = a.payload?.entete?.domicile?.nom;
       const ext = a.payload?.entete?.exterieur?.nom;
       if (!p || !dom || !ext) return;
+      if (!(Number(p.cote) >= COTE_MIN) || !(Number(p.fiabilite) >= FIABILITE_MIN)) return;
       const comp = a.competition || 'Football';
       if (!par.has(comp)) par.set(comp, []);
       par.get(comp).push({
