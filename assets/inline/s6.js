@@ -2049,7 +2049,9 @@
   };
 
   var _tz = window._NS_TZ || 'Europe/Paris';
-  window.NS_FIXTURES = function (offset) {
+  // frais=true : ignore le cache memoire (utilise par le calendrier quand un
+  // match en direct se termine, pour recuperer le score final et le statut).
+  window.NS_FIXTURES = function (offset, frais) {
     var cle;
     if (offset === 'live') cle = 'live';
     else {
@@ -2060,6 +2062,7 @@
           + '-' + String(d.getDate()).padStart(2, '0');
     }
     // le direct change en permanence : jamais de cache local dessus
+    if (frais) delete cache[cle];
     if (cle !== 'live' && cache[cle]) return cache[cle];
     var tzParam = _tz ? '&timezone=' + encodeURIComponent(_tz) : '';
     var p = window.NS_manifestPret
