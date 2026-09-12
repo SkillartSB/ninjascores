@@ -129,7 +129,7 @@
   })();
 
   // Pilule « ⚽ Foot ▾ » + liste deroulante (Foot / Tennis). Props : t, accent, compact.
-  // Choisir Tennis ouvre le calendrier (l'accueil n'a pas encore de contenu tennis).
+  // Le choix pilote toute l'app (accueil, calendrier, pronostics, classements : voir s14.js).
   window.NS_SelecteurSport = function (props) {
     var R = window.React; if (!R) return null;
     var t = props.t || {}, accent = props.accent || '#6D28D9';
@@ -145,11 +145,7 @@
     var info = window.NS_SPORT.info(sport);
     var choisir = function (id) {
       setOuvert(false);
-      window.NS_SPORT.set(id);
-      if (id === 'tennis') {
-        try { window.__nsNav && window.__nsNav('schedule'); } catch (e) {}
-        try { window.NS_ROUTE && window.NS_ROUTE.ecran && window.NS_ROUTE.ecran('schedule'); } catch (e) {}
-      }
+      window.NS_SPORT.set(id); // l'accueil, le calendrier, les pronostics et les classements suivent
     };
     return R.createElement('div', { style: { position: 'relative', flexShrink: 0 } },
       R.createElement('button', {
