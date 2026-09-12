@@ -375,17 +375,26 @@ export default async function handler(req, res) {
     // prochain visiteur plutot qu'un quart d'heure plus tard.
     const MAJEURES = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 144, 179, 1, 4, 9, 6, 13, 11, 12, 20, 17, 16, 15, 531, 71, 128, 253, 262, 307, 98, 292, 40, 62, 136, 79, 141];
     const rangL = (id) => { const i = MAJEURES.indexOf(id); return i < 0 ? 999 : i; };
-    const ligues = [...parLigue.values()].sort((a, b) => rangL(a.id) - rangL(b.id));
+    // PERIMETRE du rattrapage : les grands championnats SEULEMENT. Un samedi,
+    // 249 championnats exotiques n'avaient aucune cote apres les pages par
+    // date ; les rappeler un par un coutait ~250 appels par reconstruction
+    // (toutes les 15 min = ~24 000 appels/jour) pour des ligues que personne
+    // n'ouvre — et la rafale declenchait la limite minute, donc le
+    // disjoncteur, donc un agregat troue... qui se reconstruisait 2 min plus
+    // tard (boucle constatee le 12/09). Les exotiques gardent ce que les
+    // pages par date leur donnent.
+    const ligues = [...parLigue.values()].filter((l) => rangL(l.id) < 999).sort((a, b) => rangL(a.id) - rangL(b.id));
     let rattrapageRate = 0;
     const rattrapage = ligues.map((l) => async () => {
       const chemin = 'odds&date=' + date + '&league=' + l.id + '&season=' + l.season;
       let rep = await interne(chemin);
-      if (!rep) { await new Promise((r) => setTimeout(r, 1500)); rep = await interne(chemin); }
+      if (!rep) { await new Promise((r) => setTimeout(r, 2000)); rep = await interne(chemin); }
       if (!rep) rattrapageRate++;
       return rep;
     });
-    (await enFile(rattrapage, 4)).forEach(absorber);
-    const ttlAgg = rattrapageRate ? 120 : TTL_AGREGAT;
+    (await enFile(rattrapage, 3)).forEach(absorber);
+    // Un grand championnat manque encore : on reessaie dans 5 min, pas 15.
+    const ttlAgg = rattrapageRate ? 300 : TTL_AGREGAT;
 
     const corps = JSON.stringify({ date, matchs, incomplet: rattrapageRate || undefined });
     const serialise = compresser(corps);
