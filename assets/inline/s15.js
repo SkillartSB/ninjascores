@@ -30,6 +30,7 @@
     if (/qualif/i.test(r)) return 'Qualifications';
     return r.replace(/^(ATP|WTA)\s+[^-]+-\s*/i, '');
   }
+  window.NS_TOUR_FR = tourFr; // utilise par la carte « Match suivi » (favoris) du bundle
   function nomRonde(nom, idx, total) {
     var depuisFin = total - 1 - idx;
     if (depuisFin === 0) return 'Finale';
