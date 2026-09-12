@@ -21,7 +21,8 @@
       });
       return Object.assign({}, g, { picks: picks });
     }).filter(function (g) { return g.picks.length; });
-    window._NS_PRONOS_JOUR = data;
+    // Fusion (13/09/2026) : ne pas ecraser les pronostics tennis deposes par l'autre appel.
+    window._NS_PRONOS_JOUR = Object.assign({}, window._NS_PRONOS_JOUR || {}, data);
     window._NS_PRONOS_PRETS = true;
     window.dispatchEvent(new Event('pronosJourReady'));
   }

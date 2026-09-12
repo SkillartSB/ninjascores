@@ -63,7 +63,9 @@ export async function pronosTennis(cle, jour) {
   ]);
   if (!fix) throw new Error('fixtures indisponibles');
   const T = tournois || {};
-  let matchs = fix.filter((x) => /^(Atp|Wta) Singles$/.test(x.event_type_type || '') && !x.event_status && !/\//.test(x.event_first_player || ''))
+  // Matchs a venir ou en cours (pas les termines) : la liste ne se vide pas au fil de la soiree.
+  const fini = (x) => /finished|retired|walkover|w\.?o\.?|cancel|abandon|postponed/i.test(String(x.event_status || ''));
+  let matchs = fix.filter((x) => /^(Atp|Wta) Singles$/.test(x.event_type_type || '') && !fini(x) && !/\//.test(x.event_first_player || ''))
     .map((x) => { const t = T[String(x.tournament_key)] || {}; return { x, t, tier: TIER[t.cat] || 4, circuit: /^Wta/.test(x.event_type_type) ? 'WTA' : 'ATP' }; })
     .sort((a, b) => (a.tier - b.tier) || String(a.x.event_time).localeCompare(String(b.x.event_time)));
   matchs = matchs.filter((m) => m.tier <= 3).concat(matchs.filter((m) => m.tier === 4)).slice(0, MAX_MATCHS);
