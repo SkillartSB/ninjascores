@@ -137,7 +137,7 @@
         }).catch(function (e) { if (vif) setEtat({ matchs: [], chargement: false, erreur: e && e.message }); });
       };
       charger();
-      var iv = setInterval(charger, 60000);
+      var iv = setInterval(charger, 20000);
       return function () { vif = false; clearInterval(iv); };
     }, []);
     return etat;

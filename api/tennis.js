@@ -54,6 +54,37 @@ export default async function handler(req, res) {
   }
   const spec = METHODES[methode];
   if (!spec) { res.status(400).json({ error: 'Methode non autorisee', autorisees: Object.keys(METHODES) }); return; }
+  // ── Direct (etape 2) : tennis:live est alimente par services/tennis-live (WebSocket
+  // API-Tennis -> Redis, 1 ecriture/s). Ici : une lecture Redis, 3 s de cache CDN, donc
+  // tous les visiteurs partagent le meme appel. Sans cle (service arrete, perime > 90 s) on
+  // retombe sur get_livescore REST (20 s), ce qui reste correct mais moins reactif.
+  if (methode === 'live') {
+    const mk = q.match_key ? String(q.match_key).replace(/[^0-9]/g, '') : '';
+    const lu = await redisPipeline([['GET', 'tennis:live:meta'], ['GET', mk ? 'tennis:live:' + mk : 'tennis:live']]);
+    let meta = null, corps = null;
+    try { meta = lu && lu[0] && lu[0].result ? JSON.parse(lu[0].result) : null; } catch (e) {}
+    corps = lu && lu[1] && lu[1].result ? lu[1].result : null;
+    const frais = meta && meta.ts && Date.now() - meta.ts < 90000;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    if (frais && corps) {
+      res.setHeader('Cache-Control', 'public, s-maxage=3, stale-while-revalidate=5');
+      res.setHeader('X-Tennis-Live', 'ws');
+      res.status(200).send(mk ? '{"success":1,"source":"ws","result":[' + corps + ']}' : '{"success":1,"source":"ws","result":' + corps + '}');
+      return;
+    }
+    if (frais && mk) { // le service tourne mais ce match n'est pas (ou plus) en direct
+      res.setHeader('Cache-Control', 'public, s-maxage=3');
+      res.setHeader('X-Tennis-Live', 'ws-absent');
+      res.status(200).json({ success: 1, source: 'ws', result: [] });
+      return;
+    }
+    // Repli REST : on reutilise le chemin get_livescore (cache Redis 20 s, detail garde).
+    req.query = { method: 'get_livescore', match_key: mk || undefined, detail: '1' };
+    res.setHeader('X-Tennis-Live', 'rest');
+    return handler(req, res);
+  }
+
   const cle = process.env.API_TENNIS_KEY;
   if (!cle) { res.status(500).json({ error: 'API_TENNIS_KEY absente' }); return; }
 

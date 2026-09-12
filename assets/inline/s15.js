@@ -70,14 +70,15 @@
       var charger = function () {
         // En direct : get_livescore (20 s) ; sinon get_fixtures (5 min). Le detail
         // (stats, point par point) n'est jamais cache pour la liste, seulement ici.
-        api('method=' + (live ? 'get_livescore' : 'get_fixtures') + '&match_key=' + cle + '&detail=1').then(function (r) {
+        // En direct : method=live (WebSocket -> Redis, 3 s de cache CDN), sinon get_fixtures.
+        api(live ? 'method=live&match_key=' + cle : 'method=get_fixtures&match_key=' + cle + '&detail=1').then(function (r) {
           if (!vif) return;
           if (r && r.length) setX(r[0]);
           else if (live) api('method=get_fixtures&match_key=' + cle + '&detail=1').then(function (r2) { if (vif && r2 && r2.length) setX(r2[0]); });
         });
       };
       charger();
-      var iv = live ? setInterval(charger, 20000) : null;
+      var iv = live ? setInterval(charger, 4000) : null;
       return function () { vif = false; if (iv) clearInterval(iv); };
     }, [cle, live]);
     return x;

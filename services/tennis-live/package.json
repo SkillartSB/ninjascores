@@ -1,0 +1,11 @@
+{
+  "name": "ninjascores-tennis-live",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Consommateur du WebSocket API-Tennis -> Upstash Redis (tennis:live) pour NinjaScores",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node index.mjs"
+  }
+}

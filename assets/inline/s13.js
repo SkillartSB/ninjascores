@@ -185,9 +185,17 @@
   window.NinjaTennisAPI = {
     fetchComps: function (sel) {
       var dl = dateDe(sel); var date = dl[0], live = dl[1];
-      var appel = live ? api('method=get_livescore') : api('method=get_fixtures&date_start=' + date + '&date_stop=' + date);
-      return Promise.all([appel, tournois()]).then(function (r) {
-        var brut = r[0], T = r[1];
+      // Le direct vient de /api/tennis/?method=live (WebSocket -> Redis, 3 s de cache CDN).
+      // Vue LIVE : uniquement ces matchs. Vue du jour : fixtures (5 min) + fusion du direct.
+      var auj = dateDe('today')[0];
+      var appel = live ? api('method=live') : api('method=get_fixtures&date_start=' + date + '&date_stop=' + date);
+      var appelLive = (!live && date === auj) ? api('method=live') : Promise.resolve(null);
+      return Promise.all([appel, tournois(), appelLive]).then(function (r) {
+        var brut = r[0], T = r[1], enDirect = r[2];
+        if (enDirect && enDirect.length) {
+          var parCle = {}; enDirect.forEach(function (x) { parCle[String(x.event_key)] = x; });
+          brut = brut.map(function (x) { var l = parCle[String(x.event_key)]; return l ? Object.assign({}, x, l) : x; });
+        }
         var atp = [], wta = [];
         brut.forEach(function (x) {
           var m = convertir(x, T); if (!m) return;
