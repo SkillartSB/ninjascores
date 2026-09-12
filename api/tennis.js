@@ -108,6 +108,20 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Journal des points NinjaScores (ecrit par services/tennis-live), plus propre que le
+  // point par point de l'API. Absent si le service ne tourne pas : la fiche garde l'API.
+  if (methode === 'journal') {
+    const mk = String(q.match_key || '').replace(/[^0-9]/g, '');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=3, stale-while-revalidate=5');
+    if (!mk) { res.status(200).json({ success: 1, result: null }); return; }
+    const luJ = await redisPipeline([['GET', 'tennis:pbp:' + mk]]);
+    const corpsJ = luJ && luJ[0] && luJ[0].result;
+    res.status(200).send('{"success":1,"result":' + (corpsJ || 'null') + '}');
+    return;
+  }
+
   if (methode === 'live') {
     const mk = q.match_key ? String(q.match_key).replace(/[^0-9]/g, '') : '';
     const lu = await redisPipeline([['GET', 'tennis:live:meta'], ['GET', mk ? 'tennis:live:' + mk : 'tennis:live']]);

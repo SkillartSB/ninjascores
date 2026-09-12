@@ -259,8 +259,25 @@
         })));
     };
     var sp = R.useState(null), setChoisi = sp[0], setSetChoisi = sp[1];
+    // Journal NinjaScores (WebSocket -> Redis, nettoye) : prefere au point par point de l'API.
+    var jr = R.useState(null), journal = jr[0], setJournal = jr[1];
+    R.useEffect(function () {
+      if (tab !== 'pbp' || !cle) return;
+      var vif = true;
+      var charger = function () { api('method=journal&match_key=' + cle).then(function (r) { if (vif && r && r.sets && r.sets.length) setJournal(r); }); };
+      charger();
+      var iv = statut === 'live' ? setInterval(charger, 4000) : null;
+      return function () { vif = false; if (iv) clearInterval(iv); };
+    }, [tab, cle, statut]);
     var rendrePbp = function () {
       var pbp = (x && x.pointbypoint) || [];
+      if (journal && journal.sets && journal.sets.length) {
+        // Meme forme que l'API pour reutiliser le rendu.
+        pbp = [];
+        journal.sets.forEach(function (st) { (st.jeux || []).forEach(function (g, gi) {
+          pbp.push({ set_number: 'Set ' + st.n, number_game: String(gi + 1), player_served: g.serveur === 'b' ? 'Second Player' : 'First Player', serve_winner: g.gagnant === 'a' ? 'First Player' : g.gagnant === 'b' ? 'Second Player' : null, serve_lost: null, score: g.apres, points: (g.pts || []).map(function (sc) { return { score: sc.replace(':', ' - '), break_point: null, set_point: null, match_point: null }; }) });
+        }); });
+      }
       if (!pbp.length) return h(Vide, { t: t }, statut === 'upcoming' ? 'Le point par point apparaîtra au coup d’envoi.' : (x ? 'Point par point indisponible pour ce match.' : 'Chargement…'));
       var parSet = {}, ordre = [];
       pbp.forEach(function (g) { var k = String(g.set_number || 'Set 1'); if (!parSet[k]) { parSet[k] = []; ordre.push(k); } parSet[k].push(g); });
@@ -317,7 +334,7 @@
                   p.score, special ? h('span', { style: { fontSize: 9, fontWeight: 900, background: accent, color: '#fff', borderRadius: 4, padding: '1px 4px' } }, special) : null);
               })));
           })),
-        h('div', { style: { fontSize: 10.5, color: t.textTer, padding: '0 4px 12px', lineHeight: 1.5 } }, 'La balle marque le serveur. BB balle de break, BS balle de set, BM balle de match.'));
+        h('div', { style: { fontSize: 10.5, color: t.textTer, padding: '0 4px 12px', lineHeight: 1.5 } }, 'La balle marque le serveur. BB balle de break, BS balle de set, BM balle de match.' + (journal ? ' Séquence NinjaScores en direct.' : '')));
     };
     var bilanH2H = function () {
       var l = (h2h.d && h2h.d.H2H) || [];
