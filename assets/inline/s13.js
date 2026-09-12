@@ -89,8 +89,8 @@
       tennis: {
         cle: x.event_key, tournoiCle: x.tournament_key, tournoi: nom, cat: cat, rang: t.rang || 5,
         surface: t.surface || null, surfaceFr: surf, pays: t.pays || null, paysNom: paysNom || null, tour: x.tournament_round || null,
-        j1: { cle: x.first_player_key, nom: x.event_first_player, photo: x.event_first_player_logo || null },
-        j2: { cle: x.second_player_key, nom: x.event_second_player, photo: x.event_second_player_logo || null },
+        j1: { cle: x.first_player_key, nom: x.event_first_player, photo: x.event_first_player_logo || null, pays: poserDrapeau(x.first_player_key, x.event_first_player) },
+        j2: { cle: x.second_player_key, nom: x.event_second_player, photo: x.event_second_player_logo || null, pays: poserDrapeau(x.second_player_key, x.event_second_player) },
         serveur: x.event_serve || null, jeu: x.event_game_result || null, statutBrut: x.event_status || ''
       }
     };
@@ -219,6 +219,29 @@
     });
   };
 
+  // Drapeaux des joueurs (13/09/2026) : le calendrier n'en avait que pour ~200 noms codes en dur.
+  // Les classements ATP/WTA (2 300 joueurs chacun, cache CDN 6 h) donnent le pays de chacun ;
+  // on expose window.NS_TENNIS_DRAPEAUX[nom affiche] = drapeau, lu par le rendu du calendrier.
+  var PAYS_ISO_EN = { 'Italy': 'IT', 'Spain': 'ES', 'Germany': 'DE', 'Serbia': 'RS', 'USA': 'US', 'United States': 'US', 'Russia': 'RU', 'Norway': 'NO', 'Denmark': 'DK', 'Greece': 'GR', 'Poland': 'PL', 'Australia': 'AU', 'Canada': 'CA', 'France': 'FR', 'Great Britain': 'GB', 'United Kingdom': 'GB', 'Czech Republic': 'CZ', 'Czechia': 'CZ', 'Kazakhstan': 'KZ', 'Argentina': 'AR', 'Chile': 'CL', 'Brazil': 'BR', 'Japan': 'JP', 'China': 'CN', 'Netherlands': 'NL', 'Belgium': 'BE', 'Switzerland': 'CH', 'Austria': 'AT', 'Croatia': 'HR', 'Bulgaria': 'BG', 'Hungary': 'HU', 'Romania': 'RO', 'Ukraine': 'UA', 'Belarus': 'BY', 'Latvia': 'LV', 'Estonia': 'EE', 'Lithuania': 'LT', 'Finland': 'FI', 'Sweden': 'SE', 'Portugal': 'PT', 'Slovakia': 'SK', 'Slovenia': 'SI', 'Bosnia and Herzegovina': 'BA', 'Georgia': 'GE', 'Turkey': 'TR', 'Tunisia': 'TN', 'Egypt': 'EG', 'South Africa': 'ZA', 'India': 'IN', 'Colombia': 'CO', 'Peru': 'PE', 'Mexico': 'MX', 'Ecuador': 'EC', 'Uruguay': 'UY', 'Bolivia': 'BO', 'Venezuela': 'VE', 'Korea, Republic of': 'KR', 'South Korea': 'KR', 'Taiwan': 'TW', 'Chinese Taipei': 'TW', 'Thailand': 'TH', 'Indonesia': 'ID', 'Israel': 'IL', 'Moldova': 'MD', 'Cyprus': 'CY', 'Monaco': 'MC', 'Luxembourg': 'LU', 'Ireland': 'IE', 'New Zealand': 'NZ', 'Uzbekistan': 'UZ', 'Armenia': 'AM', 'Azerbaijan': 'AZ', 'Dominican Republic': 'DO', 'Puerto Rico': 'PR', 'Morocco': 'MA', 'Philippines': 'PH', 'Hong Kong': 'HK', 'Malaysia': 'MY', 'Pakistan': 'PK', 'Zimbabwe': 'ZW', 'Nigeria': 'NG', 'Kenya': 'KE', 'Paraguay': 'PY', 'Costa Rica': 'CR', 'Guatemala': 'GT', 'Jamaica': 'JM', 'Barbados': 'BB', 'Vietnam': 'VN', 'Montenegro': 'ME', 'North Macedonia': 'MK', 'Albania': 'AL', 'Kosovo': 'XK', 'Liechtenstein': 'LI', 'Andorra': 'AD', 'Burundi': 'BI', 'Ivory Coast': 'CI', 'Jordan': 'JO', 'Malta': 'MT' };
+  function drapeauISO(iso) { try { return String.fromCodePoint.apply(null, iso.toUpperCase().split('').map(function (c) { return 0x1F1E6 + c.charCodeAt(0) - 65; })); } catch (e) { return ''; } }
+  var paysParCle = null, paysP = null;
+  function paysJoueurs() {
+    if (paysP) return paysP;
+    paysP = Promise.all(['ATP', 'WTA'].map(function (c) { return api('method=get_standings&event_type=' + c); })).then(function (r) {
+      var m = {};
+      (r[0] || []).concat(r[1] || []).forEach(function (j) { var iso = PAYS_ISO_EN[j.country]; if (iso && j.player_key) m[String(j.player_key)] = iso; });
+      paysParCle = m; return m;
+    }).catch(function () { paysParCle = {}; return {}; });
+    return paysP;
+  }
+  window.NS_TENNIS_DRAPEAUX = window.NS_TENNIS_DRAPEAUX || {};
+  function poserDrapeau(cle, nom) {
+    if (!paysParCle || !cle || !nom) return null;
+    var iso = paysParCle[String(cle)]; if (!iso) return null;
+    window.NS_TENNIS_DRAPEAUX[nom] = drapeauISO(iso);
+    return iso;
+  }
+
   window.NinjaTennisAPI = {
     fetchComps: function (sel) {
       var dl = dateDe(sel); var date = dl[0], live = dl[1];
@@ -227,7 +250,7 @@
       var auj = dateDe('today')[0];
       var appel = live ? api('method=live') : api('method=get_fixtures&date_start=' + date + '&date_stop=' + date);
       var appelLive = (!live && date === auj) ? api('method=live') : Promise.resolve(null);
-      return Promise.all([appel, tournois(), appelLive]).then(function (r) {
+      return Promise.all([appel, tournois(), appelLive, paysJoueurs()]).then(function (r) {
         var brut = r[0], T = r[1], enDirect = r[2];
         if (enDirect && enDirect.length) {
           var parCle = {}; enDirect.forEach(function (x) { parCle[String(x.event_key)] = x; });
