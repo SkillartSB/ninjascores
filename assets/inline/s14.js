@@ -283,8 +283,14 @@
         return h('div', { key: i, style: { position: 'relative' } }, c,
           (x.a.tb != null || x.b.tb != null) ? h('span', { style: { position: 'absolute', right: -3, top: (x.a.j < x.b.j ? 0 : H) + 1, fontSize: 7.5, color: t.textTer, fontWeight: 700 } }, x.a.j < x.b.j ? x.a.tb : x.b.tb) : null);
       }),
-      (ctx.cotes && !ended && m.cote1 && m.cote2 && !window.NS_HIDE_ODDS) ? h('div', { className: 'ns-odds', style: { width: 36, flexShrink: 0, marginLeft: 4 } },
-        [m.cote1, m.cote2].map(function (c, i) { return h('div', { key: i, style: { height: H, lineHeight: H + 'px', fontSize: 11.5, fontWeight: 800, color: accent, textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, Number(c).toFixed(2)); })) : null,
+      // Cotes vainqueur, meme pastille que le foot : violet sur fond clair, et apres le match
+      // l'issue sortie en blanc sur violet. Masquees pendant le direct, comme au foot.
+      (ctx.cotes && !live && m.cote1 && m.cote2 && !window.NS_HIDE_ODDS) ? h('div', { className: 'ns-odds', style: { width: 34, flexShrink: 0, marginLeft: 6 } },
+        [[m.cote1, gagneA], [m.cote2, gagneB]].map(function (c, i) {
+          var sorti = ended && c[1];
+          return h('div', { key: i, style: { height: H, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' } },
+            h('span', { style: { fontSize: 11, fontWeight: 800, color: sorti ? '#fff' : accent, background: sorti ? accent : t.cardAlt, borderRadius: 5, padding: '2px 4px', minWidth: 28, textAlign: 'center', display: 'block', fontVariantNumeric: 'tabular-nums' } }, Number(c[0]).toFixed(2)));
+        })) : null,
       h('div', { style: { width: 2 } }));
   };
 
