@@ -278,16 +278,18 @@
       h('button', { onClick: function (e) { e.stopPropagation(); if (window.FavMatchesStore) window.FavMatchesStore.toggle(m); }, 'aria-label': estFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
         style: { width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 17, color: estFav ? '#F59E0B' : t.textTer, flexShrink: 0, padding: 0, fontFamily: 'inherit' } }, estFav ? '★' : '☆'),
       h('div', { style: { flex: 1, minWidth: 0 } }, ligneNom(nomA, flagA, gagneA || (live && servA), servA), ligneNom(nomB, flagB, gagneB || (live && servB), servB)),
-      live ? h('div', { style: { width: 26, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: '#EF4444' } }, setNum ? 'S' + setNum : 'LIVE')
+      live ? h('div', { style: { width: 34, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: '#EF4444' } }, (setNum ? 'S' + setNum : 'LIVE') + ((sets.length && !sets[sets.length - 1].fini && sets[sets.length - 1].a.j >= 6 && sets[sets.length - 1].b.j >= 6) ? '/TB' : ''))
         : ended ? h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: /retired|walkover|w\.?o\.?|cancel|abandon|postpon/i.test(tx.statutBrut || '') ? '#EF4444' : t.textTer, lineHeight: 1.2 } },
             /retired/i.test(tx.statutBrut || '') ? 'Abandon' : /walkover|w\.?o\.?/i.test(tx.statutBrut || '') ? 'Forfait' : /cancel/i.test(tx.statutBrut || '') ? 'Annulé' : /postpon/i.test(tx.statutBrut || '') ? 'Reporté' : 'Terminé')
         : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),
       live ? h('div', { style: { width: 16, flexShrink: 0 } }, balle(servA), balle(servB)) : null,
       (live && jeu && jeu.length === 2) ? col(jeu[0], jeu[1], { width: 26 }) : null,
       (live || (ended && sets.length)) ? col(gagnesA, gagnesB, { width: 22, rouge: live, fortA: true, fortB: true }) : null,
-      sets.map(function (x, i) {
-        var enCours = live && !x.fini;
-        var c = col(x.a.j, x.b.j, { width: 20, fortA: x.fini && x.a.j > x.b.j, fortB: x.fini && x.b.j > x.a.j, sombre: enCours });
+      // Comme Flashscore : en direct, seulement les jeux du set en cours (les sets finis sont dans
+      // la fiche) ; termine, seulement les sets gagnes (colonne ci-dessus), pas le detail.
+      sets.filter(function (x) { return live && !x.fini; }).slice(-1).map(function (x, i) {
+        var enCours = true;
+        var c = col(x.a.j, x.b.j, { width: 20, fortA: false, fortB: false, sombre: enCours });
         return h('div', { key: i, style: { position: 'relative' } }, c,
           (x.a.tb != null || x.b.tb != null) ? h('span', { style: { position: 'absolute', right: -3, top: (x.a.j < x.b.j ? 0 : H) + 1, fontSize: 7.5, color: t.textTer, fontWeight: 700 } }, x.a.j < x.b.j ? x.a.tb : x.b.tb) : null);
       }),
