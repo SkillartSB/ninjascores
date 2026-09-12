@@ -385,12 +385,56 @@
       "destination": "/api/seo"
     },
     {
+      "source": "/pronostics/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
+      "destination": "/api/pronostics-liste"
+    },
+    {
+      "source": "/pronostics",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
+      "destination": "/api/pronostics-liste"
+    },
+    {
       "source": "/transferts/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
       "destination": "/api/seo?transferts=1"
     },
     {
       "source": "/transferts",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
       "destination": "/api/seo?transferts=1"
+    },
+    {
+      "source": "/transferts/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/transferts",
+      "destination": "/index.html"
     },
     {
       "source": "/calendrier/",
@@ -406,7 +450,7 @@
     },
     {
       "source": "/pronostics/",
-      "destination": "/api/pronostics-liste"
+      "destination": "/index.html"
     },
     {
       "source": "/favoris/",
@@ -426,7 +470,7 @@
     },
     {
       "source": "/pronostics",
-      "destination": "/api/pronostics-liste"
+      "destination": "/index.html"
     },
     {
       "source": "/favoris",
