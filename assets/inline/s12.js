@@ -40,4 +40,24 @@
       publier(j);
     })
     .catch(function () {});
+
+  // Tennis (12/09/2026) : meme ecran /pronostics/, seuls les pronostics changent.
+  // Deposes dans _NS_PRONOS_JOUR.tennis ; le bundle lit foot ou tennis selon NS_SPORT.
+  function publierTennis(groupes) {
+    var propres = (groupes || []).map(function (g) {
+      var picks = (g.picks || []).filter(function (p) { var c = Number(p && p.odds); if (!(c > 1)) return false; p.odds = c; return true; });
+      return Object.assign({}, g, { picks: picks });
+    }).filter(function (g) { return g.picks.length; });
+    window._NS_PRONOS_JOUR = Object.assign({}, window._NS_PRONOS_JOUR || {}, { tennis: propres });
+    window.dispatchEvent(new Event('pronosJourReady'));
+  }
+  try { var brutT = sessionStorage.getItem(CLE + '_tennis'); if (brutT) publierTennis(JSON.parse(brutT)); } catch (e) {}
+  fetch('/api/pronostics-tennis/')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      if (!j || !j.tennis) return;
+      try { sessionStorage.setItem(CLE + '_tennis', JSON.stringify(j.tennis)); } catch (e) {}
+      publierTennis(j.tennis);
+    })
+    .catch(function () {});
 })();
