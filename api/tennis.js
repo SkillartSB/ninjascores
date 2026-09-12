@@ -56,6 +56,22 @@ export default async function handler(req, res) {
   // API-Tennis -> Redis, 1 ecriture/s). Ici : une lecture Redis, 3 s de cache CDN, donc
   // tous les visiteurs partagent le meme appel. Sans cle (service arrete, perime > 90 s) on
   // retombe sur get_livescore REST (20 s), ce qui reste correct mais moins reactif.
+  // Photos des joueurs (13/09/2026) : le classement n'en a pas (get_standings), les
+  // fixtures oui (event_*_player_logo). On accumule un hash Redis tennis:photos a
+  // chaque passage de fixtures/livescore, et l'ecran Classement demande les siennes ici.
+  if (methode === 'photos') {
+    const cles = String(q.keys || '').split(',').map((k) => k.replace(/[^0-9]/g, '')).filter(Boolean).slice(0, 300);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    if (!cles.length) { res.status(200).json({ success: 1, result: {} }); return; }
+    const lu = await redisPipeline([['HMGET', 'tennis:photos'].concat(cles)]);
+    const vals = (lu && lu[0] && lu[0].result) || [];
+    const out = {};
+    cles.forEach((k, i) => { if (vals[i]) out[k] = vals[i]; });
+    res.status(200).json({ success: 1, result: out });
+    return;
+  }
+
   if (methode === 'live') {
     const mk = q.match_key ? String(q.match_key).replace(/[^0-9]/g, '') : '';
     const lu = await redisPipeline([['GET', 'tennis:live:meta'], ['GET', mk ? 'tennis:live:' + mk : 'tennis:live']]);
@@ -116,6 +132,14 @@ export default async function handler(req, res) {
     // Les listes (calendrier, live) embarquent le point par point et les stats de chaque
     // match : 1,4 Mo par jour, 82 % de poids inutile pour une liste et au-dela de la limite
     // Redis (900 Ko) -> on les retire ici. Le detail d'un match les redemande avec ?detail=1.
+    if (json && json.success === 1 && Array.isArray(json.result) && (methode === 'get_fixtures' || methode === 'get_livescore')) {
+      const photos = [];
+      json.result.forEach((m) => {
+        if (m.first_player_key && m.event_first_player_logo) photos.push(String(m.first_player_key), m.event_first_player_logo);
+        if (m.second_player_key && m.event_second_player_logo) photos.push(String(m.second_player_key), m.event_second_player_logo);
+      });
+      if (photos.length) redisPipeline([['HSET', 'tennis:photos'].concat(photos.slice(0, 1000))]).catch(() => {});
+    }
     if (json && json.success === 1 && Array.isArray(json.result) && (methode === 'get_fixtures' || methode === 'get_livescore') && q.detail !== '1') {
       json.result.forEach((m) => { delete m.pointbypoint; delete m.statistics; });
       corps = JSON.stringify(json);

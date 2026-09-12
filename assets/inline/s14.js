@@ -321,6 +321,20 @@
       return function () { vif = false; };
     }, [circuit]);
     var liste = (etat.liste || []).slice(0, limite);
+    // Photos (13/09/2026) : une requete pour les lignes affichees (hash Redis alimente par les fixtures), images lazy.
+    var ph = R.useState({}), photos = ph[0], setPhotos = ph[1];
+    R.useEffect(function () {
+      var manquantes = liste.map(function (j) { return String(j.player_key); }).filter(function (k) { return photos[k] === undefined; });
+      if (!manquantes.length) return;
+      var vif = true;
+      fetch('/api/tennis/?method=photos&keys=' + manquantes.join(',')).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        if (!vif) return;
+        var maj = Object.assign({}, photos);
+        manquantes.forEach(function (k) { maj[k] = (j && j.result && j.result[k]) || null; });
+        setPhotos(maj);
+      }).catch(function () {});
+      return function () { vif = false; };
+    }, [etat.liste, limite]);
     var fleche = function (mv) { return mv === 'up' ? h('span', { style: { color: '#10B981', fontWeight: 800 } }, '▲') : mv === 'down' ? h('span', { style: { color: '#EF4444', fontWeight: 800 } }, '▼') : h('span', { style: { color: t.textTer } }, '–'); };
     return h('div', { style: { flex: 1, overflowY: 'auto', padding: '12px 16px 24px' } },
       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
@@ -335,8 +349,10 @@
         : h(R.Fragment, null,
           carte(t, liste.map(function (j, i) {
             return h('div', { key: j.player_key || i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderTop: i ? '1px solid ' + t.divider : 'none' } },
-              h('div', { style: { width: 28, fontSize: 13, fontWeight: 800, color: i < 3 ? accent : t.textSec, textAlign: 'right', flexShrink: 0 } }, j.place),
-              h('span', { style: { fontSize: 18, lineHeight: 1, width: 24, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, drapeauPays(j.country)),
+              h('div', { style: { width: 24, fontSize: 13, fontWeight: 800, color: i < 3 ? accent : t.textSec, textAlign: 'right', flexShrink: 0 } }, j.place),
+              photos[String(j.player_key)] ? h('img', { src: photos[String(j.player_key)], alt: '', loading: 'lazy', width: 30, height: 30, style: { width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', background: t.cardAlt, border: '1px solid ' + t.border, flexShrink: 0 } })
+                : h('div', { style: { width: 30, height: 30, borderRadius: '50%', background: t.cardAlt, color: t.textSec, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, String(j.player || '?').split(' ').map(function (x) { return x.charAt(0); }).join('').slice(0, 2).toUpperCase()),
+              h('span', { style: { fontSize: 16, lineHeight: 1, width: 20, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, drapeauPays(j.country)),
               h('div', { style: { flex: 1, minWidth: 0 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, j.player),
                 h('div', { style: { fontSize: 10.5, fontWeight: 600, color: t.textTer } }, j.country || '')),
