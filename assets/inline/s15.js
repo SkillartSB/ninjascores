@@ -10,6 +10,8 @@
   var h = R.createElement;
   var EMOJI = window.NS_POLICE_EMOJI || 'inherit';
   var U = window.NS_TENNIS_UTIL || { drapeau: function () { return ''; }, drapeauPays: function () { return ''; }, PAYS_ISO: {} };
+  // Logos des bookmakers FR (memes visuels que la fiche foot) : Unibet, bet365, Winamax, Betclic.
+  window.NS_BKMS_FR = [{logo:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTAgNDQiPgogIDx0ZXh0IHg9IjU1IiB5PSIxNiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLEltcGFjdCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iOTAwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dExlbmd0aD0iMTAwIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiPlVOSUJFVDwvdGV4dD4KICA8Y2lyY2xlIGN4PSIzMCIgY3k9IjM0IiByPSI1IiBmaWxsPSIjQzhGMDdBIi8+CiAgPGNpcmNsZSBjeD0iNDIiIGN5PSIzNCIgcj0iNSIgZmlsbD0iI0E4RDg1QSIvPgogIDxjaXJjbGUgY3g9IjU0IiBjeT0iMzQiIHI9IjUiIGZpbGw9IiM4OEMwNDAiLz4KICA8Y2lyY2xlIGN4PSI2NiIgY3k9IjM0IiByPSI1IiBmaWxsPSIjNjhBODI4Ii8+CiAgPGNpcmNsZSBjeD0iNzgiIGN5PSIzNCIgcj0iNSIgZmlsbD0iIzQ4OTAxMCIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iMzQiIHI9IjUiIGZpbGw9IiMyODY4MDAiLz4KPC9zdmc+',url:'https://www.unibet.fr',color:'#3DB33D',size:44,w:110},{logo:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE4IiBmaWxsPSIjMDI3QjVCIi8+PHRleHQgeD0iNTAiIHk9IjM4IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssQXJpYWwsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIzOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIj5iZXQ8L3RleHQ+PHRleHQgeD0iNTAiIHk9IjcyIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssQXJpYWwsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSIzOCIgZmlsbD0iI0Y1QzUxOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9ImNlbnRyYWwiPjM2NTwvdGV4dD48L3N2Zz4=',url:'https://www.bet365.fr',color:'#027B5B',size:44},{logo:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTAgNDQiPgogIDxyZWN0IHdpZHRoPSIxMTAiIGhlaWdodD0iNDQiIHJ4PSI4IiBmaWxsPSIjMTExMTExIi8+CiAgPHRleHQgeD0iNTUiIHk9IjIyIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssSW1wYWN0LHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMjYiIGZpbGw9IiNFODAwMEQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJjZW50cmFsIiB0ZXh0TGVuZ3RoPSIxMDIiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyI+V0lOQU1BWDwvdGV4dD4KPC9zdmc+',url:'https://www.winamax.fr',color:'#111111',size:44,w:110},{logo:'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMTAgNDQiPgogIDxkZWZzPjxjbGlwUGF0aCBpZD0iYyI+PHJlY3Qgd2lkdGg9IjExMCIgaGVpZ2h0PSI0NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTEwIiBoZWlnaHQ9IjQ0IiByeD0iOCIgZmlsbD0iI0U4MTkyQyIvPgogIDxnIGNsaXAtcGF0aD0idXJsKCNjKSI+CiAgICA8bGluZSB4MT0iNjAiIHkxPSItNSIgeDI9IjExMCIgeTI9IjQ1IiBzdHJva2U9IiNGRjMzNDQiIHN0cm9rZS13aWR0aD0iNiIgb3BhY2l0eT0iMC41Ii8+CiAgICA8bGluZSB4MT0iNzIiIHkxPSItNSIgeDI9IjEyMiIgeTI9IjQ1IiBzdHJva2U9IiNGRjMzNDQiIHN0cm9rZS13aWR0aD0iNiIgb3BhY2l0eT0iMC41Ii8+CiAgICA8bGluZSB4MT0iODQiIHkxPSItNSIgeDI9IjEzNCIgeTI9IjQ1IiBzdHJva2U9IiNGRjMzNDQiIHN0cm9rZS13aWR0aD0iNiIgb3BhY2l0eT0iMC41Ii8+CiAgICA8cmVjdCB4PSIwIiB5PSI5IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjI2IiBmaWxsPSIjQjgxMDFGIi8+CiAgICA8dGV4dCB4PSI1NSIgeT0iMjIiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxBcmlhbCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iOTAwIiBmb250LXNpemU9IjIwIiBmb250LXN0eWxlPSJpdGFsaWMiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dExlbmd0aD0iOTYiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyI+QmV0Y2xpYzwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==',url:'https://www.betclic.fr',color:'#E8192C',size:44,w:110}];
 
   var SURF_FR = { 'Hard': 'Dur', 'Hard (Indoor)': 'Dur indoor', 'Clay': 'Terre battue', 'Grass': 'Gazon', 'Carpet': 'Moquette', 'Carpet (Indoor)': 'Moquette' };
   var SURF_GROUPE = { 'Hard': 'dur', 'Hard (Indoor)': 'dur', 'Carpet': 'dur', 'Carpet (Indoor)': 'dur', 'Clay': 'terre', 'Grass': 'gazon' };
@@ -295,139 +297,296 @@
         !x ? h(Vide, { t: t }, 'Chargement…') : null);
     };
 
+    // ── outils communs aux onglets Cotes / Pronostics / TàT (meme structure que le foot) ──
+    var estFR = !(window.NS_GEO && window.NS_GEO.actif && window.NS_GEO.actif().code && window.NS_GEO.actif().code !== 'FR');
+    var bandeauANJ = function () {
+      if (!estFR) return null;
+      return h('div', { style: { background: '#FFE24D', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12, marginBottom: 14 } },
+        h('p', { style: { flex: 1, minWidth: 0, margin: 0, fontSize: 10.5, lineHeight: 1.42, fontWeight: 800, color: '#111', textTransform: 'uppercase' } }, 'Les jeux d’argent et de hasard peuvent être dangereux : pertes d’argent, conflits familiaux, addiction… Retrouvez nos conseils sur joueurs-info-service.fr (09 74 75 13 13 - appel non surtaxé)'),
+        h('div', { style: { width: 34, height: 34, borderRadius: '50%', border: '3px solid #E11D48', color: '#E11D48', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#fff' } }, '-18'));
+    };
+    // Partenaires : logos du foot (NS_BKMS_FR) + offres (NS_BONUS_LIST) ; hors France, partenaires du pays.
+    var partenaires = (function () {
+      var geo = window.NS_GEO && window.NS_GEO.actif ? window.NS_GEO.actif() : null;
+      if (geo && geo.code !== 'FR' && window.NS_BKMS_GEO) {
+        try { var l = window.NS_BKMS_GEO() || []; if (l.length) return l.map(function (b) { return { logo: b.logo, url: b.url, color: b.color, nom: b.nom, offre: b.offre || 'Bonus de bienvenue', w: b.w, size: b.size }; }); } catch (e) {}
+      }
+      var liste = (window.NS_BONUS_LIST ? window.NS_BONUS_LIST() : (window.NS_BOOKMAKERS || []));
+      var COURT = { winamax: '100€ EN CASH', unibet: '100€ OFFERTS', betclic: '100€ OFFERTS', pmu: '100€ REMBOURSÉS' };
+      var logos = window.NS_BKMS_FR || [];
+      return liste.map(function (b) {
+        var dom = (b.slug || '').toLowerCase();
+        var lg = logos.filter(function (x) { return String(x.url || '').indexOf(dom) >= 0; })[0];
+        return { logo: lg && lg.logo, url: b.url, color: b.couleur || (lg && lg.color) || accent, nom: b.nom, offre: COURT[b.slug] || b.offre || 'Bonus de bienvenue', w: lg && lg.w, size: lg && lg.size };
+      });
+    })();
+    var bandeOffre = function (i) {
+      if (!partenaires.length) return null;
+      var bk = partenaires[i % partenaires.length];
+      return h('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: t.bg, borderRadius: 12, border: '1px solid ' + t.border, textDecoration: 'none', marginBottom: 16 } },
+        h('span', { style: { fontSize: 18, fontFamily: EMOJI } }, '🎁'),
+        bk.logo ? h('img', { src: bk.logo, alt: bk.nom, style: { height: 26, width: 'auto', maxWidth: 74, borderRadius: 6, flexShrink: 0, display: 'block' } }) : h('span', { style: { fontSize: 15, fontWeight: 900, color: bk.color, whiteSpace: 'nowrap' } }, bk.nom),
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontSize: 9, fontWeight: 700, color: t.textSec, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 } }, 'Offre de bienvenue'),
+          h('div', { style: { fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, bk.offre)),
+        h('div', { style: { background: bk.color, borderRadius: 8, padding: '7px 10px', color: window.NS_TXTON ? window.NS_TXTON(bk.color) : '#fff', fontSize: 9, fontWeight: 800, letterSpacing: 0.5, flexShrink: 0, whiteSpace: 'nowrap' } }, "S'INSCRIRE"));
+    };
+    var bandeParier = function (i) {
+      if (!partenaires.length) return null;
+      var bk = partenaires[i % partenaires.length];
+      var txt = window.NS_TXTON ? window.NS_TXTON(bk.color) : '#fff';
+      return h('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '10px 16px', background: bk.color, borderTop: '1px solid rgba(0,0,0,0.1)', textDecoration: 'none', width: '100%', boxSizing: 'border-box' } },
+        bk.logo ? h('img', { src: bk.logo, alt: bk.nom, style: { width: bk.w || bk.size || 28, height: bk.size || 28, borderRadius: 6, flexShrink: 0, objectFit: 'contain' } }) : h('span', { style: { fontSize: 16, fontWeight: 900, color: txt, letterSpacing: 0.5 } }, bk.nom),
+        h('span', { style: { fontSize: 12, fontWeight: 700, color: txt, letterSpacing: 0.3 } }, 'Je parie'),
+        h('span', { style: { fontSize: 13, color: txt } }, '›'));
+    };
+    var titreMarche = function (txt) { return h('div', { style: { fontSize: 11, fontWeight: 700, color: t.textSec, letterSpacing: 1.2, textTransform: 'uppercase', margin: '0 0 10px' } }, txt); };
+
+    var marche = function (nom) { return (cotes.d && cotes.d[String(cle)] && cotes.d[String(cle)][nom]) || null; };
+    var meilleureDe = function (obj) {
+      if (!obj) return null; var best = null;
+      Object.keys(obj).forEach(function (b) { var o = parseFloat(obj[b]); if (o > 1 && (!best || o > best.o)) best = { o: o, b: BOOK[b] || b }; });
+      return best;
+    };
+    var meilleures = function (nom, cle2) { var mk = marche(nom); return mk ? meilleureDe(mk[cle2]) : null; };
+    var meilleuresOU = function (nom, ligne, sens) { var mk = marche(nom); if (!mk) return null; var v = mk[nom + ' ' + sens]; return v ? meilleureDe(v[ligne]) : null; };
+    var pctImplicite = function (o, autres) { var inv = 1 / o; var tot = inv; (autres || []).forEach(function (x) { if (x) tot += 1 / x.o; }); return Math.round(inv / tot * 100); };
+
+    // Carte de cote « foot » : libelle, sous-libelle, cote, % implicite, barre.
+    var carteCote = function (lib, sous, best, pct, cle2) {
+      return h('div', { key: cle2, style: { flex: 1, minWidth: 0, background: t.card, borderRadius: 12, border: '1px solid ' + t.border, padding: '10px 10px 8px', textAlign: 'center' } },
+        h('div', { style: { fontSize: 11.5, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, lib),
+        sous ? h('div', { style: { fontSize: 9.5, color: t.textTer, marginBottom: 4 } }, sous) : h('div', { style: { height: 4 } }),
+        h('div', { style: { fontSize: 20, fontWeight: 900, color: best ? accent : t.textTer, lineHeight: 1.1 } }, best ? best.o.toFixed(2) : '–'),
+        h('div', { style: { fontSize: 9.5, fontWeight: 700, color: t.textSec, marginTop: 2 } }, best ? (pct != null ? pct + ' %' : best.b) : ''),
+        h('div', { style: { height: 3, background: t.cardAlt, borderRadius: 2, marginTop: 6, overflow: 'hidden' } }, h('div', { style: { width: (pct || 0) + '%', height: '100%', background: accent } })));
+    };
+    var tableauOU = function (nom, lignes, unite) {
+      if (!lignes.length) return null;
+      return h(Carte, { t: t },
+        h('div', { style: { display: 'flex', padding: '8px 12px 4px', fontSize: 9.5, fontWeight: 700, color: t.textTer, textTransform: 'uppercase', letterSpacing: .5 } }, h('div', { style: { flex: 1 } }, '+'), h('div', { style: { width: 70, textAlign: 'center' } }, 'Ligne'), h('div', { style: { flex: 1, textAlign: 'right' } }, 'Moins')),
+        lignes.map(function (l, i) {
+          var o = meilleuresOU(nom, l, 'Over'), u = meilleuresOU(nom, l, 'Under');
+          var po = o && u ? pctImplicite(o.o, [u]) : null, pu = o && u ? 100 - po : null;
+          var cel = function (b, p, droite) { return h('div', { style: { flex: 1, textAlign: droite ? 'right' : 'left' } }, h('div', { style: { fontSize: 16, fontWeight: 900, color: b ? accent : t.textTer } }, b ? b.o.toFixed(2) : '–'), h('div', { style: { fontSize: 9.5, fontWeight: 700, color: t.textSec } }, p != null ? p + ' %' : (b ? b.b : ''))); };
+          return h('div', { key: l, style: { display: 'flex', alignItems: 'center', padding: '9px 12px', borderTop: '1px solid ' + t.divider } },
+            cel(o, po, false), h('div', { style: { width: 70, textAlign: 'center', fontSize: 12, fontWeight: 800, color: t.text } }, l.replace('.', ',') + (unite ? ' ' + unite : '')), cel(u, pu, true));
+        }));
+    };
+
     // ── onglet Cotes ──
-    var meilleures = function (marche, cle2) {
-      var mk = cotes.d && cotes.d[String(cle)] && cotes.d[String(cle)][marche];
-      if (!mk) return null;
-      var v = mk[cle2]; if (!v) return null;
-      var best = null;
-      Object.keys(v).forEach(function (b) { var o = parseFloat(v[b]); if (o > 1 && (!best || o > best.o)) best = { o: o, b: BOOK[b] || b }; });
-      return best;
-    };
-    var meilleuresOU = function (marche, ligne, sens) {
-      var mk = cotes.d && cotes.d[String(cle)] && cotes.d[String(cle)][marche];
-      if (!mk) return null;
-      var v = mk[marche + ' ' + sens] && mk[marche + ' ' + sens][ligne]; if (!v) return null;
-      var best = null;
-      Object.keys(v).forEach(function (b) { var o = parseFloat(v[b]); if (o > 1 && (!best || o > best.o)) best = { o: o, b: BOOK[b] || b }; });
-      return best;
-    };
-    var ligneCote = function (libelle, best, i) {
-      return h('div', { key: i, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderTop: i ? '1px solid ' + t.divider : 'none' } },
-        h('div', { style: { minWidth: 0 } }, h('div', { style: { fontSize: 13, fontWeight: 700, color: t.text } }, libelle), best ? h('div', { style: { fontSize: 10.5, color: t.textTer, fontWeight: 600 } }, best.b) : null),
-        h('div', { style: { fontSize: 15, fontWeight: 900, color: best ? accent : t.textTer, background: best ? (accent + '18') : 'transparent', borderRadius: 8, padding: '4px 10px' } }, best ? best.o.toFixed(2) : '–'));
-    };
     var rendreCotes = function () {
       if (!cotes.ok) return h(Vide, { t: t }, 'Chargement des cotes…');
       var w1 = meilleures('Home/Away', 'Home'), w2 = meilleures('Home/Away', 'Away');
-      if (!w1 && !w2) return h(Vide, { t: t }, 'Pas de cotes disponibles pour ce match.');
-      var p1 = w1 && w2 ? (1 / w1.o) / (1 / w1.o + 1 / w2.o) : null;
+      if (!w1 && !w2) return h(R.Fragment, null, bandeauANJ(), h(Vide, { t: t }, 'Pas de cotes disponibles pour ce match.'));
+      var p1 = w1 && w2 ? pctImplicite(w1.o, [w2]) : null;
       var s1 = meilleures('Home/Away (1st Set)', 'Home'), s2 = meilleures('Home/Away (1st Set)', 'Away');
-      var mkOU = cotes.d[String(cle)]['Over/Under'] || {};
-      var lignesOU = Object.keys((mkOU['Over/Under Over'] || {})).slice(0, 2);
-      var mkG = cotes.d[String(cle)]['Over/Under by Games in Match'] || {};
-      var lignesG = Object.keys((mkG['Over/Under by Games in Match Over'] || {})).filter(function (l) { return /\.5$/.test(l); }).sort(function (a, b) { return Math.abs(a - 22.5) - Math.abs(b - 22.5); }).slice(0, 2);
+      var ps1 = s1 && s2 ? pctImplicite(s1.o, [s2]) : null;
+      var mkS = marche('Over/Under') || {}; var lignesS = Object.keys(mkS['Over/Under Over'] || {}).filter(function (l) { return /\.5$/.test(l); }).slice(0, 2);
+      var mkG = marche('Over/Under by Games in Match') || {}; var lignesG = Object.keys(mkG['Over/Under by Games in Match Over'] || {}).filter(function (l) { return /\.5$/.test(l); }).sort(function (a, b) { return a - b; });
+      if (lignesG.length > 5) { var mid = lignesG.length / 2; lignesG = lignesG.slice(Math.max(0, Math.floor(mid) - 2), Math.floor(mid) + 3); }
+      var scoreExact = marche('Correct Score') || marche('Set Betting') || marche('Correct Score (Sets)');
+      var lignesSE = scoreExact ? Object.keys(scoreExact).filter(function (k) { return /^\d\s*[-:]\s*\d$/.test(k); }) : [];
+      var i = 0;
       return h(R.Fragment, null,
-        h(Titre, { t: t }, 'Vainqueur du match'),
-        h(Carte, { t: t },
-          p1 != null ? h('div', { style: { padding: '12px 14px 4px' } },
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontWeight: 800, color: t.textSec, marginBottom: 5 } }, h('span', null, n1 + ' ' + Math.round(p1 * 100) + ' %'), h('span', null, Math.round((1 - p1) * 100) + ' % ' + n2)),
-            h('div', { style: { height: 8, borderRadius: 4, background: '#EC4899', overflow: 'hidden' } }, h('div', { style: { width: (p1 * 100) + '%', height: '100%', background: accent } }))) : null,
-          ligneCote(n1, w1, 0), ligneCote(n2, w2, 1)),
-        lignesOU.length ? h(R.Fragment, null, h(Titre, { t: t }, 'Nombre de sets'), h(Carte, { t: t }, lignesOU.map(function (l, i) { return h(R.Fragment, { key: l }, ligneCote('Plus de ' + l.replace('.', ',') + ' sets', meilleuresOU('Over/Under', l, 'Over'), i * 2), ligneCote('Moins de ' + l.replace('.', ',') + ' sets', meilleuresOU('Over/Under', l, 'Under'), i * 2 + 1)); }))) : null,
-        lignesG.length ? h(R.Fragment, null, h(Titre, { t: t }, 'Nombre de jeux'), h(Carte, { t: t }, lignesG.map(function (l, i) { return h(R.Fragment, { key: l }, ligneCote('Plus de ' + l.replace('.', ',') + ' jeux', meilleuresOU('Over/Under by Games in Match', l, 'Over'), i * 2), ligneCote('Moins de ' + l.replace('.', ',') + ' jeux', meilleuresOU('Over/Under by Games in Match', l, 'Under'), i * 2 + 1)); }))) : null,
-        s1 || s2 ? h(R.Fragment, null, h(Titre, { t: t }, 'Vainqueur du 1er set'), h(Carte, { t: t }, ligneCote(n1, s1, 0), ligneCote(n2, s2, 1))) : null,
-        h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Meilleure cote parmi les bookmakers suivis. Jouer comporte des risques : endettement, isolement, dépendance. Appelez le 09 74 75 13 13 (appel non surtaxé).'));
+        bandeauANJ(),
+        bandeOffre(i++),
+        titreMarche('Vainqueur du match'),
+        h('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } }, carteCote(n1, 'Vainqueur', w1, p1, 'w1'), carteCote(n2, 'Vainqueur', w2, p1 != null ? 100 - p1 : null, 'w2')),
+        (s1 || s2) ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Vainqueur du 1er set'), h('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } }, carteCote(n1, '1er set', s1, ps1, 's1'), carteCote(n2, '1er set', s2, ps1 != null ? 100 - ps1 : null, 's2'))) : null,
+        lignesS.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Nombre de sets'), tableauOU('Over/Under', lignesS, 'sets')) : null,
+        lignesG.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Nombre de jeux'), tableauOU('Over/Under by Games in Match', lignesG, 'jeux')) : null,
+        lignesSE.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Score exact (sets)'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } }, lignesSE.map(function (k) { var b = meilleureDe(scoreExact[k]); return h('div', { key: k, style: { background: t.card, borderRadius: 12, border: '1px solid ' + t.border, padding: '10px 6px', textAlign: 'center' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: t.text } }, k.replace(/\s/g, '')), h('div', { style: { fontSize: 15, fontWeight: 900, color: accent, marginTop: 2 } }, b ? b.o.toFixed(2) : '–')); }))) : null,
+        h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Meilleure cote parmi les bookmakers suivis (source ' + ((w1 && w1.b) || 'Pinnacle') + ', 45 min de délai possible). Jouer comporte des risques : endettement, isolement, dépendance. Appelez le 09 74 75 13 13 (appel non surtaxé).'));
+    };
+
+    // ── tendances des 2 joueurs (10 derniers matchs) ──
+    var analyser = function (liste, k) {
+      return (liste || []).slice(0, 10).map(function (e) {
+        var aEstK = String(e.first_player_key) === String(k);
+        var gagne = (aEstK && e.event_winner === 'First Player') || (!aEstK && e.event_winner === 'Second Player');
+        var sets = (e.scores || []).map(function (q) { var a = String(q.score_first || ''), b = String(q.score_second || ''); if (!a || !b || (a === '0' && b === '0')) return null; return { a: parseInt(a, 10) || 0, b: parseInt(b, 10) || 0, tb: /\./.test(a) || /\./.test(b) || (parseInt(a, 10) >= 6 && parseInt(b, 10) >= 6) }; }).filter(Boolean);
+        var moi = function (s) { return aEstK ? s.a : s.b; }, lui = function (s) { return aEstK ? s.b : s.a; };
+        var jeux = sets.reduce(function (acc, s) { return acc + s.a + s.b; }, 0);
+        var premierSet = sets.length ? moi(sets[0]) > lui(sets[0]) : null;
+        var setsPerdus = sets.filter(function (s) { return lui(s) > moi(s); }).length;
+        var tt = T[String(e.tournament_key)] || {};
+        return { gagne: gagne, nbSets: sets.length, jeux: jeux, tb: sets.some(function (s) { return s.tb; }), premierSet: premierSet, concede: setsPerdus > 0, surface: tt.surface || null, adv: aEstK ? e.event_second_player : e.event_first_player, tournoi: e.tournament_name, date: e.event_date };
+      });
+    };
+    var EVENEMENTS = [
+      { id: 'gagne', label: 'Gagne le match', f: function (m) { return m.gagne; } },
+      { id: 'set1', label: 'Gagne le 1er set', f: function (m) { return m.premierSet === true; } },
+      { id: 'sets3', label: 'Match en 3 sets', f: function (m) { return m.nbSets >= 3; } },
+      { id: 'sets2', label: 'Match en 2 sets', f: function (m) { return m.nbSets === 2; } },
+      { id: 'tb', label: 'Tie-break disputé', f: function (m) { return m.tb; } },
+      { id: 'jeux', label: 'Plus de 21,5 jeux', f: function (m) { return m.jeux > 21.5; } },
+      { id: 'concede', label: 'Concède un set', f: function (m) { return m.concede; } }
+    ];
+    var freq = function (L, ev) { var n = L.length; if (!n) return { n: 0, x: 0, p: 0 }; var x = L.filter(ev.f).length; return { n: n, x: x, p: Math.round(x / n * 100) }; };
+    var chipsForme = function (L, nb) {
+      return h('div', { style: { display: 'flex', gap: 3, flexWrap: 'wrap' } }, L.slice(0, nb || 10).map(function (m, i) {
+        return h('span', { key: i, style: { width: 22, height: 22, borderRadius: 5, background: m.gagne ? '#22C55E' : '#EF4444', color: '#fff', fontSize: 10, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, m.gagne ? 'V' : 'D');
+      }));
+    };
+    var carteTendances = function (LA, LB) {
+      var enTete = function (nom, L, couleur) {
+        var v = L.filter(function (m) { return m.gagne; }).length;
+        var jm = L.length ? (L.reduce(function (a, m) { return a + m.jeux; }, 0) / L.length).toFixed(1).replace('.', ',') : '–';
+        return h('div', { style: { padding: '10px 14px 6px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 800, color: t.text } }, h('span', { style: { width: 8, height: 8, borderRadius: '50%', background: couleur } }), nom),
+            h('div', { style: { fontSize: 10.5, fontWeight: 700, color: t.textSec } }, v + 'V ' + (L.length - v) + 'D · ' + jm + ' jeux/match')),
+          chipsForme(L));
+      };
+      var ligne = function (ev, i) {
+        var a = freq(LA, ev), b = freq(LB, ev);
+        var badge = function (r, couleur) { return h('div', { style: { width: 44, flexShrink: 0, background: couleur, color: '#fff', borderRadius: 7, padding: '3px 0', textAlign: 'center', lineHeight: 1.05 } }, h('div', { style: { fontSize: 11, fontWeight: 900 } }, r.p + '%'), h('div', { style: { fontSize: 8.5, fontWeight: 700, opacity: .9 } }, r.x + '/' + r.n)); };
+        return h('div', { key: ev.id, style: { padding: '8px 14px', borderTop: '1px solid ' + t.divider } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } }, badge(a, accent), h('div', { style: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: 700, color: t.text } }, ev.label), badge(b, '#F59E0B')),
+          h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
+            h('div', { style: { flex: 1, height: 4, background: t.cardAlt, borderRadius: 2, overflow: 'hidden', display: 'flex', justifyContent: 'flex-end' } }, h('div', { style: { width: a.p + '%', background: accent } })),
+            h('div', { style: { flex: 1, height: 4, background: t.cardAlt, borderRadius: 2, overflow: 'hidden' } }, h('div', { style: { width: b.p + '%', height: '100%', background: '#F59E0B' } }))));
+      };
+      return h(Carte, { t: t },
+        h('div', { style: { padding: '12px 14px 4px' } },
+          h('div', { style: { fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase' } }, 'Tendances des 2 joueurs'),
+          h('div', { style: { fontSize: 11, color: t.textSec, marginTop: 3, lineHeight: 1.4 } }, 'Fréquence de chaque événement sur les ', h('span', { style: { fontWeight: 800, color: t.text } }, '10 derniers matchs'), ' de chaque joueur.')),
+        enTete(n1, LA, accent), enTete(n2, LB, '#F59E0B'),
+        EVENEMENTS.map(ligne),
+        h('div', { style: { padding: '8px 14px 12px', fontSize: 9.5, color: t.textTer, lineHeight: 1.4 } }, h('span', { style: { color: '#22C55E', fontWeight: 800 } }, 'V'), ' Victoire · ', h('span', { style: { color: '#EF4444', fontWeight: 800 } }, 'D'), ' Défaite. Une fréquence élevée ne garantit pas le résultat.'));
     };
 
     // ── onglet Pronostics ──
     var rendrePronos = function () {
-      if (!cotes.ok || !h2h.ok) return h(Vide, { t: t }, 'Calcul du pronostic…');
+      if (!cotes.ok || !h2h.ok) return h(R.Fragment, null, bandeauANJ(), h(Vide, { t: t }, 'Calcul des pronostics…'));
+      var LA = analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = analyser(h2h.d && h2h.d.secondPlayerResults, k2);
       var w1 = meilleures('Home/Away', 'Home'), w2 = meilleures('Home/Away', 'Away');
-      if (!w1 || !w2) return h(Vide, { t: t }, 'Pronostic indisponible sans cotes sur ce match.');
-      var pCotes = (1 / w1.o) / (1 / w1.o + 1 / w2.o);
+      var pCotes = w1 && w2 ? (1 / w1.o) / (1 / w1.o + 1 / w2.o) : null;
       var bh = bilanH2H();
       var pH2H = bh.n ? (bh.wa + 1) / (bh.n + 2) : 0.5;
-      var forme = function (liste, k) { var w = 0, n = 0; (liste || []).slice(0, 10).forEach(function (e) { n++; var aEstK = String(e.first_player_key) === String(k); if ((aEstK && e.event_winner === 'First Player') || (!aEstK && e.event_winner === 'Second Player')) w++; }); return { w: w, n: n }; };
-      var f1 = forme(h2h.d.firstPlayerResults, k1), f2 = forme(h2h.d.secondPlayerResults, k2);
-      var pForme = (f1.n && f2.n) ? (f1.w / f1.n + 0.5) / ((f1.w / f1.n + 0.5) + (f2.w / f2.n + 0.5)) : 0.5;
+      var fa = freq(LA, EVENEMENTS[0]), fb = freq(LB, EVENEMENTS[0]);
+      var pForme = (fa.n && fb.n) ? (fa.p + 50) / ((fa.p + 50) + (fb.p + 50)) : 0.5;
       var pRang = (r1 && r2) ? (1 / r1.place) / (1 / r1.place + 1 / r2.place) : 0.5;
-      var p = 0.55 * pCotes + 0.2 * pH2H + 0.15 * pForme + 0.10 * pRang;
-      var favA = p >= 0.5; var pf = favA ? p : 1 - p;
-      var nomFav = favA ? n1 : n2, coteFav = favA ? w1 : w2;
-      var freq = Math.max(5, Math.min(10, Math.round(pf * 10)));
-      var pick, cotePick, note;
-      if (coteFav.o >= 1.3) { pick = 'Vainqueur : ' + nomFav; cotePick = coteFav; }
-      else {
-        var under = meilleuresOU('Over/Under', '2.5', 'Under');
-        if (under && under.o >= 1.3) { pick = nomFav + ' gagne en 2 sets'; cotePick = under; note = 'La cote vainqueur (' + coteFav.o.toFixed(2) + ') est sous notre seuil de 1,30 : on joue le score en sets.'; }
-        else { pick = 'Vainqueur : ' + nomFav; cotePick = coteFav; note = 'Cote sous notre seuil de 1,30 : à combiner plutôt qu’à jouer seule.'; }
+      var p = pCotes != null ? 0.55 * pCotes + 0.2 * pH2H + 0.15 * pForme + 0.10 * pRang : 0.4 * pH2H + 0.35 * pForme + 0.25 * pRang;
+      var favA = p >= 0.5, nomFav = favA ? n1 : n2, nomOut = favA ? n2 : n1;
+      var surfaceFr = surface ? (SURF_FR[surface] || surface) : null;
+      var surSurface = function (L) { if (!surface) return null; var g = SURF_GROUPE[surface]; var s = L.filter(function (m) { return m.surface && SURF_GROUPE[m.surface] === g; }); return s.length ? s.filter(function (m) { return m.gagne; }).length + '/' + s.length : null; };
+      var sa = surSurface(LA), sb = surSurface(LB);
+
+      // Candidats : cote >= 1,30 et frequence >= 7/10 (regle NinjaScores), tries par frequence.
+      var s1 = meilleures('Home/Away (1st Set)', 'Home'), s2 = meilleures('Home/Away (1st Set)', 'Away');
+      var over25 = meilleuresOU('Over/Under', '2.5', 'Over'), under25 = meilleuresOU('Over/Under', '2.5', 'Under');
+      var mkG = marche('Over/Under by Games in Match') || {}; var lignesG = Object.keys(mkG['Over/Under by Games in Match Over'] || {}).filter(function (l) { return /\.5$/.test(l); }).sort(function (a, b) { return a - b; });
+      var ligneG = lignesG.filter(function (l) { return Math.abs(l - 21.5) < 1; })[0] || lignesG[Math.floor(lignesG.length / 2)];
+      var fusion = function (ev) { var a = freq(LA, ev), b = freq(LB, ev); return { x: a.x + b.x, n: a.n + b.n }; };
+      var cand = [];
+      var ajouter = function (label, sousLabel, cote, x, n) { if (!cote || !n) return; cand.push({ label: label, sous: sousLabel, cote: cote, x: x, n: n, r: x / n }); };
+      var fav = favA ? fa : fb, favCote = favA ? w1 : w2;
+      ajouter(nomFav + ' gagne', fav.x + '/' + fav.n + ' — 10 derniers matchs', favCote, fav.x, fav.n);
+      var fOut = favA ? fb : fa; ajouter(nomOut + ' gagne', fOut.x + '/' + fOut.n + ' — 10 derniers matchs', favA ? w2 : w1, fOut.x, fOut.n);
+      var f1s = favA ? freq(LA, EVENEMENTS[1]) : freq(LB, EVENEMENTS[1]); ajouter(nomFav + ' gagne le 1er set', f1s.x + '/' + f1s.n + ' — 10 derniers matchs', favA ? s1 : s2, f1s.x, f1s.n);
+      var f3 = fusion(EVENEMENTS[2]); ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — 10 derniers matchs de chaque joueur', over25, f3.x, f3.n);
+      var f2 = fusion(EVENEMENTS[3]); ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — 10 derniers matchs de chaque joueur', under25, f2.x, f2.n);
+      if (ligneG) {
+        var evG = { f: function (m) { return m.jeux > parseFloat(ligneG); } }, evGm = { f: function (m) { return m.nbSets && m.jeux < parseFloat(ligneG); } };
+        var fg = fusion(evG); ajouter('Plus de ' + ligneG.replace('.', ',') + ' jeux', fg.x + '/' + fg.n + ' — 10 derniers matchs de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Over'), fg.x, fg.n);
+        var fgm = fusion(evGm); ajouter('Moins de ' + ligneG.replace('.', ',') + ' jeux', fgm.x + '/' + fgm.n + ' — 10 derniers matchs de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Under'), fgm.x, fgm.n);
       }
-      var raison = function (lib, val, i) { return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', padding: '9px 14px', borderTop: i ? '1px solid ' + t.divider : 'none', fontSize: 12.5 } }, h('span', { style: { color: t.textSec, fontWeight: 600 } }, lib), h('span', { style: { color: t.text, fontWeight: 800 } }, val)); };
+      var retenus = cand.filter(function (c) { return c.cote.o >= 1.3 && c.r >= 0.7; }).sort(function (a, b) { return (b.r - a.r) || (b.cote.o - a.cote.o); }).slice(0, 4);
+      var note = function (r) { return Math.round(r * 20) / 2; };
+      var badgeCote = function (o) { return h('div', { style: { background: accent, borderRadius: 10, padding: '10px 16px', textAlign: 'center', minWidth: 80, flexShrink: 0, boxShadow: '0 2px 8px ' + accent + '55' } }, h('div', { style: { fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1 } }, o.toFixed(2))); };
+      var barreConfiance = function (score) { return h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 } }, h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 1 } }, h('span', { style: { fontSize: 18, fontWeight: 900, color: t.text } }, String(score).replace('.', ',')), h('span', { style: { fontSize: 11, color: t.textSec } }, '/10')), h('div', { style: { display: 'flex', gap: 2 } }, Array.apply(null, Array(10)).map(function (_, i) { return h('div', { key: i, style: { width: 6, height: 8, borderRadius: 2, background: i < Math.round(score) ? accent : t.border } }); })), h('div', { style: { fontSize: 8, fontWeight: 700, color: t.textTer, textTransform: 'uppercase', letterSpacing: .5 } }, 'Fréquence')); };
+
       return h(R.Fragment, null,
-        h('div', { style: { background: 'linear-gradient(135deg,' + accent + ',#3B1FA8)', color: '#fff', borderRadius: 16, padding: '16px', marginBottom: 14, boxShadow: t.shadowCard } },
-          h('div', { style: { fontSize: 10.5, fontWeight: 800, letterSpacing: 1, opacity: .85 } }, 'PICK DU NINJA'),
-          h('div', { style: { fontSize: 18, fontWeight: 900, margin: '4px 0 8px' } }, pick),
-          h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-            h('span', { style: { background: 'rgba(255,255,255,.18)', borderRadius: 8, padding: '4px 10px', fontSize: 13, fontWeight: 900 } }, 'Cote ' + cotePick.o.toFixed(2)),
-            h('span', { style: { background: 'rgba(255,255,255,.18)', borderRadius: 8, padding: '4px 10px', fontSize: 13, fontWeight: 900 } }, 'Fréquence ' + freq + '/10'),
-            h('span', { style: { fontSize: 11, opacity: .85 } }, cotePick.b)),
-          note ? h('div', { style: { fontSize: 11.5, marginTop: 8, opacity: .9, lineHeight: 1.4 } }, note) : null),
-        h(Titre, { t: t }, 'Pourquoi'),
+        bandeauANJ(),
+        carteTendances(LA, LB),
         h(Carte, { t: t },
-          raison('Probabilité selon les cotes', Math.round(pCotes * 100) + ' % ' + n1, 0),
-          raison('Tête-à-tête', bh.n ? bh.wa + ' - ' + bh.wb : 'Première confrontation', 1),
-          raison('Forme (10 derniers)', f1.w + '/' + f1.n + ' contre ' + f2.w + '/' + f2.n, 2),
-          raison('Classement', (r1 ? 'n°' + r1.place : '–') + ' contre ' + (r2 ? 'n°' + r2.place : '–'), 3)),
-        h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Pronostic calculé automatiquement, sans garantie. Jouer comporte des risques. Réservé aux +18 ans.'));
+          h('div', { style: { padding: '12px 14px' } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 6 } }, 'Analyse du match'),
+            h('div', { style: { fontSize: 12.5, color: t.text, lineHeight: 1.5, marginBottom: 10 } },
+              pCotes != null ? nomFav + ' part favori avec ' + Math.round((favA ? pCotes : 1 - pCotes) * 100) + ' % de probabilité implicite. ' : nomFav + ' part favori selon nos indicateurs. ',
+              bh.n ? 'Le tête-à-tête est ' + (bh.wa === bh.wb ? 'équilibré (' + bh.wa + ' - ' + bh.wb + ')' : 'en faveur de ' + (bh.wa > bh.wb ? n1 : n2) + ' (' + Math.max(bh.wa, bh.wb) + ' - ' + Math.min(bh.wa, bh.wb) + ')') + '. ' : 'Première confrontation entre les deux joueurs. ',
+              (surfaceFr && (sa || sb)) ? 'Sur ' + surfaceFr.toLowerCase() + ', ' + n1 + ' est à ' + (sa || '–') + ' et ' + n2 + ' à ' + (sb || '–') + ' sur les 10 derniers matchs.' : ''),
+            [['🎾', 'Surface', surfaceFr ? surfaceFr + (tour ? ' · ' + tour : '') : (tour || 'Tournoi ' + tournoi)],
+             ['📊', 'Probabilités', pCotes != null ? n1 + ' ' + Math.round(pCotes * 100) + ' % · ' + n2 + ' ' + Math.round((1 - pCotes) * 100) + ' %' : 'Cotes indisponibles'],
+             ['🏆', 'Classement', (r1 ? 'n°' + r1.place : '–') + ' contre ' + (r2 ? 'n°' + r2.place : '–') + ' ' + circuit]].map(function (b, i) {
+              return h('div', { key: i, style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: '6px 0', borderTop: i ? '1px solid ' + t.divider : 'none' } },
+                h('span', { style: { fontSize: 16, fontFamily: EMOJI, flexShrink: 0 } }, b[0]),
+                h('div', null, h('div', { style: { fontSize: 12, fontWeight: 800, color: t.text } }, b[1]), h('div', { style: { fontSize: 11.5, color: t.textSec } }, b[2])));
+            }))),
+        h('div', { style: { background: 'linear-gradient(135deg,' + accent + ',#2E1065)', borderRadius: '14px 14px 0 0', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+          h('div', { style: { fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: .5, textTransform: 'uppercase' } }, 'Nos pronostics'),
+          h('div', { style: { fontSize: 9.5, color: 'rgba(255,255,255,.75)', textAlign: 'right' } }, 'cote ≥ 1,30', h('br'), 'fréquence ≥ 7/10')),
+        retenus.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10, marginBottom: 14 } }, retenus.map(function (c, i) {
+          return h('div', { key: i, style: { background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, overflow: 'hidden' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' } },
+              h('div', { style: { flex: 1, minWidth: 0 } }, h('div', { style: { fontSize: 14, fontWeight: 800, color: t.text } }, c.label), h('div', { style: { fontSize: 11, color: t.textSec, marginTop: 3 } }, c.sous), h('div', { style: { fontSize: 10, color: t.textTer, marginTop: 2 } }, c.cote.b)),
+              badgeCote(c.cote.o), barreConfiance(note(c.r))),
+            bandeParier(i));
+        })) : h(Carte, { t: t, style: { borderRadius: '0 0 14px 14px', borderTop: 'none' } }, h('div', { style: { padding: '16px 14px', fontSize: 12.5, color: t.textSec, lineHeight: 1.5 } }, 'Aucun pronostic ne remplit nos critères sur ce match (cote ≥ 1,30 et fréquence ≥ 7/10 sur les 10 derniers matchs).')),
+        h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Pronostics calculés automatiquement à partir des cotes, du tête-à-tête, de la forme et du classement, sans garantie. Jouer comporte des risques. Réservé aux +18 ans.'));
     };
 
     // ── onglet Tete-a-tete ──
     var sf = R.useState('tous'), filtre = sf[0], setFiltre = sf[1];
+    var sj = R.useState('a'), joueurTend = sj[0], setJoueurTend = sj[1];
     var rendreTaT = function () {
       if (!h2h.ok) return h(Vide, { t: t }, 'Chargement…');
+      var LA = analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = analyser(h2h.d && h2h.d.secondPlayerResults, k2);
       var liste = ((h2h.d && h2h.d.H2H) || []).slice().sort(function (a, b) { return String(b.event_date).localeCompare(String(a.event_date)); });
       var surfDe = function (e) { var tt = T[String(e.tournament_key)]; return tt && tt.surface ? tt.surface : null; };
       var filtree = liste.filter(function (e) { if (filtre === 'tous') return true; var s = surfDe(e); return s && SURF_GROUPE[s] === filtre; });
       var wa = 0, wb = 0;
       filtree.forEach(function (e) { var aEstK1 = String(e.first_player_key) === String(k1); var w1 = e.event_winner === 'First Player'; if ((aEstK1 && w1) || (!aEstK1 && !w1)) wa++; else wb++; });
-      var ligneForme = function (e, k) {
-        var aEstK = String(e.first_player_key) === String(k);
-        var adv = aEstK ? e.event_second_player : e.event_first_player;
-        var gagne = (aEstK && e.event_winner === 'First Player') || (!aEstK && e.event_winner === 'Second Player');
-        return h('div', { key: e.event_key, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderTop: '1px solid ' + t.divider, fontSize: 12 } },
-          h('span', { style: { width: 20, height: 20, borderRadius: 6, background: gagne ? '#10B981' : '#EF4444', color: '#fff', fontSize: 10, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, gagne ? 'V' : 'D'),
-          h('div', { style: { flex: 1, minWidth: 0 } }, h('div', { style: { fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, adv), h('div', { style: { fontSize: 10.5, color: t.textTer } }, e.tournament_name + ' · ' + tourFr(e.tournament_round))),
-          h('span', { style: { fontWeight: 800, color: t.textSec, flexShrink: 0 } }, e.event_final_result));
-      };
+      var L = joueurTend === 'a' ? LA : LB, nomT = joueurTend === 'a' ? n1 : n2, photoT = joueurTend === 'a' ? photo1 : photo2;
+      var pilule = function (id, nom) { var on = joueurTend === id; return h('button', { key: id, onClick: function () { setJoueurTend(id); }, style: { border: 'none', borderRadius: 999, padding: '5px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', background: on ? accent : t.cardAlt, color: on ? '#fff' : t.textSec, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, nom); };
+      var dateCourte = function (iso) { try { var d = new Date(iso + 'T12:00:00Z'); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + '/' + String(d.getUTCFullYear()).slice(2); } catch (e) { return iso; } };
       return h(R.Fragment, null,
-        h(Chips, { t: t, accent: accent, valeur: filtre, onChange: setFiltre, options: [['tous', 'Toutes surfaces'], ['dur', 'Dur'], ['terre', 'Terre battue'], ['gazon', 'Gazon']] }),
         h(Carte, { t: t },
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px' } },
-            h('div', { style: { flex: 1, textAlign: 'center' } }, h('div', { style: { fontSize: 26, fontWeight: 900, color: wa > wb ? accent : t.text } }, wa), h('div', { style: { fontSize: 11, fontWeight: 700, color: t.textSec } }, n1)),
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: t.textTer } }, filtree.length ? filtree.length + ' match' + (filtree.length > 1 ? 's' : '') : 'Aucune confrontation'),
-            h('div', { style: { flex: 1, textAlign: 'center' } }, h('div', { style: { fontSize: 26, fontWeight: 900, color: wb > wa ? accent : t.text } }, wb), h('div', { style: { fontSize: 11, fontWeight: 700, color: t.textSec } }, n2))),
-          filtree.map(function (e) {
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '12px 14px 8px' } },
+            h('div', null, h('div', { style: { fontSize: 13.5, fontWeight: 800, color: t.text } }, 'Tendances en cours'), h('div', { style: { fontSize: 10.5, color: t.textSec } }, 'Sur les 10 derniers matchs')),
+            h('div', { style: { display: 'flex', gap: 4 } }, pilule('a', n1), pilule('b', n2))),
+          EVENEMENTS.map(function (ev, i) {
+            var r = freq(L, ev);
+            return h('div', { key: ev.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderTop: '1px solid ' + t.divider } },
+              h(Avatar, { nom: nomT, photo: photoT, taille: 22, t: t, accent: accent }),
+              h('div', { style: { flex: 1, textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: t.text } }, ev.label),
+              h('div', { style: { fontSize: 13, fontWeight: 900, color: r.p >= 70 ? accent : t.text, minWidth: 34, textAlign: 'right' } }, r.x + '/' + r.n));
+          })),
+        h(Carte, { t: t },
+          h('div', { style: { padding: '12px 14px 4px', fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase' } }, 'Forme récente'),
+          [[n1, photo1, LA], [n2, photo2, LB]].map(function (c, i) {
+            return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px 10px' } }, h(Avatar, { nom: c[0], photo: c[1], taille: 30, t: t, accent: accent }), chipsForme(c[2], 8));
+          })),
+        h('div', { style: { display: 'flex', gap: 6, background: t.card, border: '1px solid ' + t.border, borderRadius: 12, padding: 4, marginBottom: 14 } },
+          [['tous', 'Global'], ['dur', 'Dur'], ['terre', 'Terre battue'], ['gazon', 'Gazon']].map(function (o) {
+            var on = o[0] === filtre;
+            return h('button', { key: o[0], onClick: function () { setFiltre(o[0]); }, style: { flex: 1, border: 'none', borderRadius: 9, padding: '8px 4px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', background: on ? accent : 'transparent', color: on ? '#fff' : t.textSec } }, o[1]);
+          })),
+        h(Carte, { t: t },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px 6px' } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase' } }, 'Confrontations directes'),
+            h('div', { style: { fontSize: 11.5, fontWeight: 800, color: t.textSec } }, filtree.length ? wa + ' - ' + wb : '')),
+          filtree.length ? filtree.map(function (e) {
             var aEstK1 = String(e.first_player_key) === String(k1);
             var gagneA = (aEstK1 && e.event_winner === 'First Player') || (!aEstK1 && e.event_winner === 'Second Player');
-            var s = surfDe(e); var tt = T[String(e.tournament_key)] || {};
+            var s = surfDe(e);
+            var sets = (e.scores || []).filter(function (q) { var a = String(q.score_first || ''), b = String(q.score_second || ''); return a && b && !(a === '0' && b === '0'); });
+            var sA = sets.filter(function (q) { var a = parseInt(q.score_first, 10), b = parseInt(q.score_second, 10); return aEstK1 ? a > b : b > a; }).length;
+            var scoreSets = sA + '-' + (sets.length - sA);
             var tb = function (v) { return String(v).replace(/^(\d+)\.(\d+)$/, '$1($2)'); };
-            var score = (e.scores || []).map(function (q) { var a = q.score_first, b = q.score_second; if (a == null || b == null || a === '' || b === '' || (String(a) === '0' && String(b) === '0')) return null; return aEstK1 ? tb(a) + '-' + tb(b) : tb(b) + '-' + tb(a); }).filter(Boolean).join('\u2002');
-            return h('div', { key: e.event_key, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderTop: '1px solid ' + t.divider } },
-              h('div', { style: { width: 34, fontSize: 11, fontWeight: 800, color: t.textSec, flexShrink: 0 } }, annee(e.event_date)),
-              tt.pays ? h('span', { style: { fontSize: 16, fontFamily: EMOJI, flexShrink: 0 } }, U.drapeau(tt.pays)) : null,
-              h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, (gagneA ? n1 : n2) + ' gagne'),
-                h('div', { style: { fontSize: 10.5, color: t.textTer } }, [e.tournament_name, tourFr(e.tournament_round), s ? SURF_FR[s] : null].filter(Boolean).join(' · '))),
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: t.textSec, flexShrink: 0 } }, score || e.event_final_result));
-          })),
-        h(Titre, { t: t }, 'Forme récente'),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
-          [[n1, h2h.d && h2h.d.firstPlayerResults, k1], [n2, h2h.d && h2h.d.secondPlayerResults, k2]].map(function (col, i) {
-            return h(Carte, { key: i, t: t, style: { marginBottom: 0 } },
-              h('div', { style: { padding: '8px 12px', fontSize: 12, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, col[0]),
-              (col[1] || []).slice(0, 8).map(function (e) { return ligneForme(e, col[2]); }));
-          })));
+            var detail = sets.map(function (q) { return aEstK1 ? tb(q.score_first) + '-' + tb(q.score_second) : tb(q.score_second) + '-' + tb(q.score_first); }).join(' ');
+            return h('div', { key: e.event_key, style: { padding: '9px 14px', borderTop: '1px solid ' + t.divider } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { fontSize: 10, color: t.textTer, width: 52, flexShrink: 0 } }, dateCourte(e.event_date)),
+                h('span', { style: { flex: 1, textAlign: 'right', fontSize: 12, fontWeight: gagneA ? 800 : 500, color: gagneA ? t.text : t.textSec, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, n1),
+                h(Avatar, { nom: n1, photo: photo1, taille: 18, t: t, accent: accent }),
+                h('span', { style: { background: t.cardAlt, borderRadius: 6, padding: '3px 8px', fontSize: 12, fontWeight: 900, color: t.text, flexShrink: 0 } }, scoreSets),
+                h(Avatar, { nom: n2, photo: photo2, taille: 18, t: t, accent: accent }),
+                h('span', { style: { flex: 1, fontSize: 12, fontWeight: !gagneA ? 800 : 500, color: !gagneA ? t.text : t.textSec, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, n2)),
+              h('div', { style: { fontSize: 10.5, color: t.textTer, marginTop: 3, paddingLeft: 60 } }, [e.tournament_name, tourFr(e.tournament_round), s ? SURF_FR[s] : null, detail].filter(Boolean).join(' · ')));
+          }) : h(Vide, { t: t }, filtre === 'tous' ? 'Aucune confrontation directe' : 'Aucune confrontation sur cette surface')));
     };
 
     // ── onglet Tableau ──
