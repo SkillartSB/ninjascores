@@ -396,7 +396,7 @@
         (s1 || s2) ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Vainqueur du 1er set'), h('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } }, carteCote(n1, '1er set', s1, ps1, 's1'), carteCote(n2, '1er set', s2, ps1 != null ? 100 - ps1 : null, 's2'))) : null,
         lignesS.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Nombre de sets'), tableauOU('Over/Under', lignesS, 'sets')) : null,
         lignesG.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Nombre de jeux'), tableauOU('Over/Under by Games in Match', lignesG, 'jeux')) : null,
-        lignesSE.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Score exact (sets)'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } }, lignesSE.map(function (k) { var b = meilleureDe(scoreExact[k]); return h('div', { key: k, style: { background: t.card, borderRadius: 12, border: '1px solid ' + t.border, padding: '10px 6px', textAlign: 'center' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: t.text } }, k.replace(/\s/g, '')), h('div', { style: { fontSize: 15, fontWeight: 900, color: accent, marginTop: 2 } }, b ? b.o.toFixed(2) : '–')); }))) : null,
+        lignesSE.length ? h(R.Fragment, null, bandeOffre(i++), titreMarche('Score exact (sets)'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 } }, lignesSE.map(function (k) { var b = meilleureDe(scoreExact[k]); return h('div', { key: k, style: { background: t.card, borderRadius: 12, border: '1px solid ' + t.border, padding: '10px 6px', textAlign: 'center' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: t.text } }, k.replace(/\s/g, '').replace(':', '-')), h('div', { style: { fontSize: 15, fontWeight: 900, color: accent, marginTop: 2 } }, b ? b.o.toFixed(2) : '–')); }))) : null,
         h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Meilleure cote parmi les bookmakers suivis (source ' + ((w1 && w1.b) || 'Pinnacle') + ', 45 min de délai possible). Jouer comporte des risques : endettement, isolement, dépendance. Appelez le 09 74 75 13 13 (appel non surtaxé).'));
     };
 
@@ -484,7 +484,7 @@
       var ajouter = function (label, sousLabel, cote, x, n) { if (!cote || !n) return; cand.push({ label: label, sous: sousLabel, cote: cote, x: x, n: n, r: x / n }); };
       var fav = favA ? fa : fb, favCote = favA ? w1 : w2;
       ajouter(nomFav + ' gagne', fav.x + '/' + fav.n + ' — 10 derniers matchs', favCote, fav.x, fav.n);
-      var fOut = favA ? fb : fa; ajouter(nomOut + ' gagne', fOut.x + '/' + fOut.n + ' — 10 derniers matchs', favA ? w2 : w1, fOut.x, fOut.n);
+      // Un seul vainqueur propose (le favori de nos indicateurs) : pas de picks contradictoires.
       var f1s = favA ? freq(LA, EVENEMENTS[1]) : freq(LB, EVENEMENTS[1]); ajouter(nomFav + ' gagne le 1er set', f1s.x + '/' + f1s.n + ' — 10 derniers matchs', favA ? s1 : s2, f1s.x, f1s.n);
       var f3 = fusion(EVENEMENTS[2]); ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — 10 derniers matchs de chaque joueur', over25, f3.x, f3.n);
       var f2 = fusion(EVENEMENTS[3]); ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — 10 derniers matchs de chaque joueur', under25, f2.x, f2.n);
