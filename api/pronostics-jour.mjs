@@ -109,7 +109,7 @@ async function enFile(taches, largeur) {
 const pct = (v) => parseInt(String(v || '0'), 10) || 0;
 const arrondi = (x) => Math.round(x * 100) / 100;
 
-async function pronosCalcules(dejaFixtures) {
+export async function pronosCalcules(dejaFixtures) {
   const jour = new Date().toISOString().slice(0, 10);
   const [cal, cj] = await Promise.all([proxy('fixtures&date=' + jour), proxy('cotes-jour&date=' + jour)]);
   const cotes = (cj && cj.matchs) || {};
@@ -126,7 +126,9 @@ async function pronosCalcules(dejaFixtures) {
     if (!p || !p.winner || !p.percent) return;
     const dom = f.teams.home, ext = f.teams.away;
     const pc = { home: pct(p.percent.home), draw: pct(p.percent.draw), away: pct(p.percent.away) };
-    const coteDom = pc.home >= pc.away;                  // camp favori
+    // Le favori est celui que designe l'API (winner.id), pas un max maison.
+    if (p.winner.id !== dom.id && p.winner.id !== ext.id) return;
+    const coteDom = p.winner.id === dom.id;
     const nomFav = coteDom ? dom.name : ext.name;
     const lot = (cotes[f.fixture.id] || []).find((b) => b && b.c1 && b.c2) || null;
     const c1 = lot ? parseFloat(lot.c1) : 0, cN = lot ? parseFloat(lot.cN) : 0, c2 = lot ? parseFloat(lot.c2) : 0;
@@ -141,7 +143,13 @@ async function pronosCalcules(dejaFixtures) {
       prob = coteDom ? pc.home : pc.away;
       odds = (coteDom ? c1 : c2) || null;
     }
-    if (!prob) return;
+    // Une victoire seche a moins de 50 % n'est pas un pronostic, c'est un
+    // pari ; la double chance, plus sure, plafonne a 4/5 pour ne pas ecraser
+    // les vrais coups de coeur des articles.
+    if (!prob || (!p.win_or_draw && prob < 50)) return;
+    const score = p.win_or_draw
+      ? (prob >= 80 ? 4 : prob >= 70 ? 3 : 2)
+      : (prob >= 70 ? 5 : prob >= 60 ? 4 : 3);
     sortie.push({
       ligue: NOM_PAR_ID[f.league.id],
       pick: {
@@ -149,7 +157,7 @@ async function pronosCalcules(dejaFixtures) {
         fixtureId: f.fixture.id,
         match: dom.name + ' - ' + ext.name,
         pick, odds, prob,
-        score: prob >= 70 ? 5 : prob >= 60 ? 4 : prob >= 50 ? 3 : 2,
+        score,
         slug: null,
         heure: f.fixture.date,
         langue: 'fr',
