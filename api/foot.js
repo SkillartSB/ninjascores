@@ -314,9 +314,12 @@ export default async function handler(req, res) {
     // Appels internes via le proxy lui-même (recursion HTTP profondeur 1,
     // même mécanique que api/prechauffe.js) : chaque page profite du cache
     // Redis/CDN existant et des compteurs.
+    // 25 s : une page « odds par championnat » pese 1,3 Mo (Premier League,
+    // 9 bookmakers) — a 20 s elle tombait parfois en timeout, et l'agregat
+    // partait en cache 15 min SANS la Premier League (constat du 12/09).
     const interne = async (chemin) => {
       try {
-        const r = await fetch('https://ninjascores.com/api/foot/?path=' + chemin, { signal: AbortSignal.timeout(20000) });
+        const r = await fetch('https://ninjascores.com/api/foot/?path=' + chemin, { signal: AbortSignal.timeout(25000) });
         if (!r.ok) return null;
         return await r.json();
       } catch (e) { return null; }
@@ -350,7 +353,7 @@ export default async function handler(req, res) {
     absorber(premiere);
     const totalPages = (premiere && premiere.paging && premiere.paging.total) || 1;
     const suite = [];
-    for (let p = 2; p <= Math.min(totalPages, 25); p++) suite.push(() => interne('odds&date=' + date + '&page=' + p));
+    for (let p = 2; p <= Math.min(totalPages, 40); p++) suite.push(() => interne('odds&date=' + date + '&page=' + p));
     (await enFile(suite, 8)).forEach(absorber);
 
     // Rattrapage par championnat : l'appel par date est incomplet (constat du
@@ -364,15 +367,32 @@ export default async function handler(req, res) {
       const k = f.league.id + ':' + f.league.season;
       if (!parLigue.has(k)) parLigue.set(k, { id: f.league.id, season: f.league.season });
     });
-    const rattrapage = [...parLigue.values()].map((l) => () => interne('odds&date=' + date + '&league=' + l.id + '&season=' + l.season));
-    (await enFile(rattrapage, 8)).forEach(absorber);
+    // Grands championnats d'abord : si le fournisseur tousse, ce sont eux
+    // qu'il faut avoir. Puis 4 appels de front (pas 8 : chaque reponse est
+    // lourde, on debordait la minute et les timeouts), et UNE seconde chance
+    // par championnat rate. Un rattrapage qui echoue quand meme raccourcit la
+    // vie de l'agregat a 2 min au lieu de 15, pour que le trou se referme au
+    // prochain visiteur plutot qu'un quart d'heure plus tard.
+    const MAJEURES = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 144, 179, 1, 4, 9, 6, 13, 11, 12, 20, 17, 16, 15, 531, 71, 128, 253, 262, 307, 98, 292, 40, 62, 136, 79, 141];
+    const rangL = (id) => { const i = MAJEURES.indexOf(id); return i < 0 ? 999 : i; };
+    const ligues = [...parLigue.values()].sort((a, b) => rangL(a.id) - rangL(b.id));
+    let rattrapageRate = 0;
+    const rattrapage = ligues.map((l) => async () => {
+      const chemin = 'odds&date=' + date + '&league=' + l.id + '&season=' + l.season;
+      let rep = await interne(chemin);
+      if (!rep) { await new Promise((r) => setTimeout(r, 1500)); rep = await interne(chemin); }
+      if (!rep) rattrapageRate++;
+      return rep;
+    });
+    (await enFile(rattrapage, 4)).forEach(absorber);
+    const ttlAgg = rattrapageRate ? 120 : TTL_AGREGAT;
 
-    const corps = JSON.stringify({ date, matchs });
+    const corps = JSON.stringify({ date, matchs, incomplet: rattrapageRate || undefined });
     const serialise = compresser(corps);
     if (serialise.length < REDIS_VAL_MAX) {
-      await redisPipeline([['SETEX', cle, TTL_AGREGAT, serialise]]);
+      await redisPipeline([['SETEX', cle, ttlAgg, serialise]]);
     }
-    res.setHeader('Cache-Control', `public, s-maxage=${TTL_AGREGAT}, stale-while-revalidate=3600`);
+    res.setHeader('Cache-Control', `public, s-maxage=${ttlAgg}, stale-while-revalidate=600`);
     res.setHeader('X-Cache-Foot', 'agrege');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.status(200).send(corps);
