@@ -34,7 +34,7 @@
     if (depuisFin === 1) return 'Demi-finales';
     if (depuisFin === 2) return 'Quarts de finale';
     if (depuisFin === 3) return 'Huitièmes';
-    return (idx + 1) + 'er tour'.replace('1er', idx === 0 ? '1er' : (idx + 1) + 'e');
+    return idx === 0 ? '1er tour' : (idx + 1) + 'e tour';
   }
   function setsDe(x) {
     return (x.scores || []).map(function (s) {
@@ -201,7 +201,7 @@
 
     // ── onglet Resume ──
     var rendreScore = function () {
-      if (!sets.length && !jeu) return null;
+      if (statut === 'upcoming' || (!sets.length && !jeu)) return null;
       var cellule = function (txt, fort, cle2) { return h('div', { key: cle2, style: { width: 30, textAlign: 'center', fontSize: 15, fontWeight: fort ? 900 : 600, color: fort ? t.text : t.textSec, position: 'relative' } }, txt); };
       var ligne = function (nom, cote) {
         return h('div', { style: { display: 'flex', alignItems: 'center', padding: '9px 14px', borderTop: cote === 'b' ? '1px solid ' + t.divider : 'none' } },
@@ -410,7 +410,8 @@
             var aEstK1 = String(e.first_player_key) === String(k1);
             var gagneA = (aEstK1 && e.event_winner === 'First Player') || (!aEstK1 && e.event_winner === 'Second Player');
             var s = surfDe(e); var tt = T[String(e.tournament_key)] || {};
-            var score = (e.scores || []).map(function (q) { var a = q.score_first, b = q.score_second; if (a == null || b == null) return null; return aEstK1 ? a + '-' + b : b + '-' + a; }).filter(Boolean).join(' ');
+            var tb = function (v) { return String(v).replace(/^(\d+)\.(\d+)$/, '$1($2)'); };
+            var score = (e.scores || []).map(function (q) { var a = q.score_first, b = q.score_second; if (a == null || b == null || a === '' || b === '' || (String(a) === '0' && String(b) === '0')) return null; return aEstK1 ? tb(a) + '-' + tb(b) : tb(b) + '-' + tb(a); }).filter(Boolean).join('\u2002');
             return h('div', { key: e.event_key, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderTop: '1px solid ' + t.divider } },
               h('div', { style: { width: 34, fontSize: 11, fontWeight: 800, color: t.textSec, flexShrink: 0 } }, annee(e.event_date)),
               tt.pays ? h('span', { style: { fontSize: 16, fontFamily: EMOJI, flexShrink: 0 } }, U.drapeau(tt.pays)) : null,
