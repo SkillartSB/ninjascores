@@ -242,9 +242,15 @@
     var t = ctx.t, accent = ctx.accent, tx = m.tennis || {};
     var live = m.status === 'live', ended = m.status === 'ended';
     var lire = function (v) { var mm = /^(\d+)\((\d+)\)$/.exec(String(v || '').trim()); return mm ? { j: +mm[1], tb: +mm[2] } : { j: parseInt(v, 10) || 0, tb: null }; };
-    var sets = String(m.apiScore || '').split(',').filter(Boolean).map(function (x) { var p = x.split('-'); return { a: lire(p[0]), b: lire(p[1]) }; });
+    var sets = (live || ended) ? String(m.apiScore || '').split(',').filter(Boolean).map(function (x) { var p = x.split('-'); return { a: lire(p[0]), b: lire(p[1]) }; }) : [];
+    // Un set est termine a 6 jeux avec 2 d'ecart, a 7, ou au tie-break ; sinon c'est le set en cours.
+    var complet = function (x) { var M = Math.max(x.a.j, x.b.j); return (M >= 6 && Math.abs(x.a.j - x.b.j) >= 2) || M === 7 || x.a.tb != null || x.b.tb != null; };
+    sets.forEach(function (x) { x.fini = complet(x) || (ended && (x.a.j || x.b.j)); });
+    if (live && sets.length && sets[sets.length - 1].a.j === 0 && sets[sets.length - 1].b.j === 0 && sets.length > 1 && !sets[sets.length - 2].fini) sets.pop();
+    if (!live) sets = sets.filter(function (x) { return x.a.j || x.b.j; });
+    // Sets gagnes (colonne rouge en direct, comme Flashscore) : uniquement les sets termines.
     var gagnesA = 0, gagnesB = 0;
-    sets.forEach(function (x, i) { var dernier = live && i === sets.length - 1; if (dernier) return; if (x.a.j > x.b.j) gagnesA++; else if (x.b.j > x.a.j) gagnesB++; });
+    sets.forEach(function (x) { if (!x.fini) return; if (x.a.j > x.b.j) gagnesA++; else if (x.b.j > x.a.j) gagnesB++; });
     var nomA = (tx.j1 && tx.j1.nom) || String(m.homeTeam || '').split(': ').slice(1).join(': ') || '?';
     var nomB = (tx.j2 && tx.j2.nom) || m.awayTeam || '?';
     var flagA = (tx.j1 && tx.j1.pays) ? drapeau(tx.j1.pays) : (ctx.gf ? ctx.gf(nomA) : '');
@@ -256,7 +262,7 @@
     var H = 22;
     var col = function (haut, bas, opts) {
       opts = opts || {};
-      var cell = function (v, fort, rouge) { return h('div', { style: { height: H, lineHeight: H + 'px', fontSize: 13, fontWeight: fort ? 900 : 600, color: rouge ? '#EF4444' : (fort ? t.text : t.textSec), textAlign: 'center', fontVariantNumeric: 'tabular-nums' } }, v); };
+      var cell = function (v, fort, rouge) { return h('div', { style: { height: H, lineHeight: H + 'px', fontSize: 13, fontWeight: fort ? 900 : 600, color: rouge ? '#EF4444' : ((fort || opts.sombre) ? t.text : t.textSec), textAlign: 'center', fontVariantNumeric: 'tabular-nums' } }, v); };
       return h('div', { style: { width: opts.width || 20, flexShrink: 0 } }, cell(haut, opts.fortA, opts.rouge), cell(bas, opts.fortB, opts.rouge));
     };
     var ligneNom = function (nom, flag, fort, serveur) {
@@ -277,9 +283,10 @@
         : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),
       live ? h('div', { style: { width: 16, flexShrink: 0 } }, balle(servA), balle(servB)) : null,
       (live && jeu && jeu.length === 2) ? col(jeu[0], jeu[1], { width: 26 }) : null,
+      (live || ended) ? col(gagnesA, gagnesB, { width: 22, rouge: live, fortA: true, fortB: true }) : null,
       sets.map(function (x, i) {
-        var dernier = live && i === sets.length - 1;
-        var c = col(x.a.j, x.b.j, { width: 20, rouge: dernier, fortA: !dernier && x.a.j > x.b.j, fortB: !dernier && x.b.j > x.a.j });
+        var enCours = live && !x.fini;
+        var c = col(x.a.j, x.b.j, { width: 20, fortA: x.fini && x.a.j > x.b.j, fortB: x.fini && x.b.j > x.a.j, sombre: enCours });
         return h('div', { key: i, style: { position: 'relative' } }, c,
           (x.a.tb != null || x.b.tb != null) ? h('span', { style: { position: 'absolute', right: -3, top: (x.a.j < x.b.j ? 0 : H) + 1, fontSize: 7.5, color: t.textTer, fontWeight: 700 } }, x.a.j < x.b.j ? x.a.tb : x.b.tb) : null);
       }),
