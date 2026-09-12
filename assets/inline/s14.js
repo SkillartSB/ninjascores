@@ -283,7 +283,9 @@
         return h('div', { key: i, style: { position: 'relative' } }, c,
           (x.a.tb != null || x.b.tb != null) ? h('span', { style: { position: 'absolute', right: -3, top: (x.a.j < x.b.j ? 0 : H) + 1, fontSize: 7.5, color: t.textTer, fontWeight: 700 } }, x.a.j < x.b.j ? x.a.tb : x.b.tb) : null);
       }),
-      (!live && !ended && !sets.length) ? null : h('div', { style: { width: 2 } }));
+      (ctx.cotes && !ended && m.cote1 && m.cote2 && !window.NS_HIDE_ODDS) ? h('div', { className: 'ns-odds', style: { width: 36, flexShrink: 0, marginLeft: 4 } },
+        [m.cote1, m.cote2].map(function (c, i) { return h('div', { key: i, style: { height: H, lineHeight: H + 'px', fontSize: 11.5, fontWeight: 800, color: accent, textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, Number(c).toFixed(2)); })) : null,
+      h('div', { style: { width: 2 } }));
   };
 
   // ── Accueil tennis ────────────────────────────────────────────────────────

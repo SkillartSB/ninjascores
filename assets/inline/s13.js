@@ -250,8 +250,10 @@
       var auj = dateDe('today')[0];
       var appel = live ? api('method=live') : api('method=get_fixtures&date_start=' + date + '&date_stop=' + date);
       var appelLive = (!live && date === auj) ? api('method=live') : Promise.resolve(null);
-      return Promise.all([appel, tournois(), appelLive, paysJoueurs()]).then(function (r) {
-        var brut = r[0], T = r[1], enDirect = r[2];
+      // Cotes vainqueur du jour (une requete, cache 30 min) pour la colonne du calendrier.
+      var appelCotes = window.NS_HIDE_ODDS ? Promise.resolve({}) : fetch('/api/tennis/?method=cotes-jour&date=' + date).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return (j && j.result) || {}; }).catch(function () { return {}; });
+      return Promise.all([appel, tournois(), appelLive, paysJoueurs(), appelCotes]).then(function (r) {
+        var brut = r[0], T = r[1], enDirect = r[2], cotes = r[4] || {};
         if (enDirect && enDirect.length) {
           var parCle = {}; enDirect.forEach(function (x) { parCle[String(x.event_key)] = x; });
           brut = brut.map(function (x) { var l = parCle[String(x.event_key)]; return l ? Object.assign({}, x, l) : x; });
@@ -259,6 +261,7 @@
         var atp = [], wta = [];
         brut.forEach(function (x) {
           var m = convertir(x, T); if (!m) return;
+          var c = cotes[String(x.event_key)]; if (c) { m.cote1 = c.c1; m.cote2 = c.c2; }
           (m.competition === 'WTA' ? wta : atp).push(m);
         });
         var tri = function (a, b) { return (a.apiTier - b.apiTier) || String(a.startDate).localeCompare(String(b.startDate)); };

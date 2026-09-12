@@ -72,6 +72,42 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Cotes du jour (13/09/2026) pour la colonne du calendrier : UNE requete get_odds par jour
+  // (259 Ko amont) reduite a { event_key: { c1, c2 } } (meilleure cote vainqueur), Redis 30 min.
+  if (methode === 'cotes-jour') {
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(String(q.date || '')) ? String(q.date) : jour;
+    const cleC = 'tennis:cotes:' + d;
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1800');
+    const luC = await redisPipeline([['GET', cleC]]);
+    if (luC && luC[0] && luC[0].result) { res.setHeader('X-Cache-Tennis', 'redis'); res.status(200).send(luC[0].result); return; }
+    const cleApi = process.env.API_TENNIS_KEY;
+    if (!cleApi) { res.status(500).json({ error: 'API_TENNIS_KEY absente' }); return; }
+    try {
+      const r = await fetch(API_BASE + '?method=get_odds&date_start=' + d + '&date_stop=' + d + '&timezone=UTC&APIkey=' + cleApi, { signal: AbortSignal.timeout(25000) });
+      const j = await r.json();
+      const out = {};
+      if (j && j.success === 1 && j.result && typeof j.result === 'object') {
+        Object.keys(j.result).forEach((k) => {
+          const ha = j.result[k] && j.result[k]['Home/Away']; if (!ha) return;
+          const best = (o) => { let b = 0; Object.keys(o || {}).forEach((bk) => { const v = parseFloat(o[bk]); if (v > 1 && v > b) b = v; }); return b || null; };
+          const c1 = best(ha.Home), c2 = best(ha.Away);
+          if (c1 && c2) out[k] = { c1, c2 };
+        });
+      }
+      const corps = JSON.stringify({ success: 1, jour: d, result: out });
+      const compteur = 'footcnt:' + jour + ':tennis:get_odds';
+      await redisPipeline([['INCR', compteur], ['EXPIRE', compteur, 604800], ['SETEX', cleC, 1800, corps]]);
+      res.setHeader('X-Cache-Tennis', 'amont');
+      res.status(200).send(corps);
+    } catch (e) {
+      res.setHeader('Cache-Control', 'public, s-maxage=60');
+      res.status(200).json({ success: 1, jour: d, result: {}, erreur: e.message });
+    }
+    return;
+  }
+
   if (methode === 'live') {
     const mk = q.match_key ? String(q.match_key).replace(/[^0-9]/g, '') : '';
     const lu = await redisPipeline([['GET', 'tennis:live:meta'], ['GET', mk ? 'tennis:live:' + mk : 'tennis:live']]);
