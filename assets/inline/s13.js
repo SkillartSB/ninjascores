@@ -93,9 +93,91 @@
     };
   }
 
-  // Lien profond : /calendrier/?sport=tennis ouvre directement l'onglet tennis
-  // (ScheduleScreen lit window._ninjaScheduleSport a l'initialisation).
-  try { if (/[?&]sport=tennis\b/.test(location.search)) window._ninjaScheduleSport = 'tennis'; } catch (e) {}
+  // ── Sport courant, global a l'app (12/09/2026) ──────────────────────────
+  // Choisi dans le header de l'accueil (NS_SelecteurSport) ou dans le calendrier.
+  // Memorise (localStorage ns_sport), lien profond ?sport=tennis, et expose via
+  // window._ninjaScheduleSport que ScheduleScreen lit a l'initialisation.
+  var SPORTS = [
+    { id: 'football', emoji: '\u26bd', nom: 'Foot' },
+    { id: 'tennis', emoji: '\ud83c\udfbe', nom: 'Tennis' }
+  ];
+  window.NS_SPORT = (function () {
+    var abonnes = [];
+    var courant = 'football';
+    try {
+      var m = /[?&]sport=(football|tennis)\b/.exec(location.search);
+      if (m) courant = m[1];
+      else { var mem = localStorage.getItem('ns_sport'); if (mem === 'tennis' || mem === 'football') courant = mem; }
+    } catch (e) {}
+    window._ninjaScheduleSport = courant;
+    return {
+      liste: SPORTS,
+      get: function () { return courant; },
+      info: function (id) { return SPORTS.filter(function (x) { return x.id === (id || courant); })[0] || SPORTS[0]; },
+      set: function (id) {
+        if (!SPORTS.some(function (x) { return x.id === id; }) || id === courant) return;
+        courant = id; window._ninjaScheduleSport = id;
+        try { localStorage.setItem('ns_sport', id); } catch (e) {}
+        abonnes.slice().forEach(function (f) { try { f(id); } catch (e) {} });
+      },
+      abonner: function (f) { abonnes.push(f); return function () { abonnes = abonnes.filter(function (x) { return x !== f; }); }; }
+    };
+  })();
+
+  // Pilule « ⚽ Foot ▾ » + liste deroulante (Foot / Tennis). Props : t, accent, compact.
+  // Choisir Tennis ouvre le calendrier (l'accueil n'a pas encore de contenu tennis).
+  window.NS_SelecteurSport = function (props) {
+    var R = window.React; if (!R) return null;
+    var t = props.t || {}, accent = props.accent || '#6D28D9';
+    var st = R.useState(false), ouvert = st[0], setOuvert = st[1];
+    var sv = R.useState(window.NS_SPORT.get()), sport = sv[0], setSport = sv[1];
+    R.useEffect(function () { return window.NS_SPORT.abonner(setSport); }, []);
+    R.useEffect(function () {
+      if (!ouvert) return;
+      var f = function () { setOuvert(false); };
+      setTimeout(function () { document.addEventListener('click', f); }, 0);
+      return function () { document.removeEventListener('click', f); };
+    }, [ouvert]);
+    var info = window.NS_SPORT.info(sport);
+    var choisir = function (id) {
+      setOuvert(false);
+      window.NS_SPORT.set(id);
+      if (id === 'tennis') {
+        try { window.__nsNav && window.__nsNav('schedule'); } catch (e) {}
+        try { window.NS_ROUTE && window.NS_ROUTE.ecran && window.NS_ROUTE.ecran('schedule'); } catch (e) {}
+      }
+    };
+    return R.createElement('div', { style: { position: 'relative', flexShrink: 0 } },
+      R.createElement('button', {
+        type: 'button', 'aria-label': 'Choisir le sport', 'aria-expanded': ouvert,
+        onClick: function (e) { e.stopPropagation(); setOuvert(!ouvert); },
+        style: { height: 36, padding: props.compact ? '0 10px' : '0 12px 0 10px', borderRadius: 18, border: '1px solid ' + (t.border || '#e5e7eb'),
+          background: t.card || '#fff', color: t.text || '#111', boxShadow: t.shadowCard, display: 'flex', alignItems: 'center', gap: 6,
+          fontFamily: 'inherit', fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }
+      },
+        R.createElement('span', { style: { fontSize: 16, lineHeight: 1 } }, info.emoji),
+        !props.compact && R.createElement('span', null, info.nom),
+        R.createElement('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round',
+          style: { transform: ouvert ? 'rotate(180deg)' : 'none', transition: 'transform .15s', opacity: .7 } },
+          R.createElement('polyline', { points: '6 9 12 15 18 9' }))
+      ),
+      ouvert && R.createElement('div', { onClick: function (e) { e.stopPropagation(); },
+        style: { position: 'absolute', top: 42, left: 0, minWidth: 168, background: t.card || '#fff', border: '1px solid ' + (t.border || '#e5e7eb'),
+          borderRadius: 14, boxShadow: '0 12px 32px rgba(0,0,0,.18)', padding: 6, zIndex: 60 } },
+        R.createElement('div', { style: { fontSize: 10, fontWeight: 800, letterSpacing: .6, textTransform: 'uppercase', color: t.textSec || '#6b7280', padding: '6px 10px 4px' } }, 'Choisir le sport'),
+        SPORTS.map(function (sp) {
+          var on = sp.id === sport;
+          return R.createElement('button', { key: sp.id, type: 'button', onClick: function () { choisir(sp.id); },
+            style: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 10, border: 'none', textAlign: 'left',
+              background: on ? accent : 'transparent', color: on ? '#fff' : (t.text || '#111'), fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
+            R.createElement('span', { style: { fontSize: 18, lineHeight: 1 } }, sp.emoji),
+            R.createElement('span', { style: { flex: 1 } }, sp.nom),
+            on && R.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' },
+              R.createElement('polyline', { points: '20 6 9 17 4 12' })));
+        })
+      )
+    );
+  };
 
   window.NinjaTennisAPI = {
     fetchComps: function (sel) {
