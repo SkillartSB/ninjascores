@@ -1,0 +1,1985 @@
+
+(function() {
+  // Normalisation des noms courts → noms complets pour l'API
+  var NAME_MAP = {
+    'Man. City':    'Manchester City',
+    'Man. United':  'Manchester United',
+    'Man United':   'Manchester United',
+    'PSG':          'Paris Saint-Germain',
+    'Bayern Munich':'Bayern Munich',
+    'Bayern':       'Bayern Munich',
+    'FC Barcelona': 'Barcelona',
+    'Barcel...':    'Barcelona',
+    'Barcelone':    'Barcelona',
+    'Inter Milan':  'Internazionale',
+    'AC Milan':     'AC Milan',
+    'Dortmund':     'Borussia Dortmund',
+    'Atletico':     'Atletico Madrid',
+    'Newcastle':    'Newcastle United',
+    'Spurs':        'Tottenham Hotspur',
+    'Real Sociedad':'Real Sociedad',
+    'Aston Villa':  'Aston Villa',
+    'Racing 92':    'Racing 92',
+    'La Rochelle':  'Stade Rochelais',
+    'Liverpool':    'Liverpool',
+    'Chelsea':      'Chelsea',
+    'Real Madrid':  'Real Madrid',
+    'Sevilla':      'Sevilla',
+    'Amiens':       'Amiens',
+    'Fenerbahçe':   'Fenerbahçe',
+    'Racing Club de Lens':    'Lens',
+    'RC Lens':                'Lens',
+    'Alavés':                 'Deportivo Alaves',
+    'Deportivo Alavés':       'Deportivo Alaves',
+    'US Sassuolo Calcio':     'Sassuolo',
+    'US Sassuolo':            'Sassuolo',
+    'BV Borussia 09 Dortmund':'Borussia Dortmund',
+    'Borussia Dortmund 09':   'Borussia Dortmund',
+    // Ligue 1 — noms Polymarket → clés CLUB_LOGOS
+    'Lille OSC':                                 'Lille',
+    'LOSC Lille':                                'Lille',
+    'Le Havre AC':                               'Le Havre',
+    'AJ Auxerre':                                'Auxerre',
+    'OGC Nice':                                  'Nice',
+    'Angers SCO':                                'Angers',
+    'AS Monaco':                                 'Monaco',
+    'AS Monaco FC':                              'Monaco',
+    'Stade de Reims':                            'Reims',
+    'Stade Brestois':                            'Brest',
+    'Stade Brestois 29':                         'Brest',
+    'Stade Rennais FC 1901':                     'Rennes',
+    'Stade Rennais':                             'Rennes',
+    'RC Strasbourg Alsace':                      'RC Strasbourg Alsace',
+    'Strasbourg Alsace':                         'RC Strasbourg Alsace',
+    'Racing Club de Strasbourg Alsace':          'RC Strasbourg Alsace',
+    'Paris FC':                                  'Paris FC',
+    // Bundesliga
+    'Francfort':              'Eintracht Frankfurt',
+    'Eintracht Frankfurt':    'Eintracht Frankfurt',
+    // LaLiga
+    'Atletico de Madrid':     'Atletico Madrid',
+    'Club Atletico de Madrid':'Atletico Madrid',
+    'Real Betis Balompié':    'Real Betis',
+    'Deportivo Alavés':       'Alavés',
+    'Real Oviedo':            'Real Oviedo',
+    // Serie A
+    'Atalanta BC':            'Atalanta',
+    'Hellas Verona FC':       'Hellas Verona',
+    'US Lecce':               'Lecce',
+    'SS Lazio':               'Lazio',
+    'Udinese Calcio':         'Udinese',
+    'Empoli FC':              'Empoli',
+    'Cagliari Calcio':        'Cagliari',
+    'Venezia FC':             'Venezia',
+    'Parma Calcio 1913':      'Parma',
+    'ACF Fiorentina':         'Fiorentina',
+    // Eredivisie
+    'AFC Ajax':               'Ajax',
+    'Groningen':              'FC Groningen',
+    'Telstar 1963':           'Telstar',
+    'Heracles Almelo':        'Heracles Almelo',
+    'NEC':                    'NEC Nijmegen',
+    'Utrecht':                'FC Utrecht',
+    'PEC Zwolle':             'Zwolle',
+    'Almere City FC':         'Almere City',
+    // Brasileirao
+    'SE Palmeiras':                              'Palmeiras',
+    'SC Corinthians Paulista':                   'Corinthians',
+    'Associação Chapecoense de Futebol':         'Chapecoense AF',
+    'São Paulo':                                 'Sao Paulo',
+    'Botafogo FR':                               'Botafogo RJ',
+    'Clube Atlético Mineiro':                    'Atletico Mineiro',
+    'Atlético Mineiro':                          'Atletico Mineiro',
+    'Club de Regatas Vasco da Gama':             'Vasco da Gama',
+    'Cruzeiro EC':                               'Cruzeiro',
+    'Sport Club Internacional':                  'Internacional',
+    'Grêmio FBPA':                               'Gremio',
+    'EC Bahia':                                  'Bahia',
+    'Fluminense FC':                             'Fluminense',
+    'CR Flamengo':                               'Flamengo',
+    'Red Bull Bragantino':                       'Red Bull Bragantino',
+    'Mirassol FC':                               'Mirassol',
+    'Santos FC':                                 'Santos',
+    'SC Corinthians Paulista':                   'Corinthians',
+    // Liga Portugal
+    'AVS Futebol':                               'AVS Futebol SAD',
+    'Estoril Praia':                             'Estoril',
+    'CF Estrela da Amadora':                     'Estrela da Amadora',
+    'Rio Ave FC':                                'Rio Ave',
+    'Vitória SC':                                'Vitoria de Guimaraes',
+    'Vitoria SC':                                'Vitoria de Guimaraes',
+    'Gil Vicente FC':                            'Gil Vicente',
+    'FC Famalicão':                              'Famalicao',
+    // MLS
+    'New York City FC':                          'New York City',
+    'Inter Miami CF':                            'Inter Miami',
+    'LA Galaxy':                                 'LA Galaxy',
+    'Seattle Sounders FC':                       'Seattle Sounders',
+    'Portland Timbers':                          'Portland Timbers',
+    // Saudi Pro League
+    'Al Riyadh Saudi Club':                      'Al Riyadh',
+    'Al Fateh Saudi Club':                       'Al Fateh FC',
+    'Al Ittihad Saudi Club':                     'Al Ittihad',
+    'Damac Saudi Club':                          'Damac FC',
+    'Al Ahli Saudi Club':                        'Al Ahli',
+    'Al Nassr Saudi Club':                       'Al Nassr FC',
+    'Al Hilal Saudi Club':                       'Al Hilal',
+    'Al Qadsiah Saudi Club':                     'Al Qadsiah',
+    'Al Shabab Saudi Club':                      'Al Shabab',
+    'Al Taawoun Saudi Club':                     'Al Taawoun',
+    // Serie A
+    'Bologna FC 1909':                           'Bologna',
+    // Autres
+    'Virtus Bologne':         'Virtus Bologna',
+    'ALBA Berlin':            'Alba Berlin',
+    'West Ham United FC':     'West Ham United',
+    'Tottenham Hotspur FC':   'Tottenham',
+    'Tottenham Hotspur':      'Tottenham',
+    'Manchester City FC':     'Manchester City',
+    'Manchester United FC':   'Manchester United',
+    'Arsenal FC':             'Arsenal',
+    'Liverpool FC':           'Liverpool',
+    'Chelsea FC':             'Chelsea',
+    'FC Barcelona':           'Barcelona',
+    'Real Madrid CF':         'Real Madrid',
+    'Getafe CF':              'Getafe',
+    // Brasileirao — short Polymarket names
+    'CA Mineiro':             'Atletico Mineiro',
+    'Mineiro':                'Atletico Mineiro',
+    'Clube do Remo':          'Clube do Remo',
+    // Liga Portugal
+    'Alverca':                'Alverca',
+    // LaLiga — noms complets Polymarket
+    'Rayo Vallecano de Madrid':              'Rayo Vallecano',
+    'Club Atlético de Madrid':               'Atletico Madrid',
+    'RC Celta de Vigo':                      'Celta Vigo',
+    'FC Internazionale Milano':              'Inter Milan',
+    'RCD Espanyol de Barcelona':             'Espanyol',
+    'RCD Mallorca':                          'Mallorca',
+    'Real Sociedad de Fútbol':               'Real Sociedad',
+    'Deportivo Alavés':                      'Deportivo Alaves',
+    // Liga Portugal — noms complets Polymarket
+    'SC Braga':                              'Braga',
+    'Sport Lisboa e Benfica':                'Benfica',
+    // Brasileirao — noms complets Polymarket
+    'CA Paranaense':                         'Athletico Paranaense',
+    'CR Vasco da Gama':                      'Vasco da Gama',
+    // Saudi Pro League — noms complets Polymarket
+    'Al Kholood Saudi Club':                 'Al Kholood',
+    'Al Okhdood SC':                         'Al Akhdoud',
+    'Al Ettifaq Saudi Club':                 'Al-Ettifaq',
+    'Al Najmah Saudi Club':                  'Al-Najmah',
+    'Al Qadisiyah Saudi Club':               'Al Qadsiah',
+    // MLS — noms Polymarket non standards
+    'D.C. United SC':                        'DC United',
+    'Los Angeles Galaxy':                    'LA Galaxy',
+    // Liga MX — noms complets Polymarket
+    'CF América':                            'Club America',
+    'CF Pachuca':                            'Pachuca',
+    'Pumas de la UNAM':                      'Pumas UNAM',
+    'Deportivo Toluca FC':                   'Deportivo Toluca',
+    // J.League — noms Polymarket avec/sans macrons
+    'FC Machida Zelvia':                     'Machida Zelvia',
+    'Kyōto Sanga FC':                        'Kyoto Sanga',
+    'Kyoto Sanga FC':                        'Kyoto Sanga',
+    'Tōkyō Verdy':                           'Tokyo Verdy',
+    'Tokyo Verdy':                           'Tokyo Verdy',
+    'Vissel Kōbe':                           'Vissel Kobe',
+    'Vissel Kobe':                           'Vissel Kobe',
+    // Noms affichage — Premier League
+    'Leeds United':           'Leeds',
+    'SSC Napoli':             'Naples',
+    'Paris Saint-Germain':    'PSG',
+    // Noms affichage — Ligue 1/2
+    'Paris':                  'Paris FC',
+    'RC Strasbourg Alsace':   'Strasbourg',
+    // Noms affichage — Bundesliga
+    '1. FSV Mainz 05':        'Mayence',
+    'FC Union Berlin':        'Union Berlin',
+    // Noms affichage — La Liga
+    'Real Betis':             'Betis',
+    'Athletic Club':          'Ath. Bilbao',
+    'Valencia':               'Valence',
+    // Équipes nationales — Coupe du Monde 2026
+    'Angleterre':             'England',
+    'Argentine':              'Argentina',
+    'France':                 'France',
+    'Brésil':                 'Brazil',
+    'Espagne':                'Spain',
+    'Allemagne':              'Germany',
+    'Portugal':               'Portugal',
+    'Italie':                 'Italy',
+    'États-Unis':             'USA',
+    'Mexique':                'Mexico',
+    'Uruguay':                'Uruguay',
+    'Colombie':               'Colombia',
+  };
+
+  // Logos depuis Wikimedia Commons (public domain, fiable)
+  var LOGOS = {
+    'Manchester City': 'https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg',
+    'Real Madrid': 'https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg',
+    'Bayern Munich': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg',
+    'Arsenal': 'https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg',
+    'Liverpool': 'https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg',
+    'Chelsea': 'https://upload.wikimedia.org/wikipedia/en/8/8c/Chelsea_FC.svg',
+    'Paris Saint-Germain': 'https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg',
+    'Barcelona': 'https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%282009%E2%80%932011%29.svg',
+    'Juventus': 'https://upload.wikimedia.org/wikipedia/en/f/f9/Juventus_FC.svg',
+    'AC Milan': 'https://upload.wikimedia.org/wikipedia/en/d/d0/Logo_of_AC_Milan.svg',
+    'Inter Milan': 'https://upload.wikimedia.org/wikipedia/en/b/b5/Inter_Milan.svg',
+    'Internazionale': 'https://upload.wikimedia.org/wikipedia/en/b/b5/Inter_Milan.svg',
+    'Borussia Dortmund': 'https://upload.wikimedia.org/wikipedia/en/6/67/Borussia_Dortmund_logo.svg',
+    'Atletico Madrid': 'https://upload.wikimedia.org/wikipedia/en/9/90/Atletico_Madrid_2012.svg',
+    'Tottenham Hotspur': 'https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg',
+    'Newcastle United': 'https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg',
+    'Aston Villa': 'https://upload.wikimedia.org/wikipedia/en/9/9f/Aston_Villa_FC_crest.svg',
+    'Roma': 'https://upload.wikimedia.org/wikipedia/en/f/f7/AS_Roma_logo_%282017%29.svg',
+    'Lazio': 'https://upload.wikimedia.org/wikipedia/en/c/ce/Lazio_badge.svg',
+    'Napoli': 'https://upload.wikimedia.org/wikipedia/en/2/2f/SSC_Napoli_logo.svg',
+    'Sevilla': 'https://upload.wikimedia.org/wikipedia/en/3/3d/Sevilla_FC_logo.svg',
+    'Fenerbahçe': 'https://upload.wikimedia.org/wikipedia/en/f/fa/Fenerbah%C3%A7e_SK.svg',
+    'Galatasaray': 'https://upload.wikimedia.org/wikipedia/en/8/84/Galatasaray_football_club_logo.svg',
+    'Sporting CP': 'https://upload.wikimedia.org/wikipedia/en/8/8d/Sporting_CP.svg',
+    'Porto': 'https://upload.wikimedia.org/wikipedia/en/c/c5/FC_Porto.svg',
+    'Ajax': 'https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg',
+    'PSV': 'https://upload.wikimedia.org/wikipedia/en/d/d6/PSV_Eindhoven.svg',
+    'Feyenoord': 'https://upload.wikimedia.org/wikipedia/en/e/e4/Feyenoord.svg',
+    'Benfica': 'https://upload.wikimedia.org/wikipedia/en/0/0c/SL_Benfica.svg',
+    'AZ Alkmaar': 'https://upload.wikimedia.org/wikipedia/en/8/8d/AZ_Alkmaar.svg',
+    'Fiorentina': 'https://upload.wikimedia.org/wikipedia/en/1/1f/ACF_Fiorentina.svg',
+    'Atalanta': 'https://upload.wikimedia.org/wikipedia/en/7/7f/Atalanta_BC.svg',
+    // ── NHL ──────────────────────────────────────────────────────────────────
+    'Anaheim Ducks':        'https://a.espncdn.com/i/teamlogos/nhl/500/ana.png',
+    'Ducks':                'https://a.espncdn.com/i/teamlogos/nhl/500/ana.png',
+    'Boston Bruins':        'https://a.espncdn.com/i/teamlogos/nhl/500/bos.png',
+    'Bruins':               'https://a.espncdn.com/i/teamlogos/nhl/500/bos.png',
+    'Buffalo Sabres':       'https://a.espncdn.com/i/teamlogos/nhl/500/buf.png',
+    'Sabres':               'https://a.espncdn.com/i/teamlogos/nhl/500/buf.png',
+    'Calgary Flames':       'https://a.espncdn.com/i/teamlogos/nhl/500/cgy.png',
+    'Flames':               'https://a.espncdn.com/i/teamlogos/nhl/500/cgy.png',
+    'Carolina Hurricanes':  'https://a.espncdn.com/i/teamlogos/nhl/500/car.png',
+    'Hurricanes':           'https://a.espncdn.com/i/teamlogos/nhl/500/car.png',
+    'Chicago Blackhawks':   'https://a.espncdn.com/i/teamlogos/nhl/500/chi.png',
+    'Blackhawks':           'https://a.espncdn.com/i/teamlogos/nhl/500/chi.png',
+    'Colorado Avalanche':   'https://a.espncdn.com/i/teamlogos/nhl/500/col.png',
+    'Avalanche':            'https://a.espncdn.com/i/teamlogos/nhl/500/col.png',
+    'Columbus Blue Jackets':'https://a.espncdn.com/i/teamlogos/nhl/500/cbj.png',
+    'Blue Jackets':         'https://a.espncdn.com/i/teamlogos/nhl/500/cbj.png',
+    'Dallas Stars':         'https://a.espncdn.com/i/teamlogos/nhl/500/dal.png',
+    'Stars':                'https://a.espncdn.com/i/teamlogos/nhl/500/dal.png',
+    'Detroit Red Wings':    'https://a.espncdn.com/i/teamlogos/nhl/500/det.png',
+    'Red Wings':            'https://a.espncdn.com/i/teamlogos/nhl/500/det.png',
+    'Edmonton Oilers':      'https://a.espncdn.com/i/teamlogos/nhl/500/edm.png',
+    'Oilers':               'https://a.espncdn.com/i/teamlogos/nhl/500/edm.png',
+    'Florida Panthers':     'https://a.espncdn.com/i/teamlogos/nhl/500/fla.png',
+    'Panthers':             'https://a.espncdn.com/i/teamlogos/nhl/500/fla.png',
+    'Los Angeles Kings':    'https://a.espncdn.com/i/teamlogos/nhl/500/la.png',
+    'Kings':                'https://a.espncdn.com/i/teamlogos/nhl/500/la.png',
+    'Minnesota Wild':       'https://a.espncdn.com/i/teamlogos/nhl/500/min.png',
+    'Wild':                 'https://a.espncdn.com/i/teamlogos/nhl/500/min.png',
+    'Montreal Canadiens':   'https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png',
+    'Montréal Canadiens':   'https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png',
+    'Canadiens':            'https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png',
+    'Nashville Predators':  'https://a.espncdn.com/i/teamlogos/nhl/500/nsh.png',
+    'Predators':            'https://a.espncdn.com/i/teamlogos/nhl/500/nsh.png',
+    'New Jersey Devils':    'https://a.espncdn.com/i/teamlogos/nhl/500/nj.png',
+    'Devils':               'https://a.espncdn.com/i/teamlogos/nhl/500/nj.png',
+    'New York Islanders':   'https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png',
+    'Islanders':            'https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png',
+    'New York Rangers':     'https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png',
+    'Rangers':              'https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png',
+    'Ottawa Senators':      'https://a.espncdn.com/i/teamlogos/nhl/500/ott.png',
+    'Senators':             'https://a.espncdn.com/i/teamlogos/nhl/500/ott.png',
+    'Philadelphia Flyers':  'https://a.espncdn.com/i/teamlogos/nhl/500/phi.png',
+    'Flyers':               'https://a.espncdn.com/i/teamlogos/nhl/500/phi.png',
+    'Pittsburgh Penguins':  'https://a.espncdn.com/i/teamlogos/nhl/500/pit.png',
+    'Penguins':             'https://a.espncdn.com/i/teamlogos/nhl/500/pit.png',
+    'San Jose Sharks':      'https://a.espncdn.com/i/teamlogos/nhl/500/sj.png',
+    'Sharks':               'https://a.espncdn.com/i/teamlogos/nhl/500/sj.png',
+    'Seattle Kraken':       'https://a.espncdn.com/i/teamlogos/nhl/500/sea.png',
+    'Kraken':               'https://a.espncdn.com/i/teamlogos/nhl/500/sea.png',
+    'St. Louis Blues':      'https://a.espncdn.com/i/teamlogos/nhl/500/stl.png',
+    'Blues':                'https://a.espncdn.com/i/teamlogos/nhl/500/stl.png',
+    'Tampa Bay Lightning':  'https://a.espncdn.com/i/teamlogos/nhl/500/tb.png',
+    'Lightning':            'https://a.espncdn.com/i/teamlogos/nhl/500/tb.png',
+    'Toronto Maple Leafs':  'https://a.espncdn.com/i/teamlogos/nhl/500/tor.png',
+    'Maple Leafs':          'https://a.espncdn.com/i/teamlogos/nhl/500/tor.png',
+    'Leafs':                'https://a.espncdn.com/i/teamlogos/nhl/500/tor.png',
+    'Utah Hockey Club':     'https://a.espncdn.com/i/teamlogos/nhl/500/utah.png',
+    'Utah Mammoth':         'https://a.espncdn.com/i/teamlogos/nhl/500/utah.png',
+    'Mammoth':              'https://a.espncdn.com/i/teamlogos/nhl/500/utah.png',
+    'Vancouver Canucks':    'https://a.espncdn.com/i/teamlogos/nhl/500/van.png',
+    'Canucks':              'https://a.espncdn.com/i/teamlogos/nhl/500/van.png',
+    'Vegas Golden Knights': 'https://a.espncdn.com/i/teamlogos/nhl/500/vgk.png',
+    'Golden Knights':       'https://a.espncdn.com/i/teamlogos/nhl/500/vgk.png',
+    'Washington Capitals':  'https://a.espncdn.com/i/teamlogos/nhl/500/wsh.png',
+    'Capitals':             'https://a.espncdn.com/i/teamlogos/nhl/500/wsh.png',
+    'Winnipeg Jets':        'https://a.espncdn.com/i/teamlogos/nhl/500/wpg.png',
+    'Jets':                 'https://a.espncdn.com/i/teamlogos/nhl/500/wpg.png',
+    // ── KHL ──────────────────────────────────────────────────────────────────
+    'Ak Bars Kazan':        'https://upload.wikimedia.org/wikipedia/en/thumb/1/11/Ak_Bars_Kazan_logo.svg/120px-Ak_Bars_Kazan_logo.svg.png',
+    'KHL: Ak Bars Kazan':   'https://upload.wikimedia.org/wikipedia/en/thumb/1/11/Ak_Bars_Kazan_logo.svg/120px-Ak_Bars_Kazan_logo.svg.png',
+    'Metallurg Magnitogorsk':'https://upload.wikimedia.org/wikipedia/en/9/98/HC_Metallurg_Magnitogorsk.png',
+    'KHL: Metallurg Magnitogorsk':'https://upload.wikimedia.org/wikipedia/en/9/98/HC_Metallurg_Magnitogorsk.png',
+    'Avangard Omsk':        'https://upload.wikimedia.org/wikipedia/en/thumb/f/f1/Avangard_Omsk_logo.svg/120px-Avangard_Omsk_logo.svg.png',
+    'KHL: Avangard Omsk':   'https://upload.wikimedia.org/wikipedia/en/thumb/f/f1/Avangard_Omsk_logo.svg/120px-Avangard_Omsk_logo.svg.png',
+    'Avtomobilist Yekaterinburg':'https://upload.wikimedia.org/wikipedia/en/thumb/0/0a/Avtomobilist_Yekaterinburg_Logo.png/120px-Avtomobilist_Yekaterinburg_Logo.png',
+    'KHL: Avtomobilist':    'https://upload.wikimedia.org/wikipedia/en/thumb/0/0a/Avtomobilist_Yekaterinburg_Logo.png/120px-Avtomobilist_Yekaterinburg_Logo.png',
+    'Lokomotiv Yaroslavl':  'https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Lokomotiv_Yaroslavl_Logo.svg/120px-Lokomotiv_Yaroslavl_Logo.svg.png',
+    'KHL: Lokomotiv Yaroslavl':'https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Lokomotiv_Yaroslavl_Logo.svg/120px-Lokomotiv_Yaroslavl_Logo.svg.png',
+    'SKA Saint-Pétersbourg':'https://upload.wikimedia.org/wikipedia/commons/c/c6/HC_SKA_Logo_2023.svg',
+    'SKA Saint-Petersburg': 'https://upload.wikimedia.org/wikipedia/commons/c/c6/HC_SKA_Logo_2023.svg',
+    'SKA':                  'https://upload.wikimedia.org/wikipedia/commons/c/c6/HC_SKA_Logo_2023.svg',
+    'KHL: SKA Saint-Petersburg':'https://upload.wikimedia.org/wikipedia/commons/c/c6/HC_SKA_Logo_2023.svg',
+    'CSKA Moscow':          'https://upload.wikimedia.org/wikipedia/en/f/fa/CSKA_Moscow_logo.png',
+    'CSKA Moscou':          'https://upload.wikimedia.org/wikipedia/en/f/fa/CSKA_Moscow_logo.png',
+    'KHL: CSKA Moscow':     'https://upload.wikimedia.org/wikipedia/en/f/fa/CSKA_Moscow_logo.png',
+    'Dynamo Moscow':        'https://upload.wikimedia.org/wikipedia/en/5/51/MGO_Dynamo_logo.png',
+    'Dynamo Moscou':        'https://upload.wikimedia.org/wikipedia/en/5/51/MGO_Dynamo_logo.png',
+    'KHL: Dynamo Moscow':   'https://upload.wikimedia.org/wikipedia/en/5/51/MGO_Dynamo_logo.png',
+    // ── AHL ──────────────────────────────────────────────────────────────────
+    'Springfield Thunderbirds':       'https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Springfield_Thunderbirds_logo.svg/120px-Springfield_Thunderbirds_logo.svg.png',
+    'AHL: Springfield Thunderbirds':  'https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Springfield_Thunderbirds_logo.svg/120px-Springfield_Thunderbirds_logo.svg.png',
+    'Thunderbirds':                   'https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/Springfield_Thunderbirds_logo.svg/120px-Springfield_Thunderbirds_logo.svg.png',
+    'Wilkes-Barre/Scranton Penguins': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Wilkes-Barre_Scranton_Penguins_logo.svg/120px-Wilkes-Barre_Scranton_Penguins_logo.svg.png',
+    'AHL: Wilkes-Barre/Scranton Penguins':'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Wilkes-Barre_Scranton_Penguins_logo.svg/120px-Wilkes-Barre_Scranton_Penguins_logo.svg.png',
+    'Hershey Bears':                  'https://upload.wikimedia.org/wikipedia/en/thumb/2/22/Hershey_Bears_logo.svg/120px-Hershey_Bears_logo.svg.png',
+    'AHL: Hershey Bears':             'https://upload.wikimedia.org/wikipedia/en/thumb/2/22/Hershey_Bears_logo.svg/120px-Hershey_Bears_logo.svg.png',
+    'Lehigh Valley Phantoms':         'https://upload.wikimedia.org/wikipedia/en/thumb/b/b3/Lehigh_Valley_Phantoms_logo.svg/120px-Lehigh_Valley_Phantoms_logo.svg.png',
+    'Hartford Wolf Pack':             'https://upload.wikimedia.org/wikipedia/en/thumb/3/3f/Hartford-Wolf-Pack-Logo.svg/120px-Hartford-Wolf-Pack-Logo.svg.png',
+    'Providence Bruins':              'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Providence_Bruins_logo.svg/120px-Providence_Bruins_logo.svg.png',
+    'Charlotte Checkers':             'https://upload.wikimedia.org/wikipedia/en/thumb/4/47/Charlotte_Checkers_%28AHL%29_logo.svg/120px-Charlotte_Checkers_%28AHL%29_logo.svg.png',
+    'Milwaukee Admirals':             'https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Milwaukee_Admirals_logo.svg/120px-Milwaukee_Admirals_logo.svg.png',
+    'Chicago Wolves':                 'https://upload.wikimedia.org/wikipedia/en/thumb/a/ac/Chicago_Wolves_Logo.svg/120px-Chicago_Wolves_Logo.svg.png',
+    'Toronto Marlies':                'https://upload.wikimedia.org/wikipedia/en/thumb/7/7b/Toronto_Marlies_logo.svg/120px-Toronto_Marlies_logo.svg.png',
+    'Grand Rapids Griffins':          'https://upload.wikimedia.org/wikipedia/en/thumb/0/0e/Grand_Rapids_Griffins_logo.svg/120px-Grand_Rapids_Griffins_logo.svg.png',
+    'Cleveland Monsters':             'https://upload.wikimedia.org/wikipedia/en/thumb/b/b7/Cleveland_Monsters_Logo_2016.svg/120px-Cleveland_Monsters_Logo_2016.svg.png',
+    'Laval Rocket':                   'https://upload.wikimedia.org/wikipedia/en/thumb/c/c4/Laval_Rocket_logo.svg/120px-Laval_Rocket_logo.svg.png',
+    'Belleville Senators':            'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Belleville_Senators_logo.svg/120px-Belleville_Senators_logo.svg.png',
+    'Utica Comets':                   'https://upload.wikimedia.org/wikipedia/en/thumb/4/43/Utica_Comets_logo.svg/120px-Utica_Comets_logo.svg.png',
+    'Tucson Roadrunners':             'https://upload.wikimedia.org/wikipedia/en/thumb/0/04/Tucson_Roadrunners_logo.svg/120px-Tucson_Roadrunners_logo.svg.png',
+    'Rockford IceHogs':               'https://upload.wikimedia.org/wikipedia/en/thumb/4/49/Rockford_IceHogs.svg/120px-Rockford_IceHogs.svg.png',
+    'Iowa Wild':                      'https://upload.wikimedia.org/wikipedia/en/thumb/9/90/Iowa_Wild_logo.svg/120px-Iowa_Wild_logo.svg.png',
+    'Texas Stars':                    'https://upload.wikimedia.org/wikipedia/en/thumb/2/27/Texas_Stars_logo.svg/120px-Texas_Stars_logo.svg.png',
+    'Colorado Eagles':                'https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Colorado_Eagles_logo.svg/120px-Colorado_Eagles_logo.svg.png',
+    'Bakersfield Condors':            'https://upload.wikimedia.org/wikipedia/en/thumb/4/46/Bakersfield_Condors_logo.svg/120px-Bakersfield_Condors_logo.svg.png',
+    'Henderson Silver Knights':       'https://upload.wikimedia.org/wikipedia/en/thumb/4/4f/Henderson_Silver_Knights_logo.svg/120px-Henderson_Silver_Knights_logo.svg.png',
+    'Ontario Reign':                  'https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Ontario_Reign_logo.svg/120px-Ontario_Reign_logo.svg.png',
+    'San Diego Gulls':                'https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/San_Diego_Gulls_logo.svg/120px-San_Diego_Gulls_logo.svg.png',
+    'Abbotsford Canucks':             'https://upload.wikimedia.org/wikipedia/en/thumb/b/b3/Abbotsford_Canucks_logo.svg/120px-Abbotsford_Canucks_logo.svg.png',
+    'Coachella Valley Firebirds':     'https://upload.wikimedia.org/wikipedia/en/thumb/5/57/Coachella_Valley_Firebirds.svg/120px-Coachella_Valley_Firebirds.svg.png',
+
+    // ── Ligue Magnus ─────────────────────────────────────────────────────────
+    'Grenoble':   'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/HG38_logo.png/120px-HG38_logo.png',
+    'Rouen':      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Dragons_de_Rouen.png/120px-Dragons_de_Rouen.png',
+    'Bordeaux':   'https://upload.wikimedia.org/wikipedia/fr/thumb/b/b6/Logo_boxers_bordeaux.png/120px-Logo_boxers_bordeaux.png',
+    'Amiens':     'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Gothiques_Amiens.png/120px-Gothiques_Amiens.png',
+    'Angers':     'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Ducs_Angers_Hockey.png/120px-Ducs_Angers_Hockey.png',
+    'Gap':        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Rapaces_de_Gap.png/120px-Rapaces_de_Gap.png',
+    'Briançon':   'https://upload.wikimedia.org/wikipedia/fr/thumb/8/81/Logo_diables_rouges_briancon.png/120px-Logo_diables_rouges_briancon.png',
+    'IHC Nice':   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/IHC_Nice_logo.png/120px-IHC_Nice_logo.png',
+    // ── Équipes nationales (data URIs) ──────────────────────────────────
+    'England':    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1MCcgZmlsbD0nI0NGMDgxRicvPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzM4JyBmaWxsPSd3aGl0ZScvPjxyZWN0IHg9JzQ0JyB5PScxMicgd2lkdGg9JzEyJyBoZWlnaHQ9Jzc2JyBmaWxsPScjQ0YwODFGJy8+PHJlY3QgeD0nMTInIHk9JzQ0JyB3aWR0aD0nNzYnIGhlaWdodD0nMTInIGZpbGw9JyNDRjA4MUYnLz48L3N2Zz4=',
+    'Argentina':  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48Y2lyY2xlIGN4PSc1MCcgY3k9JzUwJyByPSc1MCcgZmlsbD0nIzc1QUFEQicvPjxyZWN0IHg9JzAnIHk9JzMzJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzM0JyBmaWxsPSd3aGl0ZScvPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzEyJyBmaWxsPScjRjZCNDBFJy8+PC9zdmc+',
+    'France':     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMzQnIGhlaWdodD0nMTAwJyBmaWxsPScjMDAyMzk1Jy8+PHJlY3QgeD0nMzMnIHk9JzAnIHdpZHRoPSczNCcgaGVpZ2h0PScxMDAnIGZpbGw9JyNGRkZGRkYnLz48cmVjdCB4PSc2NicgeT0nMCcgd2lkdGg9JzM0JyBoZWlnaHQ9JzEwMCcgZmlsbD0nI0VEMjkzOScvPjwvZz48L3N2Zz4=',
+    'Brazil':     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgZmlsbD0nIzAwOUIzQScvPjxwb2x5Z29uIHBvaW50cz0nNTAsMTIgOTIsNTAgNTAsODggOCw1MCcgZmlsbD0nI0ZFREYwMCcvPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzE3JyBmaWxsPScjMDAyNzc2Jy8+PC9nPjwvc3ZnPg==',
+    'Spain':      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzM0JyBmaWxsPScjQUExNTFCJy8+PHJlY3QgeD0nMCcgeT0nMzMnIHdpZHRoPScxMDAnIGhlaWdodD0nMzQnIGZpbGw9JyNGMUJGMDAnLz48cmVjdCB4PScwJyB5PSc2Nicgd2lkdGg9JzEwMCcgaGVpZ2h0PSczNCcgZmlsbD0nI0FBMTUxQicvPjwvZz48L3N2Zz4=',
+    'Germany':    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzM0JyBmaWxsPScjMDAwMDAwJy8+PHJlY3QgeD0nMCcgeT0nMzMnIHdpZHRoPScxMDAnIGhlaWdodD0nMzQnIGZpbGw9JyNERDAwMDAnLz48cmVjdCB4PScwJyB5PSc2Nicgd2lkdGg9JzEwMCcgaGVpZ2h0PSczNCcgZmlsbD0nI0ZGQ0UwMCcvPjwvZz48L3N2Zz4=',
+    'Portugal':   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nNDAnIGhlaWdodD0nMTAwJyBmaWxsPScjMDA2NjAwJy8+PHJlY3QgeD0nNDAnIHk9JzAnIHdpZHRoPSc2MCcgaGVpZ2h0PScxMDAnIGZpbGw9JyNGRjAwMDAnLz48Y2lyY2xlIGN4PSc0MCcgY3k9JzUwJyByPScxNScgZmlsbD0nI0ZGRkYwMCcgc3Ryb2tlPScjMDA2NjAwJyBzdHJva2Utd2lkdGg9JzInLz48L2c+PC9zdmc+',
+    'Italy':      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48ZGVmcz48Y2xpcFBhdGggaWQ9J2MnPjxjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJy8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSd1cmwoI2MpJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMzQnIGhlaWdodD0nMTAwJyBmaWxsPScjMDA4QzQ1Jy8+PHJlY3QgeD0nMzMnIHk9JzAnIHdpZHRoPSczNCcgaGVpZ2h0PScxMDAnIGZpbGw9JyNGNEY1RjAnLz48cmVjdCB4PSc2NicgeT0nMCcgd2lkdGg9JzM0JyBoZWlnaHQ9JzEwMCcgZmlsbD0nI0NEMjEyQScvPjwvZz48L3N2Zz4=',
+    'USA':        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/US_Soccer_logo_2016.svg/200px-US_Soccer_logo_2016.svg.png',
+    'Mexico':     'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/FMF_Logo.svg/200px-FMF_Logo.svg.png',
+    'Uruguay':    'https://upload.wikimedia.org/wikipedia/en/thumb/0/0c/Asociaci%C3%B3n_Uruguaya_de_F%C3%BAtbol_logo.svg/200px-Asociaci%C3%B3n_Uruguaya_de_F%C3%BAtbol_logo.svg.png',
+    'Colombia':   'https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Federaci%C3%B3n_Colombiana_de_F%C3%BAtbol_logo.svg/200px-Federaci%C3%B3n_Colombiana_de_F%C3%BAtbol_logo.svg.png',
+  };
+
+  var CLUB_LOGOS = {"07 Vestur":"https://assets.football-logos.cc/logos/faroe-islands/256x256/07-vestur.da809bed.png","2 de Mayo":"https://assets.football-logos.cc/logos/paraguay/256x256/2-de-mayo.e5afa6fe.png","AB":"https://assets.football-logos.cc/logos/denmark/256x256/ab.563e8ab6.png","ABB":"https://assets.football-logos.cc/logos/bolivia/256x256/abb.845de89b.png","AC Horsens":"https://assets.football-logos.cc/logos/denmark/256x256/horsens.baef2dfd.png","ADC Juan Pablo II":"https://assets.football-logos.cc/logos/peru/256x256/juan-pablo-ii.d8df64f7.png","ADO Den Haag":"https://assets.football-logos.cc/logos/netherlands/256x256/ado-den-haag.aed6f890.png","AE Larissa":"https://assets.football-logos.cc/logos/greece/256x256/larissa.4fc9884e.png","AEK Athens":"https://assets.football-logos.cc/logos/greece/256x256/aek-athens.c6c750f1.png","AGF":"https://assets.football-logos.cc/logos/denmark/256x256/agf.ea55c15c.png","AGMK":"https://assets.football-logos.cc/logos/uzbekistan/256x256/agmk.5e2c042a.png","AIK":"https://assets.football-logos.cc/logos/sweden/256x256/aik.852c9733.png","AS Gabes":"https://assets.football-logos.cc/logos/tunisia/256x256/as-gabes.f2f52c4d.png","AS Jeunesse Esch":"https://assets.football-logos.cc/logos/luxembourg/256x256/jeunesse-esch.3a23b575.png","ASO Chlef":"https://assets.football-logos.cc/logos/algeria/256x256/aso-chlef.6fd34450.png","AZ Alkmaar":"https://assets.football-logos.cc/logos/netherlands/256x256/az-alkmaar.a5883ab7.png","AaB":"https://assets.football-logos.cc/logos/denmark/256x256/aab.d9e73ae6.png","Aalesund":"https://assets.football-logos.cc/logos/norway/256x256/aalesund.76e1b808.png","Aarau":"https://assets.football-logos.cc/logos/switzerland/256x256/aarau.e31144c6.png","Aberdeen":"https://assets.football-logos.cc/logos/scotland/256x256/aberdeen.c5783694.png","Aberystwyth":"https://assets.football-logos.cc/logos/wales/256x256/aberystwyth-town.c6d5a672.png","Adanaspor":"https://assets.football-logos.cc/logos/turkey/256x256/adanaspor.3dd71df0.png","Adelaide United":"https://assets.football-logos.cc/logos/australia/256x256/adelaide-united.e61cf36e.png","Afturelding":"https://assets.football-logos.cc/logos/iceland/256x256/afturelding.27226179.png","Aguilas Doradas":"https://assets.football-logos.cc/logos/colombia/256x256/aguilas-doradas.58d7220f.png","Airbus UK Broughton":"https://assets.football-logos.cc/logos/wales/256x256/broughton.3ffab7ed.png","Ajax":"https://assets.football-logos.cc/logos/netherlands/256x256/ajax.fadc62c4.png","Ajman":"https://assets.football-logos.cc/logos/uae/256x256/ajman.96d6b345.png","Akhisarspor":"https://assets.football-logos.cc/logos/turkey/256x256/sakaryaspor.d62f9d1a.png","Aktobe":"https://assets.football-logos.cc/logos/kazakhstan/256x256/aktobe.ecc66648.png","Al Ahli":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-ahli.4a088ea9.png","Al Ahly SC":"https://assets.football-logos.cc/logos/egypt/256x256/al-ahly.479e3cc2.png","Al Fahaheel":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-fayha.53f2bd24.png","Al Fateh FC":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-fateh.fe613f47.png","Al Fujairah":"https://assets.football-logos.cc/logos/uae/256x256/al-jazira.282e6c5c.png","Al Hazem":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-hazem.ab7378f4.png","Al Hedood":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-okhdood.ee597d67.png","Al Hilal":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-hilal.fc7a4d70.png","Al Ittihad":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-ittihad.9a2895c9.png","Al Ittihad Alexandria":"https://assets.football-logos.cc/logos/egypt/256x256/al-ittihad-alexandria.8699c914.png","Al Ittihad Kalba":"https://assets.football-logos.cc/logos/uae/256x256/al-ittihad-kalba.2e672d8d.png","Al Kahrabaa":"https://assets.football-logos.cc/logos/qatar/256x256/al-arabi.29e47d62.png","Al Karkh":"https://assets.football-logos.cc/logos/qatar/256x256/al-markhiya.b79f8792.png","Al Masry SC":"https://assets.football-logos.cc/logos/egypt/256x256/al-masry.ff16eddc.png","Al Minaa":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-najma.eb3af8cf.png","Al Mokawloon Al Arab":"https://assets.football-logos.cc/logos/egypt/256x256/al-mokawloon-al-arab.31079fd8.png","Al Najaf":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-najma.eb3af8cf.png","Al Nasr":"https://assets.football-logos.cc/logos/uae/256x256/al-nasr.12b8bf69.png","Al Nassr FC":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-nassr.7e60a8fc.png","Al Qadsiah":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-qadsiah.8c500f16.png","Al Shabab":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-shabab.c92515de.png","Al Shorta":"https://assets.football-logos.cc/logos/qatar/256x256/al-khor.f7bfb9d6.png","Al Talaba":"https://assets.football-logos.cc/logos/qatar/256x256/al-waab.c1fdf483.png","Al Zawraa":"https://assets.football-logos.cc/logos/qatar/256x256/al-waab.c1fdf483.png","Al-Ahli":"https://assets.football-logos.cc/logos/qatar/256x256/al-ahli.68ad3354.png","Al-Ain":"https://assets.football-logos.cc/logos/uae/256x256/al-ain.3e9b255d.png","Al-Arabi":"https://assets.football-logos.cc/logos/qatar/256x256/al-arabi.29e47d62.png","Al-Dhafra":"https://assets.football-logos.cc/logos/uae/256x256/al-dhafra.ea5ae50f.png","Al-Duhail SC":"https://assets.football-logos.cc/logos/qatar/256x256/al-duhail.13656ca9.png","Al-Ettifaq":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-ettifaq.012ffc39.png","Al-Gharafa":"https://assets.football-logos.cc/logos/qatar/256x256/al-gharafa.43b10e09.png","Al-Jahra":"https://assets.football-logos.cc/logos/uae/256x256/al-jazira.282e6c5c.png","Al-Jazira":"https://assets.football-logos.cc/logos/uae/256x256/al-jazira.282e6c5c.png","Al-Karma":"https://assets.football-logos.cc/logos/qatar/256x256/al-arabi.29e47d62.png","Al-Khor":"https://assets.football-logos.cc/logos/qatar/256x256/al-khor.f7bfb9d6.png","Al-Khuraitiat":"https://assets.football-logos.cc/logos/qatar/256x256/al-khuraitiat.5b7da7d3.png","Al-Nasr SC":"https://assets.football-logos.cc/logos/uae/256x256/al-nasr.12b8bf69.png","Al-Qadsia":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-qadsiah.8c500f16.png","Al-Qasim":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-qadsiah.8c500f16.png","Al-Raed":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-raed.fec6fb4b.png","Al-Rayyan":"https://assets.football-logos.cc/logos/qatar/256x256/al-rayyan.b5b8328e.png","Al-Sadd":"https://assets.football-logos.cc/logos/qatar/256x256/al-sadd.b7363498.png","Al-Sailiya":"https://assets.football-logos.cc/logos/qatar/256x256/al-sailiya.7f2e849e.png","Al-Salmiyah":"https://assets.football-logos.cc/logos/qatar/256x256/al-sailiya.7f2e849e.png","Al-Shabab":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-shabab.c92515de.png","Al-Shabab SC":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-shabab.c92515de.png","Al-Shahaniya":"https://assets.football-logos.cc/logos/qatar/256x256/al-shahania.610be30e.png","Al-Taawoun":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-taawoun.ddaee130.png","Al-Tadhamon":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-taawoun.ddaee130.png","Al-Wahda":"https://assets.football-logos.cc/logos/uae/256x256/al-wahda.c959dbda.png","Al-Wasl":"https://assets.football-logos.cc/logos/uae/256x256/al-wasl.2499285c.png","Al-Wehda":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-wehda.136e4da4.png","Alashkert FC":"https://assets.football-logos.cc/logos/armenia/256x256/alashkert.3c9aaf2c.png","Albacete":"https://assets.football-logos.cc/logos/spain/256x256/albacete.9db2efa8.png","AlbinoLeffe":"https://assets.football-logos.cc/logos/italy/256x256/albinoleffe.6f56548e.png","Albion":"https://assets.football-logos.cc/logos/uruguay/256x256/albion.c564079b.png","Albirex Niigata FC":"https://assets.football-logos.cc/logos/japan/256x256/albirex-niigata.2f1f5a11.png","Alcorcon":"https://assets.football-logos.cc/logos/spain/256x256/alcorcon.b211eb76.png","Aldosivi":"https://assets.football-logos.cc/logos/argentina/256x256/aldosivi.1869fe02.png","Alianza Atletico":"https://assets.football-logos.cc/logos/peru/256x256/alianza-atletico.d2ac3263.png","Alianza FC":"https://assets.football-logos.cc/logos/peru/256x256/alianza-lima.15ec2654.png","Alianza Lima":"https://assets.football-logos.cc/logos/peru/256x256/alianza-lima.15ec2654.png","Almere City FC":"https://assets.football-logos.cc/logos/netherlands/256x256/almere-city-fc.28f26b3f.png","Altach":"https://assets.football-logos.cc/logos/austria/256x256/altach.224b2906.png","Altay":"https://assets.football-logos.cc/logos/austria/256x256/altach.224b2906.png","Always Ready":"https://assets.football-logos.cc/logos/bolivia/256x256/always-ready.0e911d7a.png","AmaZulu":"https://assets.football-logos.cc/logos/south-africa/256x256/amazulu-fc.19d338c8.png","America MG":"https://assets.football-logos.cc/logos/brazil/256x256/america-rn.7d22f83f.png","America de Cali":"https://assets.football-logos.cc/logos/colombia/256x256/america-de-cali.f3646c89.png","Amiens":"https://assets.football-logos.cc/logos/france/256x256/amiens.76a030b0.png","Anagennisi Karditsas":"https://assets.football-logos.cc/logos/greece/256x256/anagennisi-karditsa.253793a1.png","Anderlecht":"https://assets.football-logos.cc/logos/belgium/256x256/anderlecht.225ae34e.png","Andijon":"https://assets.football-logos.cc/logos/uzbekistan/256x256/andijon.c7c31d46.png","Ararat":"https://assets.football-logos.cc/logos/armenia/256x256/ararat.3f1144eb.png","Ararat Armenia":"https://assets.football-logos.cc/logos/armenia/256x256/ararat-armenia.601399a7.png","Ards":"https://assets.football-logos.cc/logos/northern-ireland/256x256/ards.5b5b3b1a.png","Arema":"https://assets.football-logos.cc/logos/indonesia/256x256/arema-fc.fccf9fcc.png","Aris Thessaloniki":"https://assets.football-logos.cc/logos/greece/256x256/aris-thessaloniki.915735c7.png","Arka Gdynia":"https://assets.football-logos.cc/logos/poland/256x256/arka.172be77e.png","Arouca":"https://assets.football-logos.cc/logos/portugal/256x256/arouca.24305e8e.png","Arsenal Dzerzhinsk":"https://assets.football-logos.cc/logos/belarus/256x256/arsenal-dzerzhinsk.69bc46d7.png","Arsenal Sarandi":"https://assets.football-logos.cc/logos/argentina/256x256/arsenal-de-sarandi.3db49ff2.png","Arsenal Tula":"https://assets.football-logos.cc/logos/russia/256x256/arsenal-tula.89a48232.png","Ascoli":"https://assets.football-logos.cc/logos/italy/256x256/ascoli.953f32f1.png","Asociacion Deportiva Tarma":"https://assets.football-logos.cc/logos/peru/256x256/adt.f5f73b3c.png","Asteras Tripolis":"https://assets.football-logos.cc/logos/greece/256x256/asteras.cfe5b591.png","Atalanta":"https://assets.football-logos.cc/logos/italy/256x256/atalanta.92f8a674.png","Athens Kallithea FC":"https://assets.football-logos.cc/logos/greece/256x256/athens-kallithea.8c9b2021.png","Athletic Club":"https://assets.football-logos.cc/logos/spain/256x256/athletic-club.e1bfba0c.png","Athletico Paranaense":"https://assets.football-logos.cc/logos/brazil/256x256/athletico-paranaense.15469cc7.png","Athlone Town":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/athlone-town.aa0e38a1.png","Atletico GO":"https://assets.football-logos.cc/logos/brazil/256x256/athletic.c4c0b466.png","Atletico Grau":"https://assets.football-logos.cc/logos/peru/256x256/atletico-grau.080f1b8f.png","Atletico MG":"https://assets.football-logos.cc/logos/brazil/256x256/athletic.c4c0b466.png","Atletico Nacional":"https://assets.football-logos.cc/logos/colombia/256x256/atletico-nacional.4ddc325f.png","Atletico Rafaela":"https://assets.football-logos.cc/logos/argentina/256x256/atletico-atlanta.6a97c504.png","Atletico Tucuman":"https://assets.football-logos.cc/logos/argentina/256x256/atletico-tucuman.3021868e.png","Atlético Ottawa":"https://assets.football-logos.cc/logos/canada/256x256/atletico-ottawa.8857cd30.png","Atromitos":"https://assets.football-logos.cc/logos/greece/256x256/atromitos.00dfa4b2.png","Atyrau":"https://assets.football-logos.cc/logos/kazakhstan/256x256/atyrau.0e576f6d.png","Auckland City FC":"https://assets.football-logos.cc/logos/new-zealand/256x256/auckland-fc.a1055db9.png","Auckland FC B":"https://assets.football-logos.cc/logos/new-zealand/256x256/auckland-fc.a1055db9.png","Auckland United FC":"https://assets.football-logos.cc/logos/new-zealand/256x256/auckland-fc.a1055db9.png","Auda":"https://assets.football-logos.cc/logos/latvia/256x256/auda.f827c030.png","Audax Italiano":"https://assets.football-logos.cc/logos/chile/256x256/audax-italiano.c8102cac.png","Aurora":"https://assets.football-logos.cc/logos/bolivia/256x256/aurora.a31182ab.png","Austria Wien":"https://assets.football-logos.cc/logos/austria/256x256/austria-wien.1f9f9507.png","Avai FC":"https://assets.football-logos.cc/logos/brazil/256x256/avai.cdb69a77.png","Avenir de La Marsa":"https://assets.football-logos.cc/logos/tunisia/256x256/avenir-de-la-marsa.557a04aa.png","Aves":"https://assets.football-logos.cc/logos/portugal/256x256/chaves.b508c67f.png","B36 Torshavn":"https://assets.football-logos.cc/logos/faroe-islands/256x256/b36-torshavn.539668f7.png","BA Stars FC":"https://assets.football-logos.cc/logos/france/256x256/red-star-fc.73523ab8.png","BATE Borisov":"https://assets.football-logos.cc/logos/belarus/256x256/bate-borisov.d8a1028e.png","BFC Daugavpils":"https://assets.football-logos.cc/logos/latvia/256x256/daugavpils.9ddd7316.png","BG Pathum United":"https://assets.football-logos.cc/logos/thailand/256x256/bg-pathum-united.c5d9df89.png","Bahia":"https://assets.football-logos.cc/logos/brazil/256x256/bahia.ac6d69f5.png","Bala Town":"https://assets.football-logos.cc/logos/wales/256x256/bala-town-fc.ac2e2102.png","Bali United FC":"https://assets.football-logos.cc/logos/indonesia/256x256/bali-united.cdf7d1a2.png","Ballymena United":"https://assets.football-logos.cc/logos/northern-ireland/256x256/ballymena-united.a8cc014d.png","Baltika":"https://assets.football-logos.cc/logos/russia/256x256/baltika.77135062.png","Banfield":"https://assets.football-logos.cc/logos/argentina/256x256/banfield.2b03df71.png","Bangkok United":"https://assets.football-logos.cc/logos/thailand/256x256/true-bangkok-united.13121aa5.png","Bangor City":"https://assets.football-logos.cc/logos/south-africa/256x256/durban-city.65761e09.png","Banik Ostrava":"https://assets.football-logos.cc/logos/czech-republic/256x256/banik.44e0d4b6.png","Baniyas":"https://assets.football-logos.cc/logos/uae/256x256/baniyas.608f5771.png","Bar":"https://assets.football-logos.cc/logos/italy/256x256/bari.e31ae6fd.png","Baranovichi":"https://assets.football-logos.cc/logos/belarus/256x256/baranovichi.a06278b8.png","Barau":"https://assets.football-logos.cc/logos/brazil/256x256/barra.ac23d333.png","Barca Atletic":"https://assets.football-logos.cc/logos/scotland/256x256/alloa-athletic.ca7fc5b5.png","Basel":"https://assets.football-logos.cc/logos/switzerland/256x256/basel.0de31951.png","Bayelsa United":"https://assets.football-logos.cc/logos/indonesia/256x256/bali-united.cdf7d1a2.png","Beijing Guoan":"https://assets.football-logos.cc/logos/china/256x256/beijing-guoan.2337dee6.png","Bekescsaba":"https://assets.football-logos.cc/logos/hungary/256x256/bekescsaba.adacd0c4.png","Belgrano":"https://assets.football-logos.cc/logos/argentina/256x256/belgrano.a9ed5c35.png","Bellinzona":"https://assets.football-logos.cc/logos/switzerland/256x256/bellinzona.9ea08f9a.png","Bengaluru FC":"https://assets.football-logos.cc/logos/india/256x256/bengaluru-fc.ddf717bc.png","Beroe":"https://assets.football-logos.cc/logos/bulgaria/256x256/beroe.f7af5378.png","Bhayangkara Presisi Indonesia FC":"https://assets.football-logos.cc/logos/indonesia/256x256/bhayangkara-presisi-lampung.3b9ea85c.png","Blooming":"https://assets.football-logos.cc/logos/bolivia/256x256/blooming.df928de1.png","Boca Juniors":"https://assets.football-logos.cc/logos/argentina/256x256/boca-juniors.533fd0f6.png","Bodø/Glimt":"https://assets.football-logos.cc/logos/norway/256x256/bodo-glimt.5dfc49c2.png","Bohemian FC":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/bohemian.b484b490.png","Bohemians 1905":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/bohemian.b484b490.png","Bolivar":"https://assets.football-logos.cc/logos/bolivia/256x256/bolivar.9edd81db.png","Boluspor":"https://assets.football-logos.cc/logos/turkey/256x256/boluspor.0a34125f.png","Borac Banja Luka":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/borac.897a63b7.png","Borneo Samarinda":"https://assets.football-logos.cc/logos/indonesia/256x256/borneo-fc.00e1f152.png","Boston River":"https://assets.football-logos.cc/logos/uruguay/256x256/boston-river.4e0c5bb7.png","Botafogo RJ":"https://assets.football-logos.cc/logos/brazil/256x256/botafogo.e439f7a4.png","Botafogo SP":"https://assets.football-logos.cc/logos/brazil/256x256/botafogo-sp.50f2da52.png","Botev Plovdiv II":"https://assets.football-logos.cc/logos/bulgaria/256x256/botev-plovdiv.b02d47e1.png","Brann":"https://assets.football-logos.cc/logos/norway/256x256/brann.ce579b2e.png","Bray Wanderers":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/bray-wanderers.fb31c83a.png","Breidablik":"https://assets.football-logos.cc/logos/iceland/256x256/breidablik.b49b72d9.png","Brisbane Roar FC":"https://assets.football-logos.cc/logos/australia/256x256/brisbane-roar.8805395e.png","Brommapojkarna":"https://assets.football-logos.cc/logos/sweden/256x256/brommapojkarna.c6d478a0.png","Bryne":"https://assets.football-logos.cc/logos/norway/256x256/bryne.f435257f.png","Brøndby IF":"https://assets.football-logos.cc/logos/denmark/256x256/brondby.5fa628f1.png","Brønshøj":"https://assets.football-logos.cc/logos/denmark/256x256/bronshoj.e0c9cf8b.png","Bucaramanga":"https://assets.football-logos.cc/logos/colombia/256x256/bucaramanga.277d3771.png","Bucheon FC 1995":"https://assets.football-logos.cc/logos/south-korea/256x256/bucheon-fc-1995.2485339c.png","Budafoki MTE":"https://assets.football-logos.cc/logos/hungary/256x256/budafoki.c1dca0c7.png","Buducnost Podgorica":"https://assets.football-logos.cc/logos/montenegro/256x256/buducnost-podgorica.adc9d089.png","Buriram United":"https://assets.football-logos.cc/logos/thailand/256x256/buriram-united.3b0c514b.png","Buxoro":"https://assets.football-logos.cc/logos/uzbekistan/256x256/buxoro.87027705.png","Bylis":"https://assets.football-logos.cc/logos/albania/256x256/bylis.e3635dda.png","CA Bizertin":"https://assets.football-logos.cc/logos/tunisia/256x256/ca-bizertin.25165c96.png","CD UT Cajamarca":"https://assets.football-logos.cc/logos/peru/256x256/fc-cajamarca.cee03143.png","CDT Real Oruro":"https://assets.football-logos.cc/logos/bolivia/256x256/real-oruro.e224bb32.png","CFR Cluj":"https://assets.football-logos.cc/logos/romania/256x256/cfr-cluj.a51406a7.png","CR Belouizdad":"https://assets.football-logos.cc/logos/algeria/256x256/cr-belouizdad.03a54ad2.png","CRB":"https://assets.football-logos.cc/logos/brazil/256x256/crb.f44e564b.png","CS Grevenmacher":"https://assets.football-logos.cc/logos/luxembourg/256x256/grevenmacher.ec4b13a7.png","CS Sfaxien":"https://assets.football-logos.cc/logos/tunisia/256x256/cs-sfaxien.0781a022.png","CSKA 1948 II":"https://assets.football-logos.cc/logos/bulgaria/256x256/cska-1948.230955bd.png","CSKA Moscow":"https://assets.football-logos.cc/logos/russia/256x256/cska-moskva.303a8507.png","CSKA Sofia":"https://assets.football-logos.cc/logos/bulgaria/256x256/cska-sofia.742c2b90.png","Cambuur":"https://assets.football-logos.cc/logos/netherlands/256x256/sc-cambuur.f7025c05.png","Carmarthen":"https://assets.football-logos.cc/logos/wales/256x256/carmarthen.e088251e.png","Cartagena":"https://assets.football-logos.cc/logos/spain/256x256/fc-cartagena.d6c0324b.png","Cavalry FC":"https://assets.football-logos.cc/logos/canada/256x256/cavalry.4491359a.png","Ceara":"https://assets.football-logos.cc/logos/brazil/256x256/ceara.ea9d0cdd.png","Celik Zenica":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/celik.62e145d5.png","Celta Vigo":"https://assets.football-logos.cc/logos/spain/256x256/celta.37e88c80.png","Celtic":"https://assets.football-logos.cc/logos/scotland/256x256/celtic.60b55259.png","Central Coast Mariners":"https://assets.football-logos.cc/logos/australia/256x256/central-coast-mariners.fa7d312f.png","Central Espanol":"https://assets.football-logos.cc/logos/uruguay/256x256/central-espanol.bf53fc8a.png","Cercle Brugge":"https://assets.football-logos.cc/logos/belgium/256x256/cercle-brugge.ba969d8e.png","Cerro":"https://assets.football-logos.cc/logos/uruguay/256x256/cerro.8366080e.png","Cerro Largo":"https://assets.football-logos.cc/logos/uruguay/256x256/cerro.8366080e.png","Cerro Porteno":"https://assets.football-logos.cc/logos/paraguay/256x256/cerro-porteno.f145d829.png","Chania":"https://assets.football-logos.cc/logos/greece/256x256/chania.724d054a.png","Chanthaburi FC":"https://assets.football-logos.cc/logos/thailand/256x256/chonburi-fc.8c5ea5fe.png","Chapecoense AF":"https://assets.football-logos.cc/logos/brazil/256x256/chapecoense.7256ba28.png","Chayka":"https://assets.football-logos.cc/logos/finland/256x256/haka.1f64aefe.png","Chengdu Rongcheng FC":"https://assets.football-logos.cc/logos/china/256x256/chengdu-rongcheng.b1770fd5.png","Chennaiyin FC":"https://assets.football-logos.cc/logos/india/256x256/chennaiyin-fc.e15aa290.png","Cheongju FC":"https://assets.football-logos.cc/logos/thailand/256x256/chonburi-fc.8c5ea5fe.png","Cherno More Varna":"https://assets.football-logos.cc/logos/bulgaria/256x256/cherno-more.4df09c39.png","Chiangmai United":"https://assets.football-logos.cc/logos/thailand/256x256/singha-chiangrai-united.927aaf4c.png","Chiangrai United":"https://assets.football-logos.cc/logos/thailand/256x256/singha-chiangrai-united.927aaf4c.png","Chikhura":"https://assets.football-logos.cc/logos/georgia/256x256/chikhura.1a615768.png","Chonburi FC":"https://assets.football-logos.cc/logos/thailand/256x256/chonburi-fc.8c5ea5fe.png","Chongqing Tongliang Long":"https://assets.football-logos.cc/logos/china/256x256/chongqing-tonglianglong.cb69abc3.png","Chornomorets Odesa":"https://assets.football-logos.cc/logos/ukraine/256x256/chornomorets.f2b7f64d.png","Cittadella":"https://assets.football-logos.cc/logos/italy/256x256/cittadella.669924de.png","Cliftonville":"https://assets.football-logos.cc/logos/northern-ireland/256x256/cliftonville.a803879f.png","Club Africain":"https://assets.football-logos.cc/logos/tunisia/256x256/club-africain.39849e6a.png","Club Atletico Penarol":"https://assets.football-logos.cc/logos/paraguay/256x256/club-atletico-tembetary.e4296e39.png","Club Brugge":"https://assets.football-logos.cc/logos/belgium/256x256/club-brugge.78d50f94.png","Club Deportivo Moquegua":"https://assets.football-logos.cc/logos/peru/256x256/deportivo-moquegua.3b5b2adb.png","Cobh Ramblers":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/cobh-ramblers.af074316.png","Cobresal":"https://assets.football-logos.cc/logos/chile/256x256/cobresal.3636759b.png","Coleraine":"https://assets.football-logos.cc/logos/northern-ireland/256x256/coleraine.f3fd1e18.png","Colo Colo":"https://assets.football-logos.cc/logos/chile/256x256/colo-colo.b39e2300.png","Colon":"https://assets.football-logos.cc/logos/england/256x256/bolton.4a68a472.png","Comerciantes Unidos":"https://assets.football-logos.cc/logos/peru/256x256/comerciantes-unidos.0c1a16f8.png","Cong An Ha Noi":"https://assets.football-logos.cc/logos/vietnam/256x256/cong-an-ha-noi.16e52794.png","Cong An Ho Chi Minh City":"https://assets.football-logos.cc/logos/vietnam/256x256/ho-chi-minh-city.fb64679d.png","Coquimbo Unido":"https://assets.football-logos.cc/logos/chile/256x256/coquimbo-unido.20e216cb.png","Cordoba":"https://assets.football-logos.cc/logos/spain/256x256/cordoba.669c976a.png","Corinthians":"https://assets.football-logos.cc/logos/brazil/256x256/corinthians.c51ae739.png","Coritiba":"https://assets.football-logos.cc/logos/brazil/256x256/coritiba.6d282e13.png","Cork City":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/cork-city.bbb0dd46.png","Cova da Piedade SAD":"https://assets.football-logos.cc/logos/portugal/256x256/cova-da-piedade.876cc8b9.png","Cowdenbeath":"https://assets.football-logos.cc/logos/scotland/256x256/cowdenbeath.f6609982.png","Cracovia":"https://assets.football-logos.cc/logos/poland/256x256/cracovia.e6969826.png","Criciuma":"https://assets.football-logos.cc/logos/brazil/256x256/criciuma.d06aa52e.png","Crotone":"https://assets.football-logos.cc/logos/italy/256x256/crotone.5396979d.png","Crusaders":"https://assets.football-logos.cc/logos/northern-ireland/256x256/crusaders.884c5a31.png","Cruzeiro":"https://assets.football-logos.cc/logos/brazil/256x256/cruzeiro.6c188ab8.png","Cucuta":"https://assets.football-logos.cc/logos/spain/256x256/ceuta.8d6d19eb.png","Cuiaba":"https://assets.football-logos.cc/logos/brazil/256x256/cuiaba.2ff467a8.png","Cukaricki":"https://assets.football-logos.cc/logos/serbia/256x256/cukaricki.527f3aea.png","Cusco FC":"https://assets.football-logos.cc/logos/peru/256x256/cusco.1429cb61.png","DAC 1904 Dunajska Streda":"https://assets.football-logos.cc/logos/slovakia/256x256/dunajska-streda.050878f4.png","Da Nang":"https://assets.football-logos.cc/logos/vietnam/256x256/da-nang.f873fb1c.png","Daegu FC":"https://assets.football-logos.cc/logos/south-korea/256x256/daegu-fc.7f150244.png","Daejeon Hana Citizen":"https://assets.football-logos.cc/logos/south-korea/256x256/daejeon-hana-citizen.b679f304.png","Dalian Yingbo":"https://assets.football-logos.cc/logos/china/256x256/dalian-yingbo.b94a0e34.png","Damash":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/damac.4f5ef074.png","Danubio":"https://assets.football-logos.cc/logos/uruguay/256x256/danubio.d5622a4f.png","Debrecen":"https://assets.football-logos.cc/logos/hungary/256x256/debrecen.a67cd602.png","Defensa y Justicia":"https://assets.football-logos.cc/logos/argentina/256x256/defensa-y-justicia.00540812.png","Defensor Sporting":"https://assets.football-logos.cc/logos/uruguay/256x256/defensor-sporting.8acb1824.png","Degerfors":"https://assets.football-logos.cc/logos/sweden/256x256/degerfors.7e95173f.png","Denizlispor":"https://assets.football-logos.cc/logos/turkey/256x256/denizlispor.14a3357c.png","Deportes Concepcion":"https://assets.football-logos.cc/logos/chile/256x256/deportes-concepcion.afc94a04.png","Deportes Limache":"https://assets.football-logos.cc/logos/chile/256x256/deportes-limache.55da718a.png","Deportivo Cali":"https://assets.football-logos.cc/logos/colombia/256x256/deportivo-cali.79263f21.png","Deportivo Garcilaso":"https://assets.football-logos.cc/logos/peru/256x256/deportivo-garcilaso.009a0079.png","Deportivo Maldonado":"https://assets.football-logos.cc/logos/uruguay/256x256/deportivo-maldonado.5cfdec8e.png","Deportivo Pasto":"https://assets.football-logos.cc/logos/colombia/256x256/deportivo-pasto.f3545008.png","Deportivo Pereira":"https://assets.football-logos.cc/logos/colombia/256x256/deportivo-pereira.3fc6bc22.png","Derry City":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/derry-city.691c8515.png","Dewa United FC":"https://assets.football-logos.cc/logos/indonesia/256x256/dewa-united.ef49b9ab.png","Dijon Foot":"https://assets.football-logos.cc/logos/france/256x256/dijon.ee6faca4.png","Dila Gori":"https://assets.football-logos.cc/logos/georgia/256x256/dila.b4d58157.png","Dinamo Bucuresti":"https://assets.football-logos.cc/logos/romania/256x256/dinamo-bucuresti.1d0d09df.png","Dinamo Minsk":"https://assets.football-logos.cc/logos/belarus/256x256/dinamo-minsk.f2064194.png","Dinamo Moscow":"https://assets.football-logos.cc/logos/russia/256x256/dynamo-moscow.d7db80b5.png","Dinamo Samarkand":"https://assets.football-logos.cc/logos/uzbekistan/256x256/dinamo-samarkand.ff9c8cfa.png","Dinamo Tbilisi":"https://assets.football-logos.cc/logos/georgia/256x256/dinamo-tbilisi.0af187cc.png","Dinamo Zagreb":"https://assets.football-logos.cc/logos/croatia/256x256/dinamo-zagreb.3e622a37.png","Diyala":"https://assets.football-logos.cc/logos/georgia/256x256/dila.b4d58157.png","Djurgården":"https://assets.football-logos.cc/logos/sweden/256x256/djurgarden.e9c3e4df.png","Dnipro":"https://assets.football-logos.cc/logos/ukraine/256x256/dnipro.732c1d52.png","Dobrudzha Dobrich":"https://assets.football-logos.cc/logos/bulgaria/256x256/pfc-dobrudzha-dobrich.99cf562c.png","Domzale":"https://assets.football-logos.cc/logos/slovenia/256x256/domzale.9214d9b0.png","Drogheda United":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/drogheda-united.f487372a.png","Dunav Ruse":"https://assets.football-logos.cc/logos/bulgaria/256x256/dunav.5bed05db.png","Dundalk":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/dundalk.24c29555.png","Dundee FC":"https://assets.football-logos.cc/logos/scotland/256x256/dundee.1575086b.png","Dundee United":"https://assets.football-logos.cc/logos/scotland/256x256/dundee-united.983be0fc.png","Dunfermline Athletic":"https://assets.football-logos.cc/logos/scotland/256x256/dunfermline.051c9896.png","Dungannon Swifts":"https://assets.football-logos.cc/logos/northern-ireland/256x256/dungannon.b5c30ee5.png","Durban City":"https://assets.football-logos.cc/logos/south-africa/256x256/durban-city.65761e09.png","Dynamo Brest":"https://assets.football-logos.cc/logos/belarus/256x256/dinamo-brest.05c8385d.png","Dynamo Kyiv":"https://assets.football-logos.cc/logos/ukraine/256x256/dynamo-kyiv.84c73cff.png","Dynamo Makhachkala":"https://assets.football-logos.cc/logos/russia/256x256/dynamo-makhachkala.622357d9.png","EB/Streymur":"https://assets.football-logos.cc/logos/faroe-islands/256x256/eb-streymur.13449946.png","ENPPI":"https://assets.football-logos.cc/logos/egypt/256x256/enppi.3db855b0.png","ES Sétif":"https://assets.football-logos.cc/logos/algeria/256x256/es-setif.9dbc0932.png","East Bengal FC":"https://assets.football-logos.cc/logos/india/256x256/east-bengal-fc.3e27eb81.png","El Gouna FC":"https://assets.football-logos.cc/logos/egypt/256x256/el-gouna.ecc96409.png","Elche":"https://assets.football-logos.cc/logos/spain/256x256/elche.027b16d8.png","Elfsborg":"https://assets.football-logos.cc/logos/sweden/256x256/elfsborg.82ed0b15.png","Emirates Club":"https://assets.football-logos.cc/logos/england/256x256/emirates-fa-cup.a5da3afb.png","Empoli":"https://assets.football-logos.cc/logos/italy/256x256/empoli.1eeeb2b4.png","Enugu Rangers":"https://assets.football-logos.cc/logos/scotland/256x256/rangers.05ce20d9.png","Esbjerg fB":"https://assets.football-logos.cc/logos/denmark/256x256/esbjerg.4774083f.png","Espérance":"https://assets.football-logos.cc/logos/tunisia/256x256/esperance.b48427aa.png","Esteghlal":"https://assets.football-logos.cc/logos/iran/256x256/esteghlal.14e9eed3.png","Estoril":"https://assets.football-logos.cc/logos/portugal/256x256/estoril.d82142b7.png","Estudiantes":"https://assets.football-logos.cc/logos/venezuela/256x256/estudiantes-merida.4bd1531f.png","Etar":"https://assets.football-logos.cc/logos/bulgaria/256x256/etar.8e442cf5.png","Etoile du Sahel":"https://assets.football-logos.cc/logos/tunisia/256x256/etoile-du-sahel.1bafac56.png","Eupen":"https://assets.football-logos.cc/logos/belgium/256x256/eupen.b6e1fb1c.png","Everton CD":"https://assets.football-logos.cc/logos/chile/256x256/everton.9035ba08.png","FA Siauliai":"https://assets.football-logos.cc/logos/lithuania/256x256/siauliai.c0a7a505.png","FAR Rabat":"https://assets.football-logos.cc/logos/morocco/256x256/fus-rabat.88fb97ce.png","FBC Melgar":"https://assets.football-logos.cc/logos/peru/256x256/melgar.20b505cc.png","FC Anyang":"https://assets.football-logos.cc/logos/south-korea/256x256/fc-anyang.135b0bd3.png","FC Astana":"https://assets.football-logos.cc/logos/kazakhstan/256x256/astana.8f976316.png","FC Cajamarca":"https://assets.football-logos.cc/logos/peru/256x256/fc-cajamarca.cee03143.png","FC Den Bosch":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-den-bosch.ccaa4af5.png","FC Differdange 03":"https://assets.football-logos.cc/logos/luxembourg/256x256/differdange.c6903942.png","FC Dordrecht":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-dordrecht.d2734b11.png","FC Eindhoven":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-eindhoven.e4dfb089.png","FC Emmen":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-emmen.8aca22fe.png","FC Goa":"https://assets.football-logos.cc/logos/india/256x256/fc-goa.6d0ebc2e.png","FC Groningen":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-groningen.7adf21bc.png","FC Kapaz":"https://assets.football-logos.cc/logos/azerbaijan/256x256/kapaz.1745ec8f.png","FC Krasnodar":"https://assets.football-logos.cc/logos/russia/256x256/krasnodar.1af364fa.png","FC Kuressaare":"https://assets.football-logos.cc/logos/estonia/256x256/kuressaare.4fb5b6ba.png","FC Lustenau":"https://assets.football-logos.cc/logos/austria/256x256/lustenau.a0d8697f.png","FC Midtjylland":"https://assets.football-logos.cc/logos/denmark/256x256/midtjylland.d292d123.png","FC Minsk":"https://assets.football-logos.cc/logos/belarus/256x256/minsk.fc09aa04.png","FC Mokpo":"https://assets.football-logos.cc/logos/japan/256x256/fc-tokyo.4b2237cc.png","FC Noah":"https://assets.football-logos.cc/logos/india/256x256/fc-goa.6d0ebc2e.png","FC Oleksandriya":"https://assets.football-logos.cc/logos/ukraine/256x256/olexandriya.90bd3a92.png","FC Orenburg":"https://assets.football-logos.cc/logos/russia/256x256/orenburg.b11a3887.png","FC Rostov":"https://assets.football-logos.cc/logos/russia/256x256/rostov.dcab8020.png","FC Rustavi":"https://assets.football-logos.cc/logos/georgia/256x256/rustavi.cf48e62b.png","FC Seoul":"https://assets.football-logos.cc/logos/south-korea/256x256/fc-seoul.80454f22.png","FC Sheriff":"https://assets.football-logos.cc/logos/moldova/256x256/sheriff.864b45b1.png","FC Twente":"https://assets.football-logos.cc/logos/netherlands/256x256/twente.6ab33058.png","FC Utrecht":"https://assets.football-logos.cc/logos/netherlands/256x256/fc-utrecht.a8ccd806.png","FC Vaduz":"https://assets.football-logos.cc/logos/liechtenstein/256x256/vaduz.c5d7ba52.png","FC Volendam":"https://assets.football-logos.cc/logos/netherlands/256x256/volendam.f594d394.png","FC Yelimay":"https://assets.football-logos.cc/logos/kazakhstan/256x256/yelimay.216dd63d.png","FC Zbrojovka Brno":"https://assets.football-logos.cc/logos/czech-republic/256x256/brno.5e1a00d4.png","FC Zlin":"https://assets.football-logos.cc/logos/czech-republic/256x256/zlin.7f9cf645.png","FCI Levadia":"https://assets.football-logos.cc/logos/estonia/256x256/levadia.fe7a9fa6.png","FCSB":"https://assets.football-logos.cc/logos/romania/256x256/fcsb.8cb78585.png","FCV Dender EH":"https://assets.football-logos.cc/logos/belgium/256x256/fcv-dender-eh.a8285b32.png","FK Akhmat":"https://assets.football-logos.cc/logos/russia/256x256/akhmat.1979bb88.png","FK Crvena Zvezda":"https://assets.football-logos.cc/logos/serbia/256x256/crvena-zvezda.c6899864.png","FK Haugesund":"https://assets.football-logos.cc/logos/norway/256x256/haugesund.33bd1c07.png","FK Jelgava":"https://assets.football-logos.cc/logos/latvia/256x256/jelgava.e3318f0c.png","FK Kauno Zalgiris":"https://assets.football-logos.cc/logos/lithuania/256x256/kauno-zalgiris.2c2baa7b.png","FK Leotar":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/leotar.c753adbf.png","FK Liepaja":"https://assets.football-logos.cc/logos/latvia/256x256/liepaja.9b521423.png","FK Metalac":"https://assets.football-logos.cc/logos/serbia/256x256/metalac.8cec1985.png","FK Neftchi":"https://assets.football-logos.cc/logos/azerbaijan/256x256/neftci.3ea40d90.png","FK Panevezys":"https://assets.football-logos.cc/logos/lithuania/256x256/panevezys.b4a92d62.png","FK Pohronie":"https://assets.football-logos.cc/logos/slovakia/256x256/pohronie.3d8db451.png","FK Sarajevo":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/sarajevo.6448959d.png","FK Sileks":"https://assets.football-logos.cc/logos/north-macedonia/256x256/sileks.7c2392b8.png","FK Sloboda Uzice":"https://assets.football-logos.cc/logos/serbia/256x256/sloboda-uzice.507140b1.png","FK Spartak Subotica":"https://assets.football-logos.cc/logos/serbia/256x256/spartak-subotica.a348c67e.png","FK TransINVEST":"https://assets.football-logos.cc/logos/lithuania/256x256/transinvest.361339d8.png","FK Tukums 2000":"https://assets.football-logos.cc/logos/latvia/256x256/tukums-2000.ccb5d3b2.png","FK Velez Mostar":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/velez.ffa2407b.png","FK Vitebsk":"https://assets.football-logos.cc/logos/belarus/256x256/vitebsk.765ac0e6.png","FK Zvijezda":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/zvijezda.170719a6.png","FUS Rabat":"https://assets.football-logos.cc/logos/morocco/256x256/fus-rabat.88fb97ce.png","Fakel":"https://assets.football-logos.cc/logos/russia/256x256/fakel.fc157e18.png","Falkenbergs FF":"https://assets.football-logos.cc/logos/sweden/256x256/falkenberg.a55a5fe1.png","Falkirk":"https://assets.football-logos.cc/logos/scotland/256x256/falkirk.d0bf56aa.png","Fatima":"https://assets.football-logos.cc/logos/portugal/256x256/fatima.3383c41a.png","Feirense":"https://assets.football-logos.cc/logos/portugal/256x256/feirense.f77f7b94.png","Ferencvaros":"https://assets.football-logos.cc/logos/hungary/256x256/ferencvaros.750030f0.png","Feyenoord":"https://assets.football-logos.cc/logos/netherlands/256x256/feyenoord.06e393bc.png","Finn Harps":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/finn-harps.0d9b66a4.png","Fiorentina":"https://assets.football-logos.cc/logos/italy/256x256/fiorentina.7ba101c2.png","First Vienna FC":"https://assets.football-logos.cc/logos/austria/256x256/first-vienna.d1964a12.png","Flamengo":"https://assets.football-logos.cc/logos/brazil/256x256/flamengo.9c3055f2.png","Flamurtari":"https://assets.football-logos.cc/logos/albania/256x256/flamurtari.a4598b1a.png","Flora Tallinn":"https://assets.football-logos.cc/logos/estonia/256x256/flora-tallinn.e2378b1e.png","Fluminense":"https://assets.football-logos.cc/logos/brazil/256x256/fluminense.118d8b5e.png","Forge FC":"https://assets.football-logos.cc/logos/canada/256x256/forge.57dcc53c.png","Fortaleza":"https://assets.football-logos.cc/logos/brazil/256x256/fortaleza.5f34e5ff.png","Fortaleza FC":"https://assets.football-logos.cc/logos/colombia/256x256/fortaleza-ceif.a049a349.png","Fortuna Sittard":"https://assets.football-logos.cc/logos/netherlands/256x256/fortuna-sittard.05ad8019.png","Fredericia":"https://assets.football-logos.cc/logos/denmark/256x256/fredericia.db1d838a.png","Fredrikstad":"https://assets.football-logos.cc/logos/norway/256x256/fredrikstad.1307e08c.png","Frosinone":"https://assets.football-logos.cc/logos/italy/256x256/frosinone.8cc89626.png","Fylkir":"https://assets.football-logos.cc/logos/iceland/256x256/fylkir.6f3d7d51.png","GAIS":"https://assets.football-logos.cc/logos/sweden/256x256/gais.bd2d3fbd.png","GKS Katowice":"https://assets.football-logos.cc/logos/poland/256x256/katowice.68b70d66.png","GV San Jose":"https://assets.football-logos.cc/logos/bolivia/256x256/gv-san-jose.698e66b3.png","Galway United FC":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/galway-united.1a6be65d.png","Gandzasar":"https://assets.football-logos.cc/logos/armenia/256x256/gandzasar.06ddc707.png","Gangwon FC":"https://assets.football-logos.cc/logos/south-korea/256x256/gangwon-fc.e54434e2.png","Gaziantep FK":"https://assets.football-logos.cc/logos/turkey/256x256/gaziantep.2b19f697.png","Genk":"https://assets.football-logos.cc/logos/belgium/256x256/genk.7f39c354.png","Genoa":"https://assets.football-logos.cc/logos/italy/256x256/genoa.a5ec9be4.png","Gent":"https://assets.football-logos.cc/logos/belgium/256x256/gent.448b926f.png","Gil Vicente":"https://assets.football-logos.cc/logos/portugal/256x256/gil-vicente.d1a5cb58.png","Gimcheon Sangmu":"https://assets.football-logos.cc/logos/south-korea/256x256/gimcheon-sangmu-fc.37b97c7f.png","Gimnasia LP":"https://assets.football-logos.cc/logos/argentina/256x256/gimnasia-lp.9ad61caf.png","Girona":"https://assets.football-logos.cc/logos/spain/256x256/girona.14b919ce.png","Glenavon":"https://assets.football-logos.cc/logos/northern-ireland/256x256/glenavon.d18fded5.png","Glentoran":"https://assets.football-logos.cc/logos/northern-ireland/256x256/glentoran.14ff9224.png","Go Ahead Eagles":"https://assets.football-logos.cc/logos/netherlands/256x256/go-ahead-eagles.8a93983d.png","Godoy Cruz":"https://assets.football-logos.cc/logos/argentina/256x256/godoy-cruz.28da0774.png","Goias":"https://assets.football-logos.cc/logos/brazil/256x256/goias.e5a0bc09.png","Gold Coast United FC":"https://assets.football-logos.cc/logos/england/256x256/boston-united.f644cc84.png","Gomel":"https://assets.football-logos.cc/logos/belarus/256x256/gomel.92629586.png","Gorica":"https://assets.football-logos.cc/logos/slovenia/256x256/gorica.8afab90e.png","Granada":"https://assets.football-logos.cc/logos/spain/256x256/granada.041e574a.png","Grasshopper":"https://assets.football-logos.cc/logos/switzerland/256x256/grasshoppers.748fcf69.png","Greenock Morton":"https://assets.football-logos.cc/logos/scotland/256x256/morton.10840cf5.png","Gremio":"https://assets.football-logos.cc/logos/brazil/256x256/gremio.d252cec9.png","Grindavik":"https://assets.football-logos.cc/logos/iceland/256x256/grindavik.872a8965.png","Grobina":"https://assets.football-logos.cc/logos/latvia/256x256/grobina.8db5e0c6.png","Grosseto":"https://assets.football-logos.cc/logos/italy/256x256/grosseto.fa06f98a.png","Grotta":"https://assets.football-logos.cc/logos/iceland/256x256/grotta.8b22cfaf.png","Guabira":"https://assets.football-logos.cc/logos/bolivia/256x256/guabira.34941f06.png","Guarani":"https://assets.football-logos.cc/logos/paraguay/256x256/guarani.e3b39f5f.png","Guingamp":"https://assets.football-logos.cc/logos/france/256x256/guingamp.40fd0c62.png","Gwangju FC":"https://assets.football-logos.cc/logos/south-korea/256x256/gwangju-fc.abfa4999.png","Górnik Zabrze":"https://assets.football-logos.cc/logos/poland/256x256/gornik-zabrze.b4c435dc.png","Górnik Łęczna":"https://assets.football-logos.cc/logos/poland/256x256/gornik-leczna.e5c888d7.png","Güngören":"https://assets.football-logos.cc/logos/slovakia/256x256/trencin.4e5193d1.png","HB Torshavn":"https://assets.football-logos.cc/logos/faroe-islands/256x256/b36-torshavn.539668f7.png","HFX Wanderers FC":"https://assets.football-logos.cc/logos/canada/256x256/hfx-wanderers.d603428b.png","Ha Noi FC":"https://assets.football-logos.cc/logos/vietnam/256x256/ha-noi-fc.f98ea4a0.png","Hai Phong":"https://assets.football-logos.cc/logos/vietnam/256x256/hai-phong.d83d449c.png","Hajduk Split":"https://assets.football-logos.cc/logos/croatia/256x256/hajduk-split.90d7fece.png","Haladas":"https://assets.football-logos.cc/logos/hungary/256x256/haladas.a8b74423.png","Halmstads BK":"https://assets.football-logos.cc/logos/sweden/256x256/halmstad.9e378f56.png","Hamarkameratene":"https://assets.football-logos.cc/logos/norway/256x256/hamkam.27e5772e.png","Hamilton Academical":"https://assets.football-logos.cc/logos/scotland/256x256/hamilton.d0e3d08b.png","Hammarby":"https://assets.football-logos.cc/logos/sweden/256x256/hammarby.6e858901.png","Haras El Hodoud":"https://assets.football-logos.cc/logos/egypt/256x256/haras-el-hodoud.8512678f.png","Hartberg":"https://assets.football-logos.cc/logos/austria/256x256/hartberg.4f4ac2c6.png","Hassania Agadir":"https://assets.football-logos.cc/logos/morocco/256x256/hassania-agadir.719c5d64.png","Haverfordwest":"https://assets.football-logos.cc/logos/wales/256x256/haverfordwest-county.6bc16e8c.png","Heart of Lions":"https://assets.football-logos.cc/logos/scotland/256x256/hearts.70cd838e.png","Hearts":"https://assets.football-logos.cc/logos/scotland/256x256/hearts.70cd838e.png","Hearts of Oak":"https://assets.football-logos.cc/logos/scotland/256x256/hearts.70cd838e.png","Hegelmann":"https://assets.football-logos.cc/logos/lithuania/256x256/hegelmann.9fb4d36c.png","Helmond Sport":"https://assets.football-logos.cc/logos/netherlands/256x256/helmond-sport.bf112ab5.png","Helsingborg":"https://assets.football-logos.cc/logos/sweden/256x256/helsingborg.8e520110.png","Henan FC":"https://assets.football-logos.cc/logos/malaysia/256x256/penang-fc.880b0168.png","Heracles":"https://assets.football-logos.cc/logos/spain/256x256/hercules.47caae48.png","Hibernian":"https://assets.football-logos.cc/logos/scotland/256x256/hibernian.3c13f863.png","Hoang Anh Gia Lai":"https://assets.football-logos.cc/logos/vietnam/256x256/hoang-anh-gia-lai.2678cb41.png","Hobro":"https://assets.football-logos.cc/logos/sweden/256x256/orebro.e5c4aa9c.png","Hong Linh Ha Tinh":"https://assets.football-logos.cc/logos/vietnam/256x256/hong-linh-ha-tinh.7ea8edf9.png","Hougang United FC":"https://assets.football-logos.cc/logos/usa/256x256/loudoun-united-fc.9d5bc82a.png","Hradec Kralove":"https://assets.football-logos.cc/logos/czech-republic/256x256/hradec-kralove.71ef7064.png","Huachipato":"https://assets.football-logos.cc/logos/chile/256x256/huachipato.dd97dd81.png","Huracan":"https://assets.football-logos.cc/logos/argentina/256x256/ca-huracan.c9e27138.png","Hvidovre":"https://assets.football-logos.cc/logos/denmark/256x256/hvidovre-if.164944fd.png","Häcken":"https://assets.football-logos.cc/logos/sweden/256x256/hacken.f352d1ce.png","Hødd":"https://assets.football-logos.cc/logos/norway/256x256/hodd.6f1ca542.png","IFK Göteborg":"https://assets.football-logos.cc/logos/sweden/256x256/goteborg.2d4bc606.png","IFK Norrköping":"https://assets.football-logos.cc/logos/sweden/256x256/norrkoping.bfd38c85.png","IK Brage":"https://assets.football-logos.cc/logos/sweden/256x256/brage.38974ffa.png","Imigresen FC":"https://assets.football-logos.cc/logos/malaysia/256x256/imigresen-fc.0dede95f.png","Incheon United":"https://assets.football-logos.cc/logos/south-korea/256x256/incheon-united.be6a7649.png","Independiente":"https://assets.football-logos.cc/logos/argentina/256x256/independiente.091ccb51.png","Independiente Medellin":"https://assets.football-logos.cc/logos/colombia/256x256/independiente-medellin.dfa39679.png","Independiente Petrolero":"https://assets.football-logos.cc/logos/bolivia/256x256/independiente-petrolero.3e51c35b.png","Indjija":"https://assets.football-logos.cc/logos/serbia/256x256/indjija.adeb0901.png","Inter":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png","Inter Kashi":"https://assets.football-logos.cc/logos/india/256x256/inter-kashi.d0f4e2c7.png","Inter Toronto FC":"https://assets.football-logos.cc/logos/usa/256x256/toronto-fc.d3870546.png","Inter Zapresic":"https://assets.football-logos.cc/logos/india/256x256/inter-kashi.d0f4e2c7.png","Internacional":"https://assets.football-logos.cc/logos/brazil/256x256/internacional.82f72a2f.png","Internacional de Bogota":"https://assets.football-logos.cc/logos/colombia/256x256/internacional-de-bogota.953d59a9.png","Inverness CT":"https://assets.football-logos.cc/logos/scotland/256x256/inverness.7021ec2b.png","Isloch":"https://assets.football-logos.cc/logos/belarus/256x256/isloch.00824834.png","Ismaily SC":"https://assets.football-logos.cc/logos/egypt/256x256/ismaily.c10f86e2.png","Ittihad Al Shorta":"https://assets.football-logos.cc/logos/saudi-arabia/256x256/al-ittihad.9a2895c9.png","Iwaki FC":"https://assets.football-logos.cc/logos/usa/256x256/miami-fc.c6fcb439.png","JEF United Chiba":"https://assets.football-logos.cc/logos/japan/256x256/jef-united-chiba.25a8ea4f.png","JS Kabylie":"https://assets.football-logos.cc/logos/algeria/256x256/js-kabylie.d603dd94.png","JS Kairouanaise":"https://assets.football-logos.cc/logos/tunisia/256x256/js-kairouanaise.a56b71d9.png","Jablonec":"https://assets.football-logos.cc/logos/czech-republic/256x256/jablonec.52241fac.png","Jamshedpur FC":"https://assets.football-logos.cc/logos/india/256x256/jamshedpur-fc.21dfd252.png","Javor":"https://assets.football-logos.cc/logos/serbia/256x256/javor.56c7fda3.png","Jeju SK":"https://assets.football-logos.cc/logos/south-korea/256x256/jeju-sk-fc.4df50cff.png","Johor Darul Ta'zim":"https://assets.football-logos.cc/logos/malaysia/256x256/johor-darul-tazim.b1c458f2.png","Juventude":"https://assets.football-logos.cc/logos/brazil/256x256/juventude.fe8abf7c.png","Juventus":"https://assets.football-logos.cc/logos/italy/256x256/juventus.a8baf848.png","KF Shkendija":"https://assets.football-logos.cc/logos/north-macedonia/256x256/shkendija.eaa39290.png","KF Tirana":"https://assets.football-logos.cc/logos/albania/256x256/tirana.df3d04f5.png","KFUM":"https://assets.football-logos.cc/logos/norway/256x256/kfum.4df090b5.png","KV Mechelen":"https://assets.football-logos.cc/logos/belgium/256x256/mechelen.78af1e3a.png","Kagoshima United":"https://assets.football-logos.cc/logos/england/256x256/hashtag-united.8c2ed743.png","Kaizer Chiefs":"https://assets.football-logos.cc/logos/south-africa/256x256/kaizer-chiefs.68719510.png","Kalmar FF":"https://assets.football-logos.cc/logos/sweden/256x256/kalmar.b54dacc8.png","KamAZ":"https://assets.football-logos.cc/logos/russia/256x256/kamaz.56198dc0.png","Kapfenberger SV":"https://assets.football-logos.cc/logos/austria/256x256/kapfenberg.45d20226.png","Karpaty":"https://assets.football-logos.cc/logos/ukraine/256x256/karpaty.824d9db3.png","Kartalspor":"https://assets.football-logos.cc/logos/turkey/256x256/antalyaspor.a15602d3.png","Karvina":"https://assets.football-logos.cc/logos/czech-republic/256x256/karvina.306f99ae.png","Karşıyaka":"https://assets.football-logos.cc/logos/poland/256x256/arka.172be77e.png","Katsina United":"https://assets.football-logos.cc/logos/usa/256x256/atlanta-united.a748f780.png","Kayseri Erciyesspor":"https://assets.football-logos.cc/logos/turkey/256x256/kayserispor.527dfb92.png","Kazma":"https://assets.football-logos.cc/logos/russia/256x256/kamaz.56198dc0.png","Kecskemeti TE":"https://assets.football-logos.cc/logos/hungary/256x256/kecskemet.53504bc9.png","Keflavik":"https://assets.football-logos.cc/logos/iceland/256x256/keflavik.d7c0399e.png","Kelantan The Real Warriors FC":"https://assets.football-logos.cc/logos/malaysia/256x256/kelantan-the-real-warriors-fc.d7ce25cb.png","Kerala Blasters FC":"https://assets.football-logos.cc/logos/india/256x256/kerala-blasters-fc.3316c8fb.png","Kerry FC":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/kerry.2dcfb19d.png","Kilmarnock":"https://assets.football-logos.cc/logos/scotland/256x256/kilmarnock.d60d2ac9.png","Klaksvik":"https://assets.football-logos.cc/logos/faroe-islands/256x256/klaksvik.3f90e26d.png","Kokand 1912":"https://assets.football-logos.cc/logos/uzbekistan/256x256/kokand-1912.98e7918e.png","Komarno":"https://assets.football-logos.cc/logos/slovakia/256x256/komarno.85017d71.png","Kongsvinger":"https://assets.football-logos.cc/logos/norway/256x256/kongsvinger.d61038c4.png","Koper":"https://assets.football-logos.cc/logos/slovenia/256x256/koper.51d580be.png","Korona Kielce":"https://assets.football-logos.cc/logos/poland/256x256/korona-kielce.956168a8.png","Kortrijk":"https://assets.football-logos.cc/logos/belgium/256x256/kortrijk.d0cc624c.png","Kosice":"https://assets.football-logos.cc/logos/slovakia/256x256/kosice.a496b024.png","Kristiansund":"https://assets.football-logos.cc/logos/norway/256x256/kristiansund.158579bf.png","Krylya Sovetov Samara":"https://assets.football-logos.cc/logos/russia/256x256/krylya-sovetov.4fdc87c8.png","Kryvbas":"https://assets.football-logos.cc/logos/ukraine/256x256/kryvbas.d3488ff0.png","Kuala Lumpur City":"https://assets.football-logos.cc/logos/malaysia/256x256/kuala-lumpur-city-fc.735bb6aa.png","Kuching City":"https://assets.football-logos.cc/logos/malaysia/256x256/kuching-city-fc.dc49a036.png","Kukesi":"https://assets.football-logos.cc/logos/albania/256x256/kukes.a3bd3d57.png","Kwara United":"https://assets.football-logos.cc/logos/indonesia/256x256/madura-united.82259e7d.png","LASK":"https://assets.football-logos.cc/logos/austria/256x256/lask.e56b0ffa.png","La Serena":"https://assets.football-logos.cc/logos/chile/256x256/la-serena.e5476c62.png","Laci":"https://assets.football-logos.cc/logos/albania/256x256/lac.d71893b1.png","Lamia":"https://assets.football-logos.cc/logos/austria/256x256/admira.6a1f59fa.png","Lamontville Golden Arrows":"https://assets.football-logos.cc/logos/south-africa/256x256/golden-arrows.7a072d7d.png","Landskrona BoIS":"https://assets.football-logos.cc/logos/sweden/256x256/landskrona.6302b59c.png","Lanus":"https://assets.football-logos.cc/logos/argentina/256x256/lanus.0b3284dc.png","Las Palmas":"https://assets.football-logos.cc/logos/spain/256x256/las-palmas.61c92246.png","Lausanne":"https://assets.football-logos.cc/logos/switzerland/256x256/lausanne-sport.bdc8a8bc.png","Lazio":"https://assets.football-logos.cc/logos/italy/256x256/lazio.2386d28d.png","Le Havre":"https://assets.football-logos.cc/logos/france/256x256/le-havre-ac.8456f0f4.png","Lech Poznan":"https://assets.football-logos.cc/logos/poland/256x256/lech-poznan.36325e03.png","Legia Warszawa":"https://assets.football-logos.cc/logos/poland/256x256/legia-warszawa.e9a87d79.png","Leixoes":"https://assets.football-logos.cc/logos/portugal/256x256/leixoes.18cc3c7e.png","Lens":"https://assets.football-logos.cc/logos/france/256x256/rc-lens.efcf2aff.png","Levadiakos":"https://assets.football-logos.cc/logos/greece/256x256/levadiakos.8fc661a5.png","Levski Sofia":"https://assets.football-logos.cc/logos/bulgaria/256x256/levski.3a8713fb.png","Liaoning Tieren":"https://assets.football-logos.cc/logos/china/256x256/liaoning-tiening.5e45daaf.png","Libertad":"https://assets.football-logos.cc/logos/paraguay/256x256/libertad.c2fa5a37.png","Lillestrøm":"https://assets.football-logos.cc/logos/norway/256x256/lillestrom.9005813f.png","Linfield":"https://assets.football-logos.cc/logos/northern-ireland/256x256/linfield.b7eb9c05.png","Lion City Sailors FC":"https://assets.football-logos.cc/logos/england/256x256/salford-city.b6285922.png","Liverpool FC":"https://assets.football-logos.cc/logos/england/256x256/liverpool.99c48ae3.png","Livorno":"https://assets.football-logos.cc/logos/italy/256x256/livorno.7221992f.png","Llanelli":"https://assets.football-logos.cc/logos/wales/256x256/llanelli-town.02806ffd.png","Llaneros FC":"https://assets.football-logos.cc/logos/colombia/256x256/llaneros.004e2376.png","Lokomotiv Moscow":"https://assets.football-logos.cc/logos/russia/256x256/lokomotiv-moskva.c121b343.png","Lokomotiv Plovdiv":"https://assets.football-logos.cc/logos/bulgaria/256x256/lokomotiv-plovdiv.701a54be.png","Lokomotiv Tashkent":"https://assets.football-logos.cc/logos/uzbekistan/256x256/lokomotiv-tashkent.ee3ff40a.png","Lommel":"https://assets.football-logos.cc/logos/belgium/256x256/lommel.882cfe93.png","Londrina EC":"https://assets.football-logos.cc/logos/brazil/256x256/londrina.12439216.png","Longford Town":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/longford-town.e9b02690.png","Los Chankas":"https://assets.football-logos.cc/logos/peru/256x256/los-chankas.1bf70e2f.png","Lovech":"https://assets.football-logos.cc/logos/bulgaria/256x256/lovech.b26f224b.png","Lugano":"https://assets.football-logos.cc/logos/switzerland/256x256/lugano.5da46b7e.png","Luzern":"https://assets.football-logos.cc/logos/switzerland/256x256/luzern.9b20878e.png","Lyn":"https://assets.football-logos.cc/logos/norway/256x256/lyn.8629c61e.png","Lyngby":"https://assets.football-logos.cc/logos/denmark/256x256/lyngby.8051e210.png","MC Alger":"https://assets.football-logos.cc/logos/algeria/256x256/mc-alger.07948633.png","MC Oran":"https://assets.football-logos.cc/logos/algeria/256x256/mc-oran.f1f6aed8.png","MVV Maastricht":"https://assets.football-logos.cc/logos/netherlands/256x256/mvv-maastricht.78dd0905.png","Madura United":"https://assets.football-logos.cc/logos/indonesia/256x256/madura-united.82259e7d.png","Malavan":"https://assets.football-logos.cc/logos/iran/256x256/malavan.01b96e85.png","Malut United":"https://assets.football-logos.cc/logos/indonesia/256x256/malut-united.4777df24.png","Mamelodi Sundowns FC":"https://assets.football-logos.cc/logos/south-africa/256x256/mamelodi-sundowns.11b201b9.png","Maribor":"https://assets.football-logos.cc/logos/slovenia/256x256/maribor.98cb3bef.png","Mariupol":"https://assets.football-logos.cc/logos/ukraine/256x256/fenix-mariupol.95154055.png","Marseille":"https://assets.football-logos.cc/logos/france/256x256/marseille.92b6437c.png","Mbeya City":"https://assets.football-logos.cc/logos/england/256x256/bath-city.7c465ca6.png","Melaka FC":"https://assets.football-logos.cc/logos/hungary/256x256/ajka-fc.07a5b0c7.png","Melbourne City FC":"https://assets.football-logos.cc/logos/australia/256x256/melbourne-city.dfad8e92.png","Melbourne Victory":"https://assets.football-logos.cc/logos/australia/256x256/melbourne-victory.4dc14194.png","Metalist Kharkiv":"https://assets.football-logos.cc/logos/ukraine/256x256/fc-metalist-1925-kharkiv.57540bfb.png","Mezokovesd SE":"https://assets.football-logos.cc/logos/hungary/256x256/mezokovesd.e1220be9.png","Milan":"https://assets.football-logos.cc/logos/italy/256x256/milan.75d56f90.png","Millonarios":"https://assets.football-logos.cc/logos/colombia/256x256/millonarios.78c9e996.png","Mirassol":"https://assets.football-logos.cc/logos/brazil/256x256/mirassol.3da1a222.png","Mito Hollyhock":"https://assets.football-logos.cc/logos/japan/256x256/mito-hollyhock.137a97b5.png","Mjällby":"https://assets.football-logos.cc/logos/sweden/256x256/mjallby.23f8c9ae.png","Mlada Boleslav":"https://assets.football-logos.cc/logos/czech-republic/256x256/mlada-boleslav.7a933325.png","Modena":"https://assets.football-logos.cc/logos/italy/256x256/modena.13041e43.png","Mohammedan SC":"https://assets.football-logos.cc/logos/india/256x256/mohammedan-sc.a4690970.png","Mohun Bagan SG":"https://assets.football-logos.cc/logos/india/256x256/mohun-bagan-super-giant.a17ad1fd.png","Molde":"https://assets.football-logos.cc/logos/norway/256x256/molde.72462fc0.png","Mons":"https://assets.football-logos.cc/logos/norway/256x256/moss.321a313a.png","Montana":"https://assets.football-logos.cc/logos/bulgaria/256x256/montana.cb12edf3.png","Montevideo City Torque":"https://assets.football-logos.cc/logos/uruguay/256x256/montevideo-city-torque.971e5eab.png","Montevideo Wanderers":"https://assets.football-logos.cc/logos/uruguay/256x256/montevideo-wanderers.b86497e6.png","Montpellier":"https://assets.football-logos.cc/logos/france/256x256/montpellier.e048338a.png","Moreirense":"https://assets.football-logos.cc/logos/portugal/256x256/moreirense.f949266c.png","Mornar":"https://assets.football-logos.cc/logos/montenegro/256x256/mornar.4858e568.png","Moss":"https://assets.football-logos.cc/logos/norway/256x256/moss.321a313a.png","Most":"https://assets.football-logos.cc/logos/malta/256x256/mosta.e97181d9.png","Motherwell":"https://assets.football-logos.cc/logos/scotland/256x256/motherwell.15cb39f7.png","Mumbai City FC":"https://assets.football-logos.cc/logos/india/256x256/mumbai-city-fc.d4d6f7a1.png","Mumbai FC":"https://assets.football-logos.cc/logos/india/256x256/mumbai-city-fc.d4d6f7a1.png","NAC Breda":"https://assets.football-logos.cc/logos/netherlands/256x256/nac-breda.57a892cd.png","NEC Nijmegen":"https://assets.football-logos.cc/logos/netherlands/256x256/nec-nijmegen.e9cc5441.png","NK Celje":"https://assets.football-logos.cc/logos/slovenia/256x256/celje.7a67bf3a.png","NK Istra 1961":"https://assets.football-logos.cc/logos/croatia/256x256/istra-1961.29814e52.png","NK Varazdin":"https://assets.football-logos.cc/logos/croatia/256x256/varazdin.766fb5df.png","NK Zagreb":"https://assets.football-logos.cc/logos/croatia/256x256/nk-zagora.c283432c.png","Nacional":"https://assets.football-logos.cc/logos/paraguay/256x256/nacional.7c9fa726.png","Nacional Potosi":"https://assets.football-logos.cc/logos/bolivia/256x256/nacional-potosi.81e75375.png","Nafta":"https://assets.football-logos.cc/logos/belarus/256x256/naftan.3721f02f.png","Nakhon Si United":"https://assets.football-logos.cc/logos/south-korea/256x256/incheon-united.be6a7649.png","Nam Dinh":"https://assets.football-logos.cc/logos/vietnam/256x256/nam-dinh.49772824.png","Namungo FC":"https://assets.football-logos.cc/logos/malaysia/256x256/penang-fc.880b0168.png","Nantes":"https://assets.football-logos.cc/logos/france/256x256/nantes.92be1c98.png","Napredok":"https://assets.football-logos.cc/logos/serbia/256x256/napredak.5d2d9346.png","Nara Club":"https://assets.football-logos.cc/logos/spain/256x256/arenas-club.d6f03a69.png","Narva Trans":"https://assets.football-logos.cc/logos/estonia/256x256/narva-trans.52141914.png","Nautico":"https://assets.football-logos.cc/logos/brazil/256x256/nautico.c4fb9d71.png","Navbahor Namangan":"https://assets.football-logos.cc/logos/uzbekistan/256x256/navbahor-namangan.97d63a08.png","Neath Athletic":"https://assets.football-logos.cc/logos/scotland/256x256/annan-athletic.a3e179dc.png","Neftchi Fargona":"https://assets.football-logos.cc/logos/uzbekistan/256x256/neftchi-fergana.4cb93298.png","Neftekhimik":"https://assets.football-logos.cc/logos/bulgaria/256x256/neftochimic.003131f6.png","Negeri Sembilan":"https://assets.football-logos.cc/logos/malaysia/256x256/negeri-sembilan-fc.108d18ae.png","Neman Grodno":"https://assets.football-logos.cc/logos/belarus/256x256/neman.94325dd9.png","Newcastle Jets":"https://assets.football-logos.cc/logos/australia/256x256/newcastle-jets.c336f438.png","Newell's Old Boys":"https://assets.football-logos.cc/logos/argentina/256x256/newells-old-boys.323439bf.png","Newroz":"https://assets.football-logos.cc/logos/northern-ireland/256x256/newry.643cbf25.png","Newtown":"https://assets.football-logos.cc/logos/wales/256x256/newtown-afc.49d6d042.png","Ninh Binh Club":"https://assets.football-logos.cc/logos/vietnam/256x256/ninh-binh.e405c0f0.png","Nitra":"https://assets.football-logos.cc/logos/slovakia/256x256/nitra.6703eb4c.png","Nomme United":"https://assets.football-logos.cc/logos/estonia/256x256/nomme-united.bd0c108b.png","Nordic United FC":"https://assets.football-logos.cc/logos/india/256x256/northeast-united-fc.85e6266d.png","Nordsjælland":"https://assets.football-logos.cc/logos/denmark/256x256/nordsjaelland.5d50d581.png","Northeast United FC":"https://assets.football-logos.cc/logos/india/256x256/northeast-united-fc.85e6266d.png","Novara":"https://assets.football-logos.cc/logos/italy/256x256/novara.8de5c42d.png","Novorizontino":"https://assets.football-logos.cc/logos/brazil/256x256/novorizontino.689cca10.png","Numancia":"https://assets.football-logos.cc/logos/spain/256x256/numancia.b6caf9e0.png","Næstved":"https://assets.football-logos.cc/logos/denmark/256x256/naestved.30f3c85b.png","O'Higgins":"https://assets.football-logos.cc/logos/chile/256x256/ohiggins.a2739d7f.png","OFK Beograd":"https://assets.football-logos.cc/logos/serbia/256x256/ofk-beograd.e078bf2a.png","OFK Titograd":"https://assets.football-logos.cc/logos/serbia/256x256/ofk-beograd.e078bf2a.png","Odisha FC":"https://assets.football-logos.cc/logos/india/256x256/odisha-fc.04853e25.png","Ogre United":"https://assets.football-logos.cc/logos/latvia/256x256/ogre-united.180e7e94.png","Oita Trinita":"https://assets.football-logos.cc/logos/japan/256x256/oita-trinita.eb495841.png","Olimpia":"https://assets.football-logos.cc/logos/paraguay/256x256/olimpia.86d1d5e2.png","Olimpija Ljubljana":"https://assets.football-logos.cc/logos/slovenia/256x256/ib-ljubljana.e880f028.png","Olimpo":"https://assets.football-logos.cc/logos/paraguay/256x256/olimpia.86d1d5e2.png","Oliveirense":"https://assets.football-logos.cc/logos/portugal/256x256/oliveirense.acfa47cd.png","Olympiacos":"https://assets.football-logos.cc/logos/greece/256x256/olympiacos.2eaa46ae.png","Olympic Club de Safi":"https://assets.football-logos.cc/logos/morocco/256x256/olympic-club-safi.786eb718.png","Olympique de Beja":"https://assets.football-logos.cc/logos/tunisia/256x256/olympique-de-beja.3ada537a.png","Once Caldas":"https://assets.football-logos.cc/logos/colombia/256x256/once-caldas.44467c26.png","Oostende":"https://assets.football-logos.cc/logos/belgium/256x256/oostende.30ed8abf.png","Operario Ferroviario":"https://assets.football-logos.cc/logos/brazil/256x256/operario-ferroviario.9fc8aa8a.png","Orduspor":"https://assets.football-logos.cc/logos/turkey/256x256/boluspor.0a34125f.png","Oriente Petrolero":"https://assets.football-logos.cc/logos/bolivia/256x256/oriente-petrolero.5a4a084e.png","Orlando Pirates":"https://assets.football-logos.cc/logos/south-africa/256x256/orlando-pirates.bcd8e029.png","Orléans":"https://assets.football-logos.cc/logos/france/256x256/orleans.b2267070.png","Osijek":"https://assets.football-logos.cc/logos/croatia/256x256/osijek.386760e0.png","PAE Chania":"https://assets.football-logos.cc/logos/greece/256x256/chania.724d054a.png","PAOK Thessaloniki":"https://assets.football-logos.cc/logos/greece/256x256/aris-thessaloniki.915735c7.png","PAS Giannina":"https://assets.football-logos.cc/logos/greece/256x256/giannina.9d3693b0.png","PEC Zwolle":"https://assets.football-logos.cc/logos/netherlands/256x256/pec-zwolle.bb36e35d.png","PFC Lokomotiv Sofia 1929":"https://assets.football-logos.cc/logos/bulgaria/256x256/lokomotiv-sofia.7f12ff7f.png","PSBS Biak Numfor":"https://assets.football-logos.cc/logos/indonesia/256x256/psbs-biak.06c5115b.png","PSIM Yogyakarta":"https://assets.football-logos.cc/logos/indonesia/256x256/psim-yogyakarta.8830edfc.png","PSM Makassar":"https://assets.football-logos.cc/logos/indonesia/256x256/psm-makassar.5903b555.png","PSV Eindhoven":"https://assets.football-logos.cc/logos/netherlands/256x256/psv.b5ebd0db.png","PVF-CAND":"https://assets.football-logos.cc/logos/vietnam/256x256/pvf-cand.285b7ec3.png","Pacific FC":"https://assets.football-logos.cc/logos/canada/256x256/pacific.71d0e02a.png","Padova":"https://assets.football-logos.cc/logos/italy/256x256/padova.a69e0bf7.png","Paksi SE":"https://assets.football-logos.cc/logos/hungary/256x256/paksi.90664e14.png","Palestino":"https://assets.football-logos.cc/logos/chile/256x256/palestino.5c5a4b35.png","Palmeiras":"https://assets.football-logos.cc/logos/brazil/256x256/palmeiras.9ab1d558.png","Panathinaikos":"https://assets.football-logos.cc/logos/greece/256x256/panathinaikos.085bafeb.png","Panegialios":"https://assets.football-logos.cc/logos/greece/256x256/panetolikos.5d77e763.png","Panetolikos":"https://assets.football-logos.cc/logos/greece/256x256/panetolikos.5d77e763.png","Panionios":"https://assets.football-logos.cc/logos/greece/256x256/panionios.d24884d5.png","Panserraikos FC":"https://assets.football-logos.cc/logos/greece/256x256/panserraikos.0f981a0c.png","Paris FC":"https://assets.football-logos.cc/logos/france/256x256/paris-fc.3e31d6c5.png","Paris Saint Germain":"https://assets.football-logos.cc/logos/france/256x256/paris-saint-germain.579907dc.png","Parma Calcio 1913":"https://assets.football-logos.cc/logos/italy/256x256/pavia-calcio-1911.ef434eb9.png","Parnu JK Vaprus":"https://assets.football-logos.cc/logos/estonia/256x256/vaprus.2b33e55d.png","Partick Thistle":"https://assets.football-logos.cc/logos/scotland/256x256/partick.291f2e76.png","Partizan Beograd":"https://assets.football-logos.cc/logos/serbia/256x256/partizan.f82f5f7a.png","Partizani":"https://assets.football-logos.cc/logos/albania/256x256/partizani.a542e901.png","Paykan":"https://assets.football-logos.cc/logos/iran/256x256/paykan.370caa8e.png","Pelister":"https://assets.football-logos.cc/logos/north-macedonia/256x256/pelister.5ad96e62.png","Penafiel":"https://assets.football-logos.cc/logos/portugal/256x256/penafiel.98894281.png","Penang":"https://assets.football-logos.cc/logos/malaysia/256x256/penang-fc.880b0168.png","Persebaya Surabaya":"https://assets.football-logos.cc/logos/indonesia/256x256/persebaya-surabaya.8d614dc6.png","Persepolis":"https://assets.football-logos.cc/logos/iran/256x256/persepolis.41501b14.png","Persib Bandung":"https://assets.football-logos.cc/logos/indonesia/256x256/persib-bandung.4d719ead.png","Persija Jakarta":"https://assets.football-logos.cc/logos/indonesia/256x256/persija-jakarta.c0295ac1.png","Persijap Jepara":"https://assets.football-logos.cc/logos/indonesia/256x256/persijap-jepara.46e5e35a.png","Persik":"https://assets.football-logos.cc/logos/hungary/256x256/pecsi.f3c36171.png","Persis Solo":"https://assets.football-logos.cc/logos/indonesia/256x256/persis-solo.b67579c6.png","Perth Glory":"https://assets.football-logos.cc/logos/australia/256x256/perth-glory.57d95b0c.png","Pescara":"https://assets.football-logos.cc/logos/italy/256x256/pescara.c27dbb0b.png","Petrojet":"https://assets.football-logos.cc/logos/egypt/256x256/petrojet.b0b9d5e9.png","Petrovac":"https://assets.football-logos.cc/logos/montenegro/256x256/petrovac.8f1ac7b9.png","Phrae United":"https://assets.football-logos.cc/logos/latvia/256x256/ogre-united.180e7e94.png","Piacenza":"https://assets.football-logos.cc/logos/italy/256x256/piacenza.dd818b44.png","Piast Gliwice":"https://assets.football-logos.cc/logos/poland/256x256/piast.21ad348e.png","Platanias":"https://assets.football-logos.cc/logos/italy/256x256/catania.a99af832.png","Plateau United":"https://assets.football-logos.cc/logos/usa/256x256/atlanta-united.a748f780.png","Pogoń Szczecin":"https://assets.football-logos.cc/logos/poland/256x256/pogon.14ab28d5.png","Pohang Steelers":"https://assets.football-logos.cc/logos/south-korea/256x256/pohang-steelers.07721753.png","Polonia Bytom":"https://assets.football-logos.cc/logos/poland/256x256/polonia-bytom.2aefef6a.png","Polonia Warszawa":"https://assets.football-logos.cc/logos/poland/256x256/polonia-warszawa.06908b38.png","Ponferradina":"https://assets.football-logos.cc/logos/spain/256x256/ponferradina.918e7be3.png","Ponte Preta":"https://assets.football-logos.cc/logos/brazil/256x256/ponte-preta.211c18b1.png","Port FC":"https://assets.football-logos.cc/logos/thailand/256x256/port-fc.7c6efbd0.png","Portadown":"https://assets.football-logos.cc/logos/northern-ireland/256x256/portadown.ba62bc75.png","Portogruaro":"https://assets.football-logos.cc/logos/italy/256x256/portogruaro.e45fc85e.png","Prestatyn Town FC":"https://assets.football-logos.cc/logos/wales/256x256/prestatyn-town.8e104a79.png","Pribram":"https://assets.football-logos.cc/logos/czech-republic/256x256/pribram.b9fd99b2.png","Primorje":"https://assets.football-logos.cc/logos/slovenia/256x256/primorje.da1ccebf.png","Puchov":"https://assets.football-logos.cc/logos/slovakia/256x256/puchov.ebab53b8.png","Pune FC":"https://assets.football-logos.cc/logos/india/256x256/punjab-fc.66c17ce4.png","Punjab FC":"https://assets.football-logos.cc/logos/india/256x256/punjab-fc.66c17ce4.png","Pyunik":"https://assets.football-logos.cc/logos/armenia/256x256/pyunik.62dc5a2f.png","Qarabag FK":"https://assets.football-logos.cc/logos/azerbaijan/256x256/qarabag.396f72c4.png","Qatar SC":"https://assets.football-logos.cc/logos/qatar/256x256/qatar-sc.e4acdb02.png","Qingdao Hainiu":"https://assets.football-logos.cc/logos/china/256x256/qingdao-hainiu.041b4a85.png","Qingdao West Coast":"https://assets.football-logos.cc/logos/china/256x256/qingdao-west-coast.b27c8f29.png","Queen of the South":"https://assets.football-logos.cc/logos/scotland/256x256/queen-of-the-south.f13f3d8a.png","Quilmes":"https://assets.football-logos.cc/logos/argentina/256x256/quilmes.01c3dd47.png","RFS":"https://assets.football-logos.cc/logos/latvia/256x256/rfs.89f122b2.png","RKC Waalwijk":"https://assets.football-logos.cc/logos/netherlands/256x256/rkc-waalwijk.c6f20fed.png","RWDM Brussels":"https://assets.football-logos.cc/logos/belgium/256x256/rwd-molenbeek.dd000805.png","Rabotnicki":"https://assets.football-logos.cc/logos/north-macedonia/256x256/rabotnicki.5961c089.png","Racing":"https://assets.football-logos.cc/logos/argentina/256x256/racing.1aa303b2.png","Racing Club":"https://assets.football-logos.cc/logos/argentina/256x256/racing-club.2b4a44c9.png","Racing FC Union Luxembourg":"https://assets.football-logos.cc/logos/luxembourg/256x256/racing-union.4820ed3a.png","Rad Beograd":"https://assets.football-logos.cc/logos/serbia/256x256/ofk-beograd.e078bf2a.png","Raith Rovers":"https://assets.football-logos.cc/logos/scotland/256x256/raith.9517601d.png","Raja Casablanca":"https://assets.football-logos.cc/logos/morocco/256x256/raja-ca.8b32b083.png","Randers FC":"https://assets.football-logos.cc/logos/denmark/256x256/randers.16d3b1ee.png","Rangdajied United":"https://assets.football-logos.cc/logos/australia/256x256/adelaide-united.e61cf36e.png","Rangers":"https://assets.football-logos.cc/logos/scotland/256x256/rangers.05ce20d9.png","Rapid Bucuresti":"https://assets.football-logos.cc/logos/romania/256x256/rapid-bucuresti.af9e25af.png","Rapid Wien":"https://assets.football-logos.cc/logos/austria/256x256/rapid-vienna.23fdb857.png","Ratchaburi FC":"https://assets.football-logos.cc/logos/thailand/256x256/chonburi-fc.8c5ea5fe.png","Rayo Vallecano":"https://assets.football-logos.cc/logos/spain/256x256/rayo-vallecano.01403ff8.png","Real Betis":"https://assets.football-logos.cc/logos/spain/256x256/real-betis.7bb10421.png","Real Tomayapo":"https://assets.football-logos.cc/logos/bolivia/256x256/real-tomayapo.45d8124f.png","Real Valladolid":"https://assets.football-logos.cc/logos/spain/256x256/valladolid.077e0c97.png","Red Bull Bragantino":"https://assets.football-logos.cc/logos/brazil/256x256/rb-bragantino.58ea7195.png","Remo":"https://media.api-sports.io/football/teams/1198.png","Renova":"https://assets.football-logos.cc/logos/italy/256x256/genoa.a5ec9be4.png","Ried":"https://assets.football-logos.cc/logos/austria/256x256/ried.8e3ea635.png","Riga FC":"https://assets.football-logos.cc/logos/latvia/256x256/riga.29b24c5a.png","Rijeka":"https://assets.football-logos.cc/logos/croatia/256x256/rijeka.730e2f1f.png","Riteriai":"https://assets.football-logos.cc/logos/lithuania/256x256/riteriai.d044c150.png","River Plate":"https://assets.football-logos.cc/logos/argentina/256x256/river-plate.44a77530.png","Rivers United FC":"https://assets.football-logos.cc/logos/india/256x256/northeast-united-fc.85e6266d.png","Rizespor":"https://assets.football-logos.cc/logos/turkey/256x256/rizespor.ce5e503b.png","Roda JC Kerkrade":"https://assets.football-logos.cc/logos/netherlands/256x256/roda-jc-kerkrade.ee519c03.png","Rodez":"https://assets.football-logos.cc/logos/france/256x256/rodez-af.8b06a0d8.png","Rodina":"https://assets.football-logos.cc/logos/latvia/256x256/grobina.8db5e0c6.png","Roma":"https://assets.football-logos.cc/logos/italy/256x256/roma.034a933e.png","Rosario Central":"https://assets.football-logos.cc/logos/argentina/256x256/rosario-central.3341c8bd.png","Rosenborg":"https://assets.football-logos.cc/logos/norway/256x256/rosenborg.8d1c5203.png","Ross County":"https://assets.football-logos.cc/logos/scotland/256x256/ross-county.1dd054e9.png","Rouen":"https://assets.football-logos.cc/logos/france/256x256/rouen.96519de4.png","Royal Antwerp":"https://assets.football-logos.cc/logos/belgium/256x256/antwerp.8f7b0701.png","Rubin Kazan":"https://assets.football-logos.cc/logos/russia/256x256/rubin.2ed09df7.png","Rubio Nu":"https://assets.football-logos.cc/logos/paraguay/256x256/rubio-nu.8a801b9d.png","Ruch Chorzow":"https://assets.football-logos.cc/logos/poland/256x256/ruch-chorzow.55e4f4bc.png","Rudar Pljevlja":"https://assets.football-logos.cc/logos/montenegro/256x256/rudar-pljevlja.b9ffe349.png","Rudar Prijedor":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/rudar-prijedor.356c1061.png","Rudar Velenje":"https://assets.football-logos.cc/logos/slovenia/256x256/rudar-velenje.62c4c240.png","Rupel Boom":"https://assets.football-logos.cc/logos/belgium/256x256/rupel-boom.10a3ad69.png","Ruzomberok":"https://assets.football-logos.cc/logos/slovakia/256x256/ruzomberok.962fa331.png","SC Bastia":"https://assets.football-logos.cc/logos/france/256x256/bastia.ef7d8b23.png","SC Heerenveen":"https://assets.football-logos.cc/logos/netherlands/256x256/sc-heerenveen.c36c6c06.png","SD Huesca":"https://assets.football-logos.cc/logos/spain/256x256/huesca.df527cba.png","SK Beveren":"https://assets.football-logos.cc/logos/belgium/256x256/beveren.514e2330.png","SK Dynamo Ceske Budejovice":"https://assets.football-logos.cc/logos/czech-republic/256x256/ceske-budejovice.cb9a7369.png","SK Super Nova":"https://assets.football-logos.cc/logos/latvia/256x256/sk-super-nova.cb4e12e8.png","SKA-Khabarovsk":"https://assets.football-logos.cc/logos/russia/256x256/ska-khabarovsk.59907155.png","SKN St. Pölten":"https://assets.football-logos.cc/logos/austria/256x256/st-polten.ed060152.png","Sabah":"https://assets.football-logos.cc/logos/azerbaijan/256x256/sabah.020bde4e.png","Sagan Tosu":"https://assets.football-logos.cc/logos/brazil/256x256/santos.5ea20e58.png","Saint-Etienne":"https://assets.football-logos.cc/logos/france/256x256/as-saint-etienne.b6d9c83b.png","Salzburg":"https://assets.football-logos.cc/logos/austria/256x256/salzburg.6df6fb59.png","Samsunspor":"https://assets.football-logos.cc/logos/turkey/256x256/samsunspor.41fc3878.png","San Antonio Bulo Bulo":"https://assets.football-logos.cc/logos/bolivia/256x256/san-antonio-bulo-bulo.1171e83b.png","San Martin San Juan":"https://assets.football-logos.cc/logos/argentina/256x256/san-martin-san-juan.addb1d1d.png","Sandefjord":"https://assets.football-logos.cc/logos/norway/256x256/sandefjord.39cce258.png","Santa Clara":"https://assets.football-logos.cc/logos/portugal/256x256/santa-clara.8e386186.png","Santa Fe":"https://assets.football-logos.cc/logos/ecuador/256x256/manta-fc.91a8682e.png","Santos FC":"https://assets.football-logos.cc/logos/brazil/256x256/santos.5ea20e58.png","Sao Bernardo":"https://assets.football-logos.cc/logos/brazil/256x256/sao-bernardo.497b05ff.png","Sao Paulo":"https://assets.football-logos.cc/logos/brazil/256x256/sao-paulo.468eaeb3.png","Sarmiento":"https://assets.football-logos.cc/logos/argentina/256x256/sarmiento.8f0e71f1.png","Sarpsborg 08":"https://assets.football-logos.cc/logos/norway/256x256/sarpsborg.67260c51.png","Sassuolo":"https://assets.football-logos.cc/logos/italy/256x256/sassuolo.1b38db1d.png","Selangor":"https://assets.football-logos.cc/logos/malaysia/256x256/selangor-fc.081fe5fa.png","Semen Padang":"https://assets.football-logos.cc/logos/indonesia/256x256/semen-padang.e88c3f6a.png","Sepahan":"https://assets.football-logos.cc/logos/iran/256x256/sepahan.c3e08775.png","Servette":"https://assets.football-logos.cc/logos/switzerland/256x256/servette.4260364a.png","Shabab Al-Ahli Dubai FC":"https://assets.football-logos.cc/logos/uae/256x256/shabab-al-ahli.5aa7f38f.png","Shamrock Rovers":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/shamrock-rovers.15da5bdb.png","Shandong Taishan":"https://assets.football-logos.cc/logos/china/256x256/shandong-taishan.26d2df27.png","Shanghai Port":"https://assets.football-logos.cc/logos/china/256x256/shanghai-port.af639000.png","Shanghai Shenhua":"https://assets.football-logos.cc/logos/china/256x256/shanghai-shenhua.c81063b4.png","Shelbourne":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/shelbourne.f58b84dc.png","Shirak":"https://assets.football-logos.cc/logos/armenia/256x256/shirak.1857259f.png","Sibenik":"https://assets.football-logos.cc/logos/croatia/256x256/sibenik.06472734.png","Siena":"https://assets.football-logos.cc/logos/italy/256x256/siena.1dd414a7.png","Sigma Olomouc":"https://assets.football-logos.cc/logos/czech-republic/256x256/olomouc.ba71a4d6.png","Silkeborg":"https://assets.football-logos.cc/logos/denmark/256x256/silkeborg.714b48ad.png","Sion":"https://assets.football-logos.cc/logos/switzerland/256x256/sion.962a72c2.png","Sirius":"https://assets.football-logos.cc/logos/sweden/256x256/sirius.4435b204.png","Siroki Brijeg":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/siroki-brijeg.af325f52.png","Siwelele":"https://assets.football-logos.cc/logos/south-africa/256x256/siwelele.aab68111.png","Skenderbeu":"https://assets.football-logos.cc/logos/albania/256x256/skenderbeu.f29a3f75.png","Skive":"https://assets.football-logos.cc/logos/denmark/256x256/skive.f60f4071.png","Skála":"https://assets.football-logos.cc/logos/faroe-islands/256x256/skala.4c7b207d.png","Slaven":"https://assets.football-logos.cc/logos/croatia/256x256/slaven.c87b34e1.png","Slavia Mozyr":"https://assets.football-logos.cc/logos/belarus/256x256/slavia-mozyr.a2cf67c6.png","Slavia Prague":"https://assets.football-logos.cc/logos/czech-republic/256x256/slavia-praha.7051a566.png","Slavia Sofia":"https://assets.football-logos.cc/logos/bulgaria/256x256/slavia-sofia.43990133.png","Sligo Rovers":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/sligo-rovers.211ceeff.png","Sliven":"https://assets.football-logos.cc/logos/croatia/256x256/slaven.c87b34e1.png","Sloboda Tuzla":"https://assets.football-logos.cc/logos/serbia/256x256/sloboda-uzice.507140b1.png","Slovacko":"https://assets.football-logos.cc/logos/czech-republic/256x256/slovacko.da56b351.png","Slovan Bratislava":"https://assets.football-logos.cc/logos/slovakia/256x256/s-bratislava.dd35f4ab.png","Slovan Bratislava B":"https://assets.football-logos.cc/logos/slovakia/256x256/s-bratislava.dd35f4ab.png","Slovan Liberec":"https://assets.football-logos.cc/logos/czech-republic/256x256/liberec.b5b226c7.png","Smouha SC":"https://assets.football-logos.cc/logos/egypt/256x256/smouha.d51dbcc5.png","Song Lam Nghe An":"https://assets.football-logos.cc/logos/vietnam/256x256/song-lam-nghe-an.08c17add.png","Sparta Prague":"https://assets.football-logos.cc/logos/czech-republic/256x256/sparta-praha.b68bbc80.png","Sparta Prague B":"https://assets.football-logos.cc/logos/czech-republic/256x256/sparta-praha.b68bbc80.png","Sparta Rotterdam":"https://assets.football-logos.cc/logos/netherlands/256x256/sparta-rotterdam.03d6a993.png","Spartak Kostroma":"https://assets.football-logos.cc/logos/russia/256x256/spartak-moskva.efb36687.png","Spartak Moscow":"https://assets.football-logos.cc/logos/russia/256x256/spartak-moskva.efb36687.png","Spartak Myjava":"https://assets.football-logos.cc/logos/slovakia/256x256/spartak-myjava.0e9cc6cf.png","Spartak Pleven":"https://assets.football-logos.cc/logos/bulgaria/256x256/spartak-varna.fcea8532.png","Spartak Trnava":"https://assets.football-logos.cc/logos/slovakia/256x256/spartak-trnava.e8ae97ee.png","Sport Boys":"https://assets.football-logos.cc/logos/peru/256x256/sport-boys.cead858d.png","Sport Huancayo":"https://assets.football-logos.cc/logos/peru/256x256/sport-huancayo.b876fed3.png","Sport Recife":"https://assets.football-logos.cc/logos/brazil/256x256/sport-recife.42103cc4.png","Sporting Club de Goa":"https://assets.football-logos.cc/logos/costa-rica/256x256/sporting-san-jose.5039a5c9.png","Sporting Covilha":"https://assets.football-logos.cc/logos/peru/256x256/sporting-cristal.7afad984.png","Sporting Cristal":"https://assets.football-logos.cc/logos/peru/256x256/sporting-cristal.7afad984.png","Sportivo Ameliano":"https://assets.football-logos.cc/logos/paraguay/256x256/sportivo-ameliano.09b9912d.png","Sportivo San Lorenzo":"https://assets.football-logos.cc/logos/paraguay/256x256/sportivo-san-lorenzo.75d42e1f.png","Sportivo Trinidense":"https://assets.football-logos.cc/logos/paraguay/256x256/trinidense.0e3c92b5.png","St. Gallen":"https://assets.football-logos.cc/logos/switzerland/256x256/st-gallen.8b777fa5.png","St. Johnstone":"https://assets.football-logos.cc/logos/scotland/256x256/st-johnstone.b81288d1.png","St. Mirren":"https://assets.football-logos.cc/logos/scotland/256x256/st-mirren.07564cc8.png","St. Patrick's Athletic":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/st-patricks-athletic.0b4fe3ea.png","St.Truiden":"https://assets.football-logos.cc/logos/belgium/256x256/sint-truidense.1514d325.png","Stabæk":"https://assets.football-logos.cc/logos/norway/256x256/stabaek.3b6c2642.png","Stade Tunisien":"https://assets.football-logos.cc/logos/tunisia/256x256/stade-tunisien.50925f82.png","Standard Liege":"https://assets.football-logos.cc/logos/belgium/256x256/standard-liege.ce182b3d.png","Start":"https://assets.football-logos.cc/logos/norway/256x256/start.60532c15.png","Stellenbosch FC":"https://assets.football-logos.cc/logos/south-africa/256x256/stellenbosch.36736190.png","Stirling Albion":"https://assets.football-logos.cc/logos/scotland/256x256/stirling-albion.e75b1be8.png","Stjarnan":"https://assets.football-logos.cc/logos/iceland/256x256/stjarnan.c0c9cbb5.png","Strasbourg":"https://assets.football-logos.cc/logos/norway/256x256/sarpsborg.67260c51.png","Strømsgodset":"https://assets.football-logos.cc/logos/norway/256x256/stromsgodset.b5bb1025.png","Sturm Graz":"https://assets.football-logos.cc/logos/austria/256x256/sturm-graz.895a28f8.png","Suduva":"https://assets.football-logos.cc/logos/lithuania/256x256/suduva.c49c1a93.png","Sutjeska":"https://assets.football-logos.cc/logos/montenegro/256x256/sutjeska.fe7eaf8d.png","Suwon FC":"https://assets.football-logos.cc/logos/south-korea/256x256/suwon-fc.5c655e7d.png","Swift Hesperange":"https://assets.football-logos.cc/logos/luxembourg/256x256/swift-hesper.f34a3f92.png","Sydney FC":"https://assets.football-logos.cc/logos/australia/256x256/sydney-fc.a9a3441a.png","Sønderjyske":"https://assets.football-logos.cc/logos/denmark/256x256/sonderjyske.0b839e77.png","TRA United":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/treaty-united.b0613aff.png","TS Podbeskidzie Bielsko-Biala":"https://assets.football-logos.cc/logos/poland/256x256/podbeskidzie.f76832ff.png","Tala'ea El Gaish":"https://assets.football-logos.cc/logos/egypt/256x256/talaea-el-gaish.b359d4f8.png","Talleres":"https://assets.football-logos.cc/logos/argentina/256x256/talleres.1dcd3bf7.png","Tammeka":"https://assets.football-logos.cc/logos/estonia/256x256/tammeka.58a66f92.png","Telstar":"https://assets.football-logos.cc/logos/netherlands/256x256/telstar.c6ac77b5.png","Tenerife":"https://assets.football-logos.cc/logos/spain/256x256/tenerife.37049330.png","Teplice":"https://assets.football-logos.cc/logos/czech-republic/256x256/teplice.f2a683c0.png","Terengganu":"https://assets.football-logos.cc/logos/malaysia/256x256/terengganu-fc.f6fad6db.png","Termalica Nieciecza":"https://assets.football-logos.cc/logos/poland/256x256/bruk-bet-termalica-nieciecza.87ac218c.png","The Strongest":"https://assets.football-logos.cc/logos/bolivia/256x256/the-strongest.ca268f60.png","Thun":"https://assets.football-logos.cc/logos/switzerland/256x256/thun.c68e130a.png","Tianjin Jinmen Tiger":"https://assets.football-logos.cc/logos/china/256x256/tianjin-jinmen-tiger.7549c4ea.png","Tienen":"https://assets.football-logos.cc/logos/liechtenstein/256x256/triesen.2120e503.png","Tigre":"https://assets.football-logos.cc/logos/argentina/256x256/tigre.81ae80b6.png","Tiraspol":"https://assets.football-logos.cc/logos/austria/256x256/tirol.319449ea.png","Tochigi City FC":"https://assets.football-logos.cc/logos/malaysia/256x256/kuching-city-fc.dc49a036.png","Tokushima Vortis":"https://assets.football-logos.cc/logos/japan/256x256/tokushima-vortis.a229014f.png","Tolima":"https://assets.football-logos.cc/logos/paraguay/256x256/olimpia.86d1d5e2.png","Torino":"https://assets.football-logos.cc/logos/italy/256x256/torino.a6c78dd6.png","Torpedo Kutaisi":"https://assets.football-logos.cc/logos/georgia/256x256/torpedo-kutaisi.6ed5072b.png","Torpedo Moscow":"https://assets.football-logos.cc/logos/russia/256x256/torpedo-moskva.e7438f46.png","Tractor":"https://assets.football-logos.cc/logos/iran/256x256/tractor.7a71abfe.png","Treaty United":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/treaty-united.b0613aff.png","Triestina":"https://assets.football-logos.cc/logos/italy/256x256/triestina.d1330684.png","Trofense":"https://assets.football-logos.cc/logos/portugal/256x256/trofense.e5bc4d9b.png","Tromsø":"https://assets.football-logos.cc/logos/norway/256x256/tromso.2cde3ac0.png","Turan Tovuz":"https://assets.football-logos.cc/logos/azerbaijan/256x256/turan.a504ed55.png","UCD":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/ucd.7c9d1519.png","US Rumelange":"https://assets.football-logos.cc/logos/luxembourg/256x256/rumelange.885b7514.png","USM Alger":"https://assets.football-logos.cc/logos/algeria/256x256/usm-alger.557d3522.png","Ujpest":"https://assets.football-logos.cc/logos/hungary/256x256/ujpest.af6dab44.png","Ulsan HD FC":"https://assets.football-logos.cc/logos/south-korea/256x256/ulsan-hd-fc.5bd36e8f.png","Ulytau":"https://assets.football-logos.cc/logos/kazakhstan/256x256/ulytau.1b633c68.png","Umm Salal":"https://assets.football-logos.cc/logos/qatar/256x256/umm-salal.b7d77427.png","Union":"https://assets.football-logos.cc/logos/argentina/256x256/union.b8de0704.png","Union La Calera":"https://assets.football-logos.cc/logos/chile/256x256/union-la-calera.57233b43.png","Universidad Catolica":"https://assets.football-logos.cc/logos/chile/256x256/universidad-catolica.e49b192f.png","Universidad de Chile":"https://assets.football-logos.cc/logos/chile/256x256/universidad-de-chile.636d25b7.png","Universidad de Concepcion":"https://assets.football-logos.cc/logos/chile/256x256/universidad-de-concepcion.6979f8e9.png","Universitario de Deportes":"https://assets.football-logos.cc/logos/peru/256x256/universitario.4ca4d60f.png","Universitario de Vinto":"https://assets.football-logos.cc/logos/bolivia/256x256/universitario-de-vinto.7a385eca.png","Universitatea Cluj":"https://assets.football-logos.cc/logos/romania/256x256/u-cluj.fa8dbeaa.png","Universitatea Craiova":"https://assets.football-logos.cc/logos/romania/256x256/u-craiova.1c69d534.png","Ural":"https://assets.football-logos.cc/logos/russia/256x256/ural.737d80cc.png","Urartu FC":"https://assets.football-logos.cc/logos/armenia/256x256/urartu.831259fa.png","V-Varen Nagasaki":"https://assets.football-logos.cc/logos/japan/256x256/v-varen-nagasaki.b3a0794c.png","VVV-Venlo":"https://assets.football-logos.cc/logos/netherlands/256x256/vvv-venlo.44bb6cfa.png","Valur":"https://assets.football-logos.cc/logos/iceland/256x256/valur.8833e6ee.png","Van":"https://assets.football-logos.cc/logos/armenia/256x256/van.3f24ebae.png","Vancouver FC":"https://assets.football-logos.cc/logos/canada/256x256/vancouver-fc.a922436f.png","Varese":"https://assets.football-logos.cc/logos/italy/256x256/varese.5d9f53c3.png","Varzim":"https://assets.football-logos.cc/logos/portugal/256x256/varzim.0474d8a1.png","Vasco da Gama":"https://assets.football-logos.cc/logos/brazil/256x256/vasco-da-gama.74746cfd.png","Veendam":"https://assets.football-logos.cc/logos/netherlands/256x256/volendam.f594d394.png","Vejle Boldklub":"https://assets.football-logos.cc/logos/denmark/256x256/vejle-boldklub.16af6d4c.png","Velez Sarsfield":"https://assets.football-logos.cc/logos/argentina/256x256/velez-sarsfield.d9813ef4.png","Vendsyssel FF":"https://assets.football-logos.cc/logos/denmark/256x256/vendsyssel.2b5286ac.png","Vestri":"https://assets.football-logos.cc/logos/iceland/256x256/vestri.11059756.png","Viborg":"https://assets.football-logos.cc/logos/denmark/256x256/viborg.549d4865.png","Vicenza":"https://assets.football-logos.cc/logos/italy/256x256/vicenza.7df775fd.png","Viettel":"https://assets.football-logos.cc/logos/vietnam/256x256/viettel.a2e31e72.png","Viking":"https://assets.football-logos.cc/logos/norway/256x256/viking.6bd46d37.png","Vikingur":"https://assets.football-logos.cc/logos/faroe-islands/256x256/vikingur.4960532a.png","Viktoria Plzen":"https://assets.football-logos.cc/logos/czech-republic/256x256/viktoria-plzen.11c30031.png","Vila Nova":"https://assets.football-logos.cc/logos/brazil/256x256/vila-nova.cbb31747.png","Villarreal B":"https://assets.football-logos.cc/logos/spain/256x256/villarreal.b0313369.png","Vise":"https://assets.football-logos.cc/logos/netherlands/256x256/vitesse.ffea0429.png","Vitesse":"https://assets.football-logos.cc/logos/netherlands/256x256/vitesse.ffea0429.png","Vitoria":"https://assets.football-logos.cc/logos/brazil/256x256/vitoria.227522d4.png","Vllaznia":"https://assets.football-logos.cc/logos/albania/256x256/vllaznia.ed3683c8.png","Vojvodina":"https://assets.football-logos.cc/logos/serbia/256x256/vojvodina.f9cadb38.png","Volyn":"https://assets.football-logos.cc/logos/norway/256x256/lyn.8629c61e.png","Västerås SK":"https://assets.football-logos.cc/logos/sweden/256x256/wasteras.aded9939.png","Vålerenga":"https://assets.football-logos.cc/logos/norway/256x256/valerenga.4d61dd7f.png","Völsungur":"https://assets.football-logos.cc/logos/iceland/256x256/volsungur.a7bade11.png","WIT Georgia Tbilisi":"https://assets.football-logos.cc/logos/georgia/256x256/wit-georgia.b6c6a00a.png","Wadi Degla FC":"https://assets.football-logos.cc/logos/egypt/256x256/wadi-degla.a53a90a3.png","Warrenpoint Town":"https://assets.football-logos.cc/logos/northern-ireland/256x256/warrenpoint.0ce12468.png","Warta Poznań":"https://assets.football-logos.cc/logos/poland/256x256/warta.72ce4add.png","Waterford FC":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/waterford.5c29350e.png","Wellington Olympic":"https://assets.football-logos.cc/logos/new-zealand/256x256/wellington-phoenix.c68759f2.png","Wellington Phoenix":"https://assets.football-logos.cc/logos/new-zealand/256x256/wellington-phoenix.c68759f2.png","Wellington Phoenix B":"https://assets.football-logos.cc/logos/new-zealand/256x256/wellington-phoenix.c68759f2.png","Wexford FC":"https://assets.football-logos.cc/logos/republic-of-ireland/256x256/wexford.dc2e5828.png","Widzew Łódź":"https://assets.football-logos.cc/logos/poland/256x256/widzew.d3702637.png","Wil":"https://assets.football-logos.cc/logos/switzerland/256x256/wil.c409a82e.png","Willem II":"https://assets.football-logos.cc/logos/netherlands/256x256/willem-ii.e9a62d88.png","Winterthur":"https://assets.football-logos.cc/logos/switzerland/256x256/winterthur.f8cf9656.png","Wisła Kraków":"https://assets.football-logos.cc/logos/poland/256x256/wisla-krakow.ab20d829.png","Wolfsberger AC":"https://assets.football-logos.cc/logos/austria/256x256/wolfsberg.cf7800db.png","Wuhan Three Towns":"https://assets.football-logos.cc/logos/china/256x256/wuhan-three-towns.e979d588.png","Xamax":"https://assets.football-logos.cc/logos/switzerland/256x256/xamax.878f1512.png","Yantra":"https://assets.football-logos.cc/logos/slovakia/256x256/nitra.6703eb4c.png","Young Boys":"https://assets.football-logos.cc/logos/switzerland/256x256/young-boys.313bb944.png","Young Lions":"https://assets.football-logos.cc/logos/switzerland/256x256/young-boys.313bb944.png","Yunnan Yukun":"https://assets.football-logos.cc/logos/china/256x256/yunnan-yukun.cd3e7e8d.png","Yverdon":"https://assets.football-logos.cc/logos/italy/256x256/verona.1da2d2b7.png","Zagłębie Lubin":"https://assets.football-logos.cc/logos/poland/256x256/zaglebie-lubin.bc6d7143.png","Zalgiris Vilnius":"https://assets.football-logos.cc/logos/lithuania/256x256/zalgiris-vilnius.786de503.png","Zamalek SC":"https://assets.football-logos.cc/logos/egypt/256x256/zamalek.9c35194a.png","Zarzis":"https://assets.football-logos.cc/logos/tunisia/256x256/zarzis.7a885c42.png","Zeljeznicar":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/zeljeznicar.51771a8d.png","Zestafoni":"https://assets.football-logos.cc/logos/georgia/256x256/zestafoni.5d3da98e.png","Zeta":"https://assets.football-logos.cc/logos/bulgaria/256x256/etar.8e442cf5.png","Zhejiang Professional":"https://assets.football-logos.cc/logos/china/256x256/zhejiang-professional.8dee2e5b.png","Zhenis":"https://assets.football-logos.cc/logos/kazakhstan/256x256/jenis.edaee2db.png","Zilina":"https://assets.football-logos.cc/logos/slovakia/256x256/zilina.12bda08d.png","Zilina B":"https://assets.football-logos.cc/logos/slovakia/256x256/zilina.12bda08d.png","Zimbru":"https://assets.football-logos.cc/logos/moldova/256x256/zimbru.9099482f.png","Zizkov":"https://assets.football-logos.cc/logos/czech-republic/256x256/zizkov.e12e1e76.png","Zlate Moravce":"https://assets.football-logos.cc/logos/slovakia/256x256/zlate-moravce.d7885b8e.png","Zob Ahan":"https://assets.football-logos.cc/logos/iran/256x256/zob-ahan.328852d5.png","Zorya":"https://assets.football-logos.cc/logos/spain/256x256/zamora.89077dfb.png","Zrinjski Mostar":"https://assets.football-logos.cc/logos/bosnia-and-herzegovina/256x256/zrinjski.7742c7e6.png","Zulte Waregem":"https://assets.football-logos.cc/logos/belgium/256x256/zulte-waregem.14c3a83a.png","Ægir":"https://assets.football-logos.cc/logos/malta/256x256/gzira.d2d635ab.png","Ñublense":"https://assets.football-logos.cc/logos/chile/256x256/nublense.f6a1cf1b.png","Örebro":"https://assets.football-logos.cc/logos/sweden/256x256/orebro.e5c4aa9c.png","Örgryte":"https://assets.football-logos.cc/logos/sweden/256x256/orgryte.28fac1c8.png","Östersunds FK":"https://assets.football-logos.cc/logos/sweden/256x256/ostersund.b18b3f3f.png","Śląsk Wrocław":"https://assets.football-logos.cc/logos/poland/256x256/slask.48ec370e.png","Arsenal":"https://assets.football-logos.cc/logos/england/256x256/arsenal.e5528ede.png","Aston Villa":"https://assets.football-logos.cc/logos/england/256x256/aston-villa.07a2646c.png","Chelsea":"https://assets.football-logos.cc/logos/england/256x256/chelsea.fe8d2c2e.png","Everton":"https://assets.football-logos.cc/logos/england/256x256/everton.6b635cd7.png","Liverpool":"https://assets.football-logos.cc/logos/england/256x256/liverpool.99c48ae3.png","Manchester City":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png","Man. City":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png","Man City":"https://assets.football-logos.cc/logos/england/256x256/manchester-city.62f9d1f2.png","Manchester United":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png","Man. United":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png","Man United":"https://assets.football-logos.cc/logos/england/256x256/manchester-united.7ab9d343.png","Newcastle United":"https://assets.football-logos.cc/logos/england/256x256/newcastle.53b65b3d.png","Newcastle":"https://assets.football-logos.cc/logos/england/256x256/newcastle.53b65b3d.png","Tottenham Hotspur":"https://assets.football-logos.cc/logos/england/256x256/tottenham.f192bf50.png","Tottenham":"https://assets.football-logos.cc/logos/england/256x256/tottenham.f192bf50.png","Spurs":"https://assets.football-logos.cc/logos/england/256x256/tottenham.f192bf50.png","West Ham United":"https://assets.football-logos.cc/logos/england/256x256/west-ham.c86eebf5.png","West Ham":"https://assets.football-logos.cc/logos/england/256x256/west-ham.c86eebf5.png","Brentford":"https://assets.football-logos.cc/logos/england/256x256/brentford.e3296e20.png","Brighton":"https://assets.football-logos.cc/logos/england/256x256/brighton.5da206a0.png","Brighton & Hove Albion":"https://assets.football-logos.cc/logos/england/256x256/brighton.5da206a0.png","Fulham":"https://assets.football-logos.cc/logos/england/256x256/fulham.4c7ce48b.png","Wolverhampton":"https://assets.football-logos.cc/logos/england/256x256/wolves.2c773758.png","Wolves":"https://assets.football-logos.cc/logos/england/256x256/wolves.2c773758.png","Leicester City":"https://assets.football-logos.cc/logos/england/256x256/leicester.9c13bc7c.png","Leicester":"https://assets.football-logos.cc/logos/england/256x256/leicester.9c13bc7c.png","Bayern Munich":"https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png","Bayern München":"https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png","Bayern":"https://assets.football-logos.cc/logos/germany/256x256/bayern-munchen.6c38f13a.png","Borussia Dortmund":"https://assets.football-logos.cc/logos/germany/256x256/borussia-dortmund.09ffedcd.png","Dortmund":"https://assets.football-logos.cc/logos/germany/256x256/borussia-dortmund.09ffedcd.png","RB Leipzig":"https://assets.football-logos.cc/logos/germany/256x256/rb-leipzig.9d65faeb.png","Leipzig":"https://assets.football-logos.cc/logos/germany/256x256/rb-leipzig.9d65faeb.png","Bayer Leverkusen":"https://assets.football-logos.cc/logos/germany/256x256/bayer-leverkusen.72f211d8.png","Leverkusen":"https://assets.football-logos.cc/logos/germany/256x256/bayer-leverkusen.72f211d8.png","Eintracht Frankfurt":"https://assets.football-logos.cc/logos/germany/256x256/eintracht-frankfurt.a8244b07.png","Frankfurt":"https://assets.football-logos.cc/logos/germany/256x256/eintracht-frankfurt.a8244b07.png","Borussia Mönchengladbach":"https://assets.football-logos.cc/logos/germany/256x256/borussia-monchengladbach.94366357.png","Gladbach":"https://assets.football-logos.cc/logos/germany/256x256/borussia-monchengladbach.94366357.png","Schalke 04":"https://assets.football-logos.cc/logos/germany/256x256/schalke-04.9a871467.png","Schalke":"https://assets.football-logos.cc/logos/germany/256x256/schalke-04.9a871467.png","FC Barcelona":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.779f8f0f.png","Barcelona":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.779f8f0f.png","Barcel...":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.779f8f0f.png","Barcelone":"https://assets.football-logos.cc/logos/spain/256x256/barcelona.779f8f0f.png","Real Madrid":"https://assets.football-logos.cc/logos/spain/256x256/real-madrid.5ce15611.png","Atletico Madrid":"https://assets.football-logos.cc/logos/spain/256x256/atletico-madrid.ba72e2cf.png","Atletico":"https://assets.football-logos.cc/logos/spain/256x256/atletico-madrid.ba72e2cf.png","Atlético Madrid":"https://assets.football-logos.cc/logos/spain/256x256/atletico-madrid.ba72e2cf.png","Sevilla":"https://assets.football-logos.cc/logos/spain/256x256/sevilla.b741a6ce.png","Valencia":"https://assets.football-logos.cc/logos/spain/256x256/valencia.f9d9eee2.png","Villarreal":"https://assets.football-logos.cc/logos/spain/256x256/villarreal.b0313369.png","Real Sociedad":"https://assets.football-logos.cc/logos/spain/256x256/real-sociedad.501e3b1e.png","Athletic Bilbao":"https://assets.football-logos.cc/logos/spain/256x256/athletic-club.e1bfba0c.png","AC Milan":"https://assets.football-logos.cc/logos/italy/256x256/milan.75d56f90.png","Inter Milan":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png","Internazionale":"https://assets.football-logos.cc/logos/italy/256x256/inter.3a7ce90c.png","Napoli":"https://assets.football-logos.cc/logos/italy/256x256/napoli.ee47a50b.png","SSC Napoli":"https://assets.football-logos.cc/logos/italy/256x256/napoli.ee47a50b.png","AS Roma":"https://assets.football-logos.cc/logos/italy/256x256/roma.034a933e.png","ACF Fiorentina":"https://assets.football-logos.cc/logos/italy/256x256/fiorentina.7ba101c2.png","PSV":"https://assets.football-logos.cc/logos/netherlands/256x256/psv.b5ebd0db.png","PSG":"https://assets.football-logos.cc/logos/france/256x256/paris-saint-germain.579907dc.png","Paris Saint-Germain":"https://assets.football-logos.cc/logos/france/256x256/paris-saint-germain.579907dc.png","Paris SG":"https://assets.football-logos.cc/logos/france/256x256/paris-saint-germain.579907dc.png","Lyon":"https://assets.football-logos.cc/logos/france/256x256/lyon.b44ff7aa.png","Olympique Lyonnais":"https://assets.football-logos.cc/logos/france/256x256/lyon.b44ff7aa.png","Olympique de Marseille":"https://assets.football-logos.cc/logos/france/256x256/marseille.92b6437c.png","Sporting CP":"https://assets.football-logos.cc/logos/portugal/256x256/sporting-cp.cf9a4c5b.png","Benfica":"https://assets.football-logos.cc/logos/portugal/256x256/benfica.3e4d3034.png","SL Benfica":"https://assets.football-logos.cc/logos/portugal/256x256/benfica.3e4d3034.png","Porto":"https://assets.football-logos.cc/logos/portugal/256x256/fc-porto.b58f31f6.png","FC Porto":"https://assets.football-logos.cc/logos/portugal/256x256/fc-porto.b58f31f6.png","Blackburn Rovers":"assets/logos/teams/england_blackburn-rovers_256x256.football-logos.cc.png","Blackburn":"assets/logos/teams/england_blackburn-rovers_256x256.football-logos.cc.png","Bournemouth":"assets/logos/teams/england_bournemouth_256x256.football-logos.cc.png","AFC Bournemouth":"assets/logos/teams/england_bournemouth_256x256.football-logos.cc.png","Bristol City":"assets/logos/teams/england_bristol-city_256x256.football-logos.cc.png","Crystal Palace":"assets/logos/teams/england_crystal-palace_256x256.football-logos.cc.png","Derby County":"assets/logos/teams/england_derby-county_256x256.football-logos.cc.png","Derby":"assets/logos/teams/england_derby-county_256x256.football-logos.cc.png","Ipswich Town":"assets/logos/teams/england_ipswich_256x256.football-logos.cc.png","Ipswich":"assets/logos/teams/england_ipswich_256x256.football-logos.cc.png","Leeds United":"assets/logos/teams/england_leeds-united_256x256.football-logos.cc.png","Leeds":"assets/logos/teams/england_leeds-united_256x256.football-logos.cc.png","Middlesbrough":"assets/logos/teams/england_middlesbrough_256x256.football-logos.cc.png","Nottingham Forest":"assets/logos/teams/england_nottingham-forest_256x256.football-logos.cc.png","Nottm Forest":"assets/logos/teams/england_nottingham-forest_256x256.football-logos.cc.png","Oxford United":"assets/logos/teams/england_oxford-united_256x256.football-logos.cc.png","Oxford":"assets/logos/teams/england_oxford-united_256x256.football-logos.cc.png","Portsmouth":"assets/logos/teams/england_portsmouth_256x256.football-logos.cc.png","Preston North End":"assets/logos/teams/england_preston-north-end_256x256.football-logos.cc.png","Preston":"assets/logos/teams/england_preston-north-end_256x256.football-logos.cc.png","Queens Park Rangers":"assets/logos/teams/england_queens-park-rangers_256x256.football-logos.cc.png","QPR":"assets/logos/teams/england_queens-park-rangers_256x256.football-logos.cc.png","Sheffield United":"assets/logos/teams/england_sheffield-united_256x256.football-logos.cc.png","Sheff Utd":"assets/logos/teams/england_sheffield-united_256x256.football-logos.cc.png","Sheffield Wednesday":"assets/logos/teams/england_sheffield-wednesday_256x256.football-logos.cc.png","Sheff Wed":"assets/logos/teams/england_sheffield-wednesday_256x256.football-logos.cc.png","Southampton":"assets/logos/teams/england_southampton_256x256.football-logos.cc.png","Saints":"assets/logos/teams/england_southampton_256x256.football-logos.cc.png","Watford":"assets/logos/teams/england_watford_256x256.football-logos.cc.png","West Bromwich Albion":"assets/logos/teams/england_west-bromwich-albion_256x256.football-logos.cc.png","West Brom":"assets/logos/teams/england_west-bromwich-albion_256x256.football-logos.cc.png","WBA":"assets/logos/teams/england_west-bromwich-albion_256x256.football-logos.cc.png","FC Augsburg":"assets/logos/teams/germany_augsburg_256x256.football-logos.cc.png","Augsburg":"assets/logos/teams/germany_augsburg_256x256.football-logos.cc.png","Darmstadt":"assets/logos/teams/germany_darmstadt_256x256.football-logos.cc.png","SV Darmstadt 98":"assets/logos/teams/germany_darmstadt_256x256.football-logos.cc.png","Darmstadt 98":"assets/logos/teams/germany_darmstadt_256x256.football-logos.cc.png","1. FC Heidenheim 1846":"assets/logos/teams/germany_fc-heidenheim_256x256.football-logos.cc.png","Heidenheim":"assets/logos/teams/germany_fc-heidenheim_256x256.football-logos.cc.png","FC Heidenheim":"assets/logos/teams/germany_fc-heidenheim_256x256.football-logos.cc.png","SC Freiburg":"assets/logos/teams/germany_freiburg_256x256.football-logos.cc.png","Freiburg":"assets/logos/teams/germany_freiburg_256x256.football-logos.cc.png","Hertha BSC":"assets/logos/teams/germany_hertha-bsc_256x256.football-logos.cc.png","Hertha Berlin":"assets/logos/teams/germany_hertha-bsc_256x256.football-logos.cc.png","Hertha":"assets/logos/teams/germany_hertha-bsc_256x256.football-logos.cc.png","TSG Hoffenheim":"assets/logos/teams/germany_hoffenheim_256x256.football-logos.cc.png","Hoffenheim":"assets/logos/teams/germany_hoffenheim_256x256.football-logos.cc.png","TSG 1899 Hoffenheim":"assets/logos/teams/germany_hoffenheim_256x256.football-logos.cc.png","FC Köln":"assets/logos/teams/germany_koln_256x256.football-logos.cc.png","1. FC Köln":"assets/logos/teams/germany_koln_256x256.football-logos.cc.png","Köln":"assets/logos/teams/germany_koln_256x256.football-logos.cc.png","Koln":"assets/logos/teams/germany_koln_256x256.football-logos.cc.png","Cologne":"assets/logos/teams/germany_koln_256x256.football-logos.cc.png","FSV Mainz 05":"assets/logos/teams/germany_mainz-05_256x256.football-logos.cc.png","Mainz 05":"assets/logos/teams/germany_mainz-05_256x256.football-logos.cc.png","Mainz":"assets/logos/teams/germany_mainz-05_256x256.football-logos.cc.png","1. FSV Mainz 05":"assets/logos/teams/germany_mainz-05_256x256.football-logos.cc.png","1. FC Union Berlin":"assets/logos/teams/germany_union-berlin_256x256.football-logos.cc.png","Union Berlin":"assets/logos/teams/germany_union-berlin_256x256.football-logos.cc.png","Werder Bremen":"assets/logos/teams/germany_werder-bremen_256x256.football-logos.cc.png","SV Werder Bremen":"assets/logos/teams/germany_werder-bremen_256x256.football-logos.cc.png","VfL Wolfsburg":"assets/logos/teams/germany_wolfsburg_256x256.football-logos.cc.png","Wolfsburg":"assets/logos/teams/germany_wolfsburg_256x256.football-logos.cc.png","Admira Wacker":"assets/logos/teams/austria_admira_256x256.football-logos.cc.png","FC Admira":"assets/logos/teams/austria_admira_256x256.football-logos.cc.png","Admira":"assets/logos/teams/austria_admira_256x256.football-logos.cc.png","Apolonia":"assets/logos/teams/albania_apolonia_256x256.football-logos.cc.png","Apolonia Fier":"assets/logos/teams/albania_apolonia_256x256.football-logos.cc.png","Dinamo City":"assets/logos/teams/albania_dinamo-city_256x256.football-logos.cc.png","Egnatia":"assets/logos/teams/albania_egnatia_256x256.football-logos.cc.png","Kastrioti":"assets/logos/teams/albania_kastrioti_256x256.football-logos.cc.png","Teuta Durres":"assets/logos/teams/albania_teuta_256x256.football-logos.cc.png","Teuta":"assets/logos/teams/albania_teuta_256x256.football-logos.cc.png","Teuta Durrës":"assets/logos/teams/albania_teuta_256x256.football-logos.cc.png","CS Constantine":"assets/logos/teams/algeria_cs-constantine_256x256.football-logos.cc.png","JS Saoura":"assets/logos/teams/algeria_js-saoura_256x256.football-logos.cc.png","Olympique Akbou":"assets/logos/teams/algeria_olympique-akbou_256x256.football-logos.cc.png","FK Qabala":"assets/logos/teams/azerbaijan_gabala_256x256.football-logos.cc.png","Gabala FK":"assets/logos/teams/azerbaijan_gabala_256x256.football-logos.cc.png","Gabala":"assets/logos/teams/azerbaijan_gabala_256x256.football-logos.cc.png","Sabah FK":"assets/logos/teams/azerbaijan_sabah_256x256.football-logos.cc.png","Sabail":"assets/logos/teams/azerbaijan_sabail_256x256.football-logos.cc.png","Sabail FK":"assets/logos/teams/azerbaijan_sabail_256x256.football-logos.cc.png","FK Sumqayit":"assets/logos/teams/azerbaijan_sumqayit_256x256.football-logos.cc.png","Sumqayit":"assets/logos/teams/azerbaijan_sumqayit_256x256.football-logos.cc.png","Araz PFK":"assets/logos/teams/azerbaijan_araz-naxcivan-pfk_256x256.football-logos.cc.png","Araz-Nakhchivan PFK":"assets/logos/teams/azerbaijan_araz-naxcivan-pfk_256x256.football-logos.cc.png","Zira":"assets/logos/teams/azerbaijan_zire_256x256.football-logos.cc.png","FK Zira":"assets/logos/teams/azerbaijan_zire_256x256.football-logos.cc.png","Zire":"assets/logos/teams/azerbaijan_zire_256x256.football-logos.cc.png","Al-Fayha":"assets/logos/teams/saudi-arabia_al-fayha_256x256.football-logos.cc.png","Al Fayha":"assets/logos/teams/saudi-arabia_al-fayha_256x256.football-logos.cc.png","Al Kholood":"assets/logos/teams/saudi-arabia_al-kholood_256x256.football-logos.cc.png","Al-Kholood":"assets/logos/teams/saudi-arabia_al-kholood_256x256.football-logos.cc.png","Al-Orobah FC":"assets/logos/teams/saudi-arabia_al-orobah_256x256.football-logos.cc.png","Al Orobah":"assets/logos/teams/saudi-arabia_al-orobah_256x256.football-logos.cc.png","Al-Orobah":"assets/logos/teams/saudi-arabia_al-orobah_256x256.football-logos.cc.png","Al Riyadh":"assets/logos/teams/saudi-arabia_al-riyadh_256x256.football-logos.cc.png","Al-Riyadh":"assets/logos/teams/saudi-arabia_al-riyadh_256x256.football-logos.cc.png","Damac FC":"assets/logos/teams/saudi-arabia_damac_256x256.football-logos.cc.png","DAMAC FC":"assets/logos/teams/saudi-arabia_damac_256x256.football-logos.cc.png","Damac":"assets/logos/teams/saudi-arabia_damac_256x256.football-logos.cc.png","AmaZulu FC":"assets/logos/teams/south-africa_amazulu-fc_256x256.football-logos.cc.png","Amazulu FC":"assets/logos/teams/south-africa_amazulu-fc_256x256.football-logos.cc.png","Chippa United":"assets/logos/teams/south-africa_chippa-united_256x256.football-logos.cc.png","Magesi FC":"assets/logos/teams/south-africa_magesi_256x256.football-logos.cc.png","Magesi":"assets/logos/teams/south-africa_magesi_256x256.football-logos.cc.png","Polokwane City":"assets/logos/teams/south-africa_polokwane-city_256x256.football-logos.cc.png","Richards Bay":"assets/logos/teams/south-africa_richards-bay_256x256.football-logos.cc.png","Richards Bay FC":"assets/logos/teams/south-africa_richards-bay_256x256.football-logos.cc.png","Sekhukhune United":"assets/logos/teams/south-africa_sekhukhune-united_256x256.football-logos.cc.png","Sekhukhune":"assets/logos/teams/south-africa_sekhukhune-united_256x256.football-logos.cc.png","TS Galaxy":"assets/logos/teams/south-africa_ts-galaxy_256x256.football-logos.cc.png","1. FC Köln":"https://media.api-sports.io/football/teams/192.png","1. FC Nürnberg":"https://media.api-sports.io/football/teams/171.png","AC Ajaccio":"https://api.sofascore.app/api/v1/team/1660/image","AC Arles":"https://api.sofascore.app/api/v1/team/7721/image","AFC Bournemouth":"https://api.sofascore.app/api/v1/team/60/image","AGOVV Apeldoorn":"https://api.sofascore.app/api/v1/team/2983/image","AS Beziers":"https://api.sofascore.app/api/v1/team/1708/image","AVS Futebol SAD":"https://api.sofascore.app/api/v1/team/483088/image","Academica":"https://media.api-sports.io/football/teams/239.png","Achilles 29":"https://media.api-sports.io/football/teams/806.png","Adana Demirspor":"https://media.api-sports.io/football/teams/3563.png","Akron Togliatti":"https://api.sofascore.app/api/v1/team/285689/image","Alania Vladikavkaz":"https://api.sofascore.app/api/v1/team/322695/image","Alanyaspor":"https://media.api-sports.io/football/teams/996.png","Almeria":"https://media.api-sports.io/football/teams/723.png","Amkar-Perm":"https://api.sofascore.app/api/v1/team/2332/image","Angers":"https://media.api-sports.io/football/teams/77.png","Ankaragücü":"https://media.api-sports.io/football/teams/1010.png","Ankaraspor":"https://media.api-sports.io/football/teams/780.png","Annecy FC":"https://api.sofascore.app/api/v1/team/33973/image","Antalyaspor":"https://media.api-sports.io/football/teams/1005.png","Anzhi Makhachkala":"https://api.sofascore.app/api/v1/team/2327/image","Argentinos Juniors":"https://api.sofascore.app/api/v1/team/3216/image","Arminia Bielefeld":"https://media.api-sports.io/football/teams/188.png","Augsburg":"https://api.sofascore.app/api/v1/team/2600/image","Auxerre":"https://media.api-sports.io/football/teams/108.png","Balikesirspor":"https://media.api-sports.io/football/teams/3568.png","Bari":"https://media.api-sports.io/football/teams/508.png","Barnsley":"https://media.api-sports.io/football/teams/747.png","Başakşehir":"https://media.api-sports.io/football/teams/564.png","Beira-Mar":"https://media.api-sports.io/football/teams/4661.png","Benevento":"https://media.api-sports.io/football/teams/506.png","Beşiktaş":"https://media.api-sports.io/football/teams/549.png","Birmingham City":"https://api.sofascore.app/api/v1/team/9/image","Blackburn Rovers":"https://api.sofascore.app/api/v1/team/46/image","Blackpool":"https://media.api-sports.io/football/teams/1356.png","Boavista":"https://media.api-sports.io/football/teams/222.png","Bochum":"https://api.sofascore.app/api/v1/team/2542/image","Bodrum FK":"https://media.api-sports.io/football/teams/3583.png","Bologna":"https://media.api-sports.io/football/teams/500.png","Bolton Wanderers":"https://api.sofascore.app/api/v1/team/5/image","Bordeaux":"https://media.api-sports.io/football/teams/78.png","Boulogne":"https://media.api-sports.io/football/teams/1299.png","Bourg en Bresse Peronnas":"https://api.sofascore.app/api/v1/team/1702/image","Braga":"https://api.sofascore.app/api/v1/team/2999/image","Brescia":"https://media.api-sports.io/football/teams/518.png","Brest":"https://api.sofascore.app/api/v1/team/1715/image","Bristol City":"https://media.api-sports.io/football/teams/56.png","Bucaspor":"https://media.api-sports.io/football/teams/11105.png","Burnley":"https://media.api-sports.io/football/teams/44.png","Bursaspor":"https://media.api-sports.io/football/teams/1003.png","Burton Albion":"https://media.api-sports.io/football/teams/748.png","Cadiz":"https://media.api-sports.io/football/teams/724.png","Caen":"https://media.api-sports.io/football/teams/88.png","Cagliari":"https://media.api-sports.io/football/teams/490.png","Cardiff City":"https://api.sofascore.app/api/v1/team/61/image","Carpi":"https://media.api-sports.io/football/teams/519.png","Casa Pia AC":"https://api.sofascore.app/api/v1/team/36365/image","Catania":"https://media.api-sports.io/football/teams/1580.png","Central Cordoba de Santiago":"https://media.api-sports.io/football/teams/1065.png","Cesena":"https://media.api-sports.io/football/teams/509.png","Chacarita Juniors":"https://media.api-sports.io/football/teams/447.png","Chambly":"https://api.sofascore.app/api/v1/team/15014/image","Charlton Athletic":"https://api.sofascore.app/api/v1/team/47/image","Chateauroux":"https://media.api-sports.io/football/teams/107.png","Chaves":"https://media.api-sports.io/football/teams/223.png","Chievo Verona":"https://api.sofascore.app/api/v1/team/2694/image","Clermont Foot":"https://media.api-sports.io/football/teams/99.png","Como":"https://media.api-sports.io/football/teams/895.png","Coventry City":"https://api.sofascore.app/api/v1/team/11/image","Cremonese":"https://media.api-sports.io/football/teams/520.png","Creteil":"https://media.api-sports.io/football/teams/1307.png","Crystal Palace":"https://media.api-sports.io/football/teams/52.png","Darmstadt":"https://api.sofascore.app/api/v1/team/2576/image","De Graafschap":"https://media.api-sports.io/football/teams/199.png","Deportivo Alaves":"https://api.sofascore.app/api/v1/team/2885/image","Deportivo La Coruna":"https://media.api-sports.io/football/teams/544.png","Derby County":"https://api.sofascore.app/api/v1/team/27/image","Dijon":"https://media.api-sports.io/football/teams/89.png","Doncaster Rovers":"https://api.sofascore.app/api/v1/team/84/image","Dunkerque":"https://media.api-sports.io/football/teams/1304.png","Eibar":"https://media.api-sports.io/football/teams/545.png","Eintracht Braunschweig":"https://media.api-sports.io/football/teams/744.png","Elazığspor":"https://media.api-sports.io/football/teams/3571.png","Erzurumspor FK":"https://media.api-sports.io/football/teams/1009.png","Eskisehirspor":"https://media.api-sports.io/football/teams/3572.png","Espanyol":"https://media.api-sports.io/football/teams/540.png","Estrela da Amadora":"https://api.sofascore.app/api/v1/team/3035/image","Excelsior":"https://media.api-sports.io/football/teams/196.png","Eyüpspor":"https://media.api-sports.io/football/teams/3588.png","FC Bastia-Borgo":"https://api.sofascore.app/api/v1/team/1698/image","FC Heidenheim":"https://media.api-sports.io/football/teams/180.png","FC Rotor Volgograd":"https://api.sofascore.app/api/v1/team/2318/image","FC Tambov":"https://api.sofascore.app/api/v1/team/107213/image","FC Ufa":"https://media.api-sports.io/football/teams/1078.png","FC Yenisey Krasnoyarsk":"https://api.sofascore.app/api/v1/team/7639/image","Famalicao":"https://media.api-sports.io/football/teams/242.png","Farense":"https://media.api-sports.io/football/teams/231.png","Fatih Karagümrük":"https://media.api-sports.io/football/teams/3589.png","Fenerbahçe":"https://media.api-sports.io/football/teams/611.png","Fortuna Düsseldorf":"https://media.api-sports.io/football/teams/158.png","Freiburg":"https://api.sofascore.app/api/v1/team/2538/image","GFC Ajaccio":"https://api.sofascore.app/api/v1/team/7924/image","Galatasaray":"https://media.api-sports.io/football/teams/645.png","Gaziantepspor":"https://media.api-sports.io/football/teams/1008.png","Gençlerbirliği":"https://media.api-sports.io/football/teams/997.png","Getafe":"https://media.api-sports.io/football/teams/546.png","Giresunspor":"https://media.api-sports.io/football/teams/3574.png","Grenoble":"https://media.api-sports.io/football/teams/101.png","Greuther Fürth":"https://api.sofascore.app/api/v1/team/2551/image","Göztepe":"https://media.api-sports.io/football/teams/994.png","Hamburger SV":"https://media.api-sports.io/football/teams/175.png","Hannover 96":"https://media.api-sports.io/football/teams/166.png","Hatayspor":"https://media.api-sports.io/football/teams/3575.png","Hellas Verona":"https://media.api-sports.io/football/teams/504.png","Hertha BSC":"https://media.api-sports.io/football/teams/159.png","Hoffenheim":"https://api.sofascore.app/api/v1/team/2569/image","Holstein Kiel":"https://media.api-sports.io/football/teams/191.png","Huddersfield Town":"https://api.sofascore.app/api/v1/team/59/image","Hull City":"https://media.api-sports.io/football/teams/64.png","Ingolstadt":"https://api.sofascore.app/api/v1/team/5880/image","Ipswich Town":"https://api.sofascore.app/api/v1/team/32/image","Istanbulspor":"https://media.api-sports.io/football/teams/3578.png","Istres":"https://media.api-sports.io/football/teams/3267.png","Jong AZ Alkmaar":"https://api.sofascore.app/api/v1/team/46161/image","Jong Ajax":"https://media.api-sports.io/football/teams/425.png","Jong FC Twente":"https://api.sofascore.app/api/v1/team/1043120/image","Jong FC Utrecht":"https://api.sofascore.app/api/v1/team/53067/image","Jong PSV":"https://media.api-sports.io/football/teams/411.png","Kaiserslautern":"https://api.sofascore.app/api/v1/team/2675/image","Karabükspor":"https://api.sofascore.app/api/v1/team/7027/image","Kasımpaşa":"https://media.api-sports.io/football/teams/1004.png","Kayserispor":"https://media.api-sports.io/football/teams/1001.png","Khimki":"https://media.api-sports.io/football/teams/1994.png","Konyaspor":"https://media.api-sports.io/football/teams/607.png","Kuban Krasnodar":"https://api.sofascore.app/api/v1/team/2343/image","Laval":"https://media.api-sports.io/football/teams/433.png","Le Mans":"https://media.api-sports.io/football/teams/1298.png","Lecce":"https://media.api-sports.io/football/teams/867.png","Leeds United":"https://api.sofascore.app/api/v1/team/34/image","Leganes":"https://media.api-sports.io/football/teams/537.png","Levante":"https://media.api-sports.io/football/teams/539.png","Lille":"https://media.api-sports.io/football/teams/79.png","Livingston":"https://media.api-sports.io/football/teams/255.png","Lorient":"https://media.api-sports.io/football/teams/97.png","Luton Town":"https://api.sofascore.app/api/v1/team/72/image","Mainz 05":"https://api.sofascore.app/api/v1/team/2556/image","Malaga":"https://media.api-sports.io/football/teams/535.png","Mallorca":"https://media.api-sports.io/football/teams/798.png","Manisaspor":"https://media.api-sports.io/football/teams/3598.png","Maritimo":"https://media.api-sports.io/football/teams/214.png","Martigues":"https://media.api-sports.io/football/teams/3200.png","Metz":"https://media.api-sports.io/football/teams/112.png","Middlesbrough":"https://media.api-sports.io/football/teams/70.png","Millwall":"https://media.api-sports.io/football/teams/58.png","Milton Keynes Dons":"https://media.api-sports.io/football/teams/1348.png","Monaco":"https://media.api-sports.io/football/teams/91.png","Monza":"https://media.api-sports.io/football/teams/1579.png","Nancy":"https://media.api-sports.io/football/teams/102.png","Naval":"https://media.api-sports.io/football/teams/17583.png","Nice":"https://media.api-sports.io/football/teams/84.png","Nimes":"https://media.api-sports.io/football/teams/92.png","Niort":"https://media.api-sports.io/football/teams/113.png","Nizhny Novgorod":"https://media.api-sports.io/football/teams/2011.png","Norwich City":"https://media.api-sports.io/football/teams/18210.png","Nottingham Forest":"https://media.api-sports.io/football/teams/65.png","Olhanense":"https://media.api-sports.io/football/teams/807.png","Osasuna":"https://media.api-sports.io/football/teams/727.png","Oxford United":"https://media.api-sports.io/football/teams/1338.png","PFC Sochi":"https://media.api-sports.io/football/teams/2012.png","Pacos de Ferreira":"https://api.sofascore.app/api/v1/team/3003/image","Paderborn":"https://api.sofascore.app/api/v1/team/2561/image","Palermo":"https://media.api-sports.io/football/teams/522.png","Parma":"https://media.api-sports.io/football/teams/523.png","Patronato de Parana":"https://api.sofascore.app/api/v1/team/43741/image","Pau":"https://media.api-sports.io/football/teams/1297.png","Pendikspor":"https://media.api-sports.io/football/teams/3601.png","Peterborough United":"https://api.sofascore.app/api/v1/team/54/image","Plymouth Argyle":"https://api.sofascore.app/api/v1/team/71/image","Portimonense":"https://media.api-sports.io/football/teams/216.png","Portsmouth":"https://media.api-sports.io/football/teams/1355.png","Preston North End":"https://api.sofascore.app/api/v1/team/21/image","Queens Park Rangers":"https://api.sofascore.app/api/v1/team/1/image","Quevilly":"https://media.api-sports.io/football/teams/431.png","Racing Santander":"https://media.api-sports.io/football/teams/4665.png","Reading":"https://media.api-sports.io/football/teams/53.png","Real Zaragoza":"https://api.sofascore.app/api/v1/team/2815/image","Red Star":"https://media.api-sports.io/football/teams/4396.png","Reims":"https://media.api-sports.io/football/teams/93.png","Rennes":"https://media.api-sports.io/football/teams/94.png","Rio Ave":"https://media.api-sports.io/football/teams/226.png","Roosendaal":"https://media.api-sports.io/football/teams/19266.png","Rotherham United":"https://media.api-sports.io/football/teams/22642.png","Royal Excel Mouscron":"https://media.api-sports.io/football/teams/743.png","SPAL":"https://media.api-sports.io/football/teams/493.png","Salernitana":"https://media.api-sports.io/football/teams/514.png","Sampdoria":"https://media.api-sports.io/football/teams/498.png","San Lorenzo":"https://media.api-sports.io/football/teams/460.png","San Martin de Tucuman":"https://api.sofascore.app/api/v1/team/23950/image","Scunthorpe United":"https://api.sofascore.app/api/v1/team/85/image","Sedan":"https://media.api-sports.io/football/teams/1310.png","Sheffield United":"https://api.sofascore.app/api/v1/team/15/image","Sheffield Wednesday":"https://media.api-sports.io/football/teams/74.png","Sivasspor":"https://media.api-sports.io/football/teams/1002.png","Sochaux":"https://media.api-sports.io/football/teams/115.png","Southampton":"https://media.api-sports.io/football/teams/41.png","Spezia":"https://media.api-sports.io/football/teams/515.png","Sporting Charleroi":"https://api.sofascore.app/api/v1/team/2898/image","Sporting Gijon":"https://media.api-sports.io/football/teams/731.png","St. Pauli":"https://api.sofascore.app/api/v1/team/2526/image","Stoke City":"https://media.api-sports.io/football/teams/75.png","Sunderland":"https://media.api-sports.io/football/teams/746.png","Swansea City":"https://api.sofascore.app/api/v1/team/74/image","TOP Oss":"https://api.sofascore.app/api/v1/team/2978/image","Thonon Evian Grand Geneve":"https://api.sofascore.app/api/v1/team/21800/image","Tondela":"https://media.api-sports.io/football/teams/218.png","Toulouse":"https://media.api-sports.io/football/teams/96.png","Tours":"https://media.api-sports.io/football/teams/432.png","Trabzonspor":"https://media.api-sports.io/football/teams/998.png","Troyes":"https://api.sofascore.app/api/v1/team/1652/image","Udinese":"https://media.api-sports.io/football/teams/494.png","Uniao da Madeira":"https://api.sofascore.app/api/v1/team/3028/image","Uniao de Leiria":"https://media.api-sports.io/football/teams/4662.png","Union Berlin":"https://media.api-sports.io/football/teams/182.png","Valenciennes":"https://media.api-sports.io/football/teams/105.png","Vannes":"https://media.api-sports.io/football/teams/3129.png","Venezia":"https://media.api-sports.io/football/teams/517.png","VfB Stuttgart":"https://media.api-sports.io/football/teams/172.png","Vitoria de Guimaraes":"https://api.sofascore.app/api/v1/team/3009/image","Vitoria de Setubal":"https://api.sofascore.app/api/v1/team/3008/image","Vizela":"https://media.api-sports.io/football/teams/810.png","Watford":"https://media.api-sports.io/football/teams/38.png","Werder Bremen":"https://media.api-sports.io/football/teams/162.png","West Bromwich Albion":"https://api.sofascore.app/api/v1/team/8/image","Wigan Athletic":"https://media.api-sports.io/football/teams/22652.png","Wolfsburg":"https://api.sofascore.app/api/v1/team/2524/image","Wolverhampton Wanderers":"https://api.sofascore.app/api/v1/team/3/image","Wycombe Wanderers":"https://api.sofascore.app/api/v1/team/62/image","Yeni Malatyaspor":"https://media.api-sports.io/football/teams/999.png","Yeovil Town":"https://media.api-sports.io/football/teams/1377.png","Zenit St. Petersburg":"https://api.sofascore.app/api/v1/team/2321/image","Ümraniyespor":"https://media.api-sports.io/football/teams/3577.png","Apollon Smyrnis":"https://api.sofascore.app/api/v1/team/2922/image","Aris":"https://media.api-sports.io/football/teams/3408.png","Austria Klagenfurt":"https://media.api-sports.io/football/teams/1405.png","Austria Vienna":"https://media.api-sports.io/football/teams/601.png","Ayr United":"https://api.sofascore.app/api/v1/team/2597/image","Beerschot VA":"https://media.api-sports.io/football/teams/263.png","Beveren":"https://api.sofascore.app/api/v1/team/2938/image","Blau-Weiß Linz":"https://api.sofascore.app/api/v1/team/91273/image","Bodo/Glimt":"https://media.api-sports.io/football/teams/327.png","Brondby":"https://media.api-sports.io/football/teams/407.png","Castellon":"https://media.api-sports.io/football/teams/5254.png","Catanzaro":"https://media.api-sports.io/football/teams/1687.png","Cercle Bruges":"https://api.sofascore.app/api/v1/team/2934/image","Copenhagen":"https://api.sofascore.app/api/v1/team/2617/image","Cove Rangers":"https://media.api-sports.io/football/teams/6763.png","Deinze":"https://media.api-sports.io/football/teams/6214.png","Dukla Prague":"https://api.sofascore.app/api/v1/team/2767/image","Entella":"https://api.sofascore.app/api/v1/team/4267/image","Esbjerg":"https://media.api-sports.io/football/teams/403.png","FC Fastav Zlin":"https://api.sofascore.app/api/v1/team/3024/image","FC Lausanne":"https://api.sofascore.app/api/v1/team/2684/image","FC Lugano":"https://media.api-sports.io/football/teams/606.png","FC Sion":"https://media.api-sports.io/football/teams/630.png","FC St. Gallen":"https://media.api-sports.io/football/teams/1011.png","FC Winterthur":"https://media.api-sports.io/football/teams/2180.png","FK Backa Topola":"https://api.sofascore.app/api/v1/team/133634/image","FK Rad":"https://api.sofascore.app/api/v1/team/2972/image","FK Radnicki 1923":"https://api.sofascore.app/api/v1/team/14617/image","FK Vojvodina":"https://api.sofascore.app/api/v1/team/2973/image","Foggia":"https://media.api-sports.io/football/teams/521.png","Gornik Zabrze":"https://media.api-sports.io/football/teams/340.png","Horsens":"https://api.sofascore.app/api/v1/team/10070/image","Huesca":"https://media.api-sports.io/football/teams/726.png","IK Start":"https://api.sofascore.app/api/v1/team/10261/image","Jagiellonia":"https://media.api-sports.io/football/teams/336.png","Karlsruher SC":"https://media.api-sports.io/football/teams/785.png","Latina":"https://media.api-sports.io/football/teams/804.png","Lechia Gdansk":"https://media.api-sports.io/football/teams/343.png","Legia Warsaw":"https://api.sofascore.app/api/v1/team/2627/image","Liberec":"https://api.sofascore.app/api/v1/team/2761/image","Lierse SK":"https://api.sofascore.app/api/v1/team/2940/image","Lokomotiva":"https://media.api-sports.io/football/teams/4352.png","Lugo":"https://media.api-sports.io/football/teams/716.png","MFK Karvina":"https://api.sofascore.app/api/v1/team/53028/image","Magdeburg":"https://api.sofascore.app/api/v1/team/2579/image","Midtjylland":"https://api.sofascore.app/api/v1/team/8031/image","Mirandes":"https://media.api-sports.io/football/teams/799.png","Montrose":"https://media.api-sports.io/football/teams/4251.png","NK Osijek":"https://media.api-sports.io/football/teams/616.png","NK Rijeka":"https://api.sofascore.app/api/v1/team/2963/image","OB":"https://api.sofascore.app/api/v1/team/2619/image","OHL":"https://api.sofascore.app/api/v1/team/5984/image","Odd":"https://api.sofascore.app/api/v1/team/10251/image","PAOK":"https://media.api-sports.io/football/teams/619.png","Partizan":"https://media.api-sports.io/football/teams/6395.png","Perugia":"https://media.api-sports.io/football/teams/524.png","Petrolul Ploiesti":"https://media.api-sports.io/football/teams/2598.png","Pisa":"https://media.api-sports.io/football/teams/801.png","Plzen":"https://media.api-sports.io/football/teams/567.png","Pogon Szczecin":"https://media.api-sports.io/football/teams/348.png","Pro Vercelli":"https://media.api-sports.io/football/teams/526.png","Queen's Park":"https://media.api-sports.io/football/teams/6778.png","RWDM":"https://media.api-sports.io/football/teams/6224.png","Radomiak Radom":"https://media.api-sports.io/football/teams/4248.png","Rakow Czestochowa":"https://media.api-sports.io/football/teams/3491.png","Randers":"https://api.sofascore.app/api/v1/team/4744/image","Rapid Bucharest":"https://api.sofascore.app/api/v1/team/2955/image","Real Oviedo":"https://api.sofascore.app/api/v1/team/2851/image","Red Bull Salzburg":"https://media.api-sports.io/football/teams/571.png","Red Star Belgrade":"https://api.sofascore.app/api/v1/team/2970/image","Regensburg":"https://api.sofascore.app/api/v1/team/6367/image","Reggina":"https://media.api-sports.io/football/teams/1692.png","Rheindorf Altach":"https://api.sofascore.app/api/v1/team/15356/image","SV Wehen":"https://media.api-sports.io/football/teams/1319.png","Sabadell":"https://media.api-sports.io/football/teams/9593.png","Sandhausen":"https://api.sofascore.app/api/v1/team/2648/image","Sepsi OSK":"https://api.sofascore.app/api/v1/team/262954/image","Seraing":"https://api.sofascore.app/api/v1/team/44315/image","Slask Wroclaw":"https://media.api-sports.io/football/teams/337.png","SonderjyskE":"https://media.api-sports.io/football/teams/396.png","SpVgg Greuther Furth":"https://media.api-sports.io/football/teams/178.png","Spartak Subotica":"https://api.sofascore.app/api/v1/team/2975/image","St Mirren":"https://media.api-sports.io/football/teams/251.png","Sudtirol":"https://media.api-sports.io/football/teams/1578.png","Ternana":"https://media.api-sports.io/football/teams/516.png","Ulm":"https://api.sofascore.app/api/v1/team/2667/image","Vejle":"https://media.api-sports.io/football/teams/395.png","Virton":"https://api.sofascore.app/api/v1/team/73741/image","Volos":"https://api.sofascore.app/api/v1/team/77271/image","WSG Tirol":"https://api.sofascore.app/api/v1/team/41830/image","Westerlo":"https://media.api-sports.io/football/teams/791.png","Widzew Lodz":"https://media.api-sports.io/football/teams/6962.png","Wisla Krakow":"https://media.api-sports.io/football/teams/338.png","Wolfsberg":"https://media.api-sports.io/football/teams/4967.png","Zaragoza":"https://media.api-sports.io/football/teams/732.png","Zbrojovka Brno":"https://media.api-sports.io/football/teams/3733.png","Zurich":"https://api.sofascore.app/api/v1/team/2677/image","1461 Trabzon":"https://media.api-sports.io/football/teams/11097.png","AC Oulu":"https://media.api-sports.io/football/teams/2077.png","Admira Wacker":"https://media.api-sports.io/football/teams/1023.png","Afjet Afyonspor":"https://media.api-sports.io/football/teams/3565.png","Altinordu":"https://media.api-sports.io/football/teams/3567.png","Amed Sportif":"https://api.sofascore.app/api/v1/team/116367/image","Ansan Greeners":"https://media.api-sports.io/football/teams/2758.png","Auckland FC":"https://api.sofascore.app/api/v1/team/1018740/image","Austria Lustenau":"https://media.api-sports.io/football/teams/1399.png","Azul Claro Numazu":"https://media.api-sports.io/football/teams/4314.png","Bandirmaspor":"https://media.api-sports.io/football/teams/3584.png","Blaublitz Akita":"https://media.api-sports.io/football/teams/4315.png","Botev Plovdiv":"https://media.api-sports.io/football/teams/634.png","Budapest Honved":"https://media.api-sports.io/football/teams/576.png","Busan I'Park":"https://media.api-sports.io/football/teams/2752.png","Cheonan City":"https://media.api-sports.io/football/teams/7060.png","Chungnam Asan FC":"https://api.sofascore.app/api/v1/team/467704/image","Desna":"https://media.api-sports.io/football/teams/3616.png","Diosgyori VTK":"https://media.api-sports.io/football/teams/2393.png","Dukla Praha":"https://media.api-sports.io/football/teams/3715.png","Ehime FC":"https://media.api-sports.io/football/teams/318.png","FC Gifu":"https://media.api-sports.io/football/teams/297.png","FC Imabari":"https://api.sofascore.app/api/v1/team/356095/image","FC Inter Turku":"https://api.sofascore.app/api/v1/team/49284/image","FC Lahti":"https://media.api-sports.io/football/teams/1166.png","FC Liefering":"https://media.api-sports.io/football/teams/1400.png","FC Osaka":"https://api.sofascore.app/api/v1/team/356096/image","FC Ryukyu":"https://media.api-sports.io/football/teams/2235.png","FF Jaro":"https://media.api-sports.io/football/teams/2075.png","FK Senica":"https://api.sofascore.app/api/v1/team/46631/image","Fujieda MYFC":"https://media.api-sports.io/football/teams/4317.png","Fukushima United":"https://media.api-sports.io/football/teams/4318.png","GIF Sundsvall":"https://media.api-sports.io/football/teams/373.png","Gainare Tottori":"https://media.api-sports.io/football/teams/4319.png","Gimpo FC":"https://api.sofascore.app/api/v1/team/855036/image","Giravanz Kitakyushu":"https://api.sofascore.app/api/v1/team/96801/image","Grazer AK":"https://media.api-sports.io/football/teams/4256.png","Gyeongnam FC":"https://media.api-sports.io/football/teams/2751.png","Győri ETO":"https://api.sofascore.app/api/v1/team/44401/image","HJK":"https://api.sofascore.app/api/v1/team/49274/image","Hokkaido Consadole Sapporo":"https://api.sofascore.app/api/v1/team/41843/image","Hwaseong FC":"https://api.sofascore.app/api/v1/team/1018741/image","IFK Mariehamn":"https://media.api-sports.io/football/teams/587.png","IFK Värnamo":"https://media.api-sports.io/football/teams/2163.png","Ilves":"https://media.api-sports.io/football/teams/1163.png","Inhulets Petrove":"https://api.sofascore.app/api/v1/team/534793/image","Irtysh Pavlodar":"https://api.sofascore.app/api/v1/team/36544/image","Jeonbuk Hyundai Motors FC":"https://api.sofascore.app/api/v1/team/42028/image","Jeonnam Dragons":"https://media.api-sports.io/football/teams/2760.png","Jubilo Iwata":"https://media.api-sports.io/football/teams/280.png","Kairat Almaty":"https://media.api-sports.io/football/teams/664.png","Kamatamare Sanuki":"https://media.api-sports.io/football/teams/317.png","Kataller Toyama":"https://media.api-sports.io/football/teams/4322.png","Keçiörengücü":"https://media.api-sports.io/football/teams/3595.png","Kisvarda":"https://api.sofascore.app/api/v1/team/337686/image","Kocaelispor":"https://media.api-sports.io/football/teams/7411.png","KuPS":"https://media.api-sports.io/football/teams/1165.png","Ludogorets Razgrad":"https://api.sofascore.app/api/v1/team/110938/image","MTK Budapest":"https://media.api-sports.io/football/teams/2396.png","Macarthur FC":"https://api.sofascore.app/api/v1/team/864859/image","Malmö FF":"https://media.api-sports.io/football/teams/375.png","Manisa Futbol Kulübü":"https://api.sofascore.app/api/v1/team/116350/image","Matsumoto Yamaga":"https://media.api-sports.io/football/teams/304.png","Menemen":"https://api.sofascore.app/api/v1/team/321476/image","Metalist 1925":"https://api.sofascore.app/api/v1/team/648398/image","Montedio Yamagata":"https://media.api-sports.io/football/teams/312.png","Nagano Parceiro":"https://api.sofascore.app/api/v1/team/164674/image","Neftochimic Burgas 1962":"https://api.sofascore.app/api/v1/team/168213/image","Norrby":"https://api.sofascore.app/api/v1/team/182478/image","Opava":"https://media.api-sports.io/football/teams/3717.png","Ordabasy Shymkent":"https://api.sofascore.app/api/v1/team/36546/image","Pardubice":"https://media.api-sports.io/football/teams/3724.png","Pirin Blagoevgrad":"https://media.api-sports.io/football/teams/1428.png","Polissya Zhytomyr":"https://api.sofascore.app/api/v1/team/534792/image","Puskas FC Academy":"https://api.sofascore.app/api/v1/team/339956/image","RB Omiya Ardija":"https://api.sofascore.app/api/v1/team/42109/image","Renofa Yamaguchi":"https://media.api-sports.io/football/teams/309.png","Roasso Kumamoto":"https://media.api-sports.io/football/teams/314.png","Rukh Lviv":"https://api.sofascore.app/api/v1/team/534791/image","SC Dnipro-1":"https://api.sofascore.app/api/v1/team/534789/image","SC Sagamihara":"https://api.sofascore.app/api/v1/team/164672/image","SJK":"https://media.api-sports.io/football/teams/689.png","SKU Amstetten":"https://media.api-sports.io/football/teams/1404.png","SV Lafnitz":"https://media.api-sports.io/football/teams/1402.png","Sakaryaspor":"https://media.api-sports.io/football/teams/3602.png","Seongnam FC":"https://media.api-sports.io/football/teams/2757.png","Seoul E-Land FC":"https://media.api-sports.io/football/teams/2749.png","Shakhtar Donetsk":"https://media.api-sports.io/football/teams/550.png","Skalica":"https://media.api-sports.io/football/teams/10542.png","Suwon Samsung Bluewings":"https://api.sofascore.app/api/v1/team/42027/image","TPS":"https://api.sofascore.app/api/v1/team/49275/image","Tatran Presov":"https://media.api-sports.io/football/teams/10550.png","Tobol Kostanay":"https://api.sofascore.app/api/v1/team/36543/image","Tochigi SC":"https://media.api-sports.io/football/teams/315.png","Trencin":"https://api.sofascore.app/api/v1/team/46628/image","Usti nad Labem":"https://media.api-sports.io/football/teams/3735.png","VPS":"https://media.api-sports.io/football/teams/650.png","Varbergs BoIS FC":"https://media.api-sports.io/football/teams/2171.png","Vasas Budapest":"https://api.sofascore.app/api/v1/team/44398/image","Vegalta Sendai":"https://media.api-sports.io/football/teams/286.png","Ventforet Kofu":"https://media.api-sports.io/football/teams/308.png","Veres Rivne":"https://media.api-sports.io/football/teams/6501.png","Videoton FC Fehervar":"https://api.sofascore.app/api/v1/team/44402/image","Vorskla":"https://api.sofascore.app/api/v1/team/36520/image","Vysocina Jihlava":"https://media.api-sports.io/football/teams/3731.png","Western Sydney Wanderers FC":"https://api.sofascore.app/api/v1/team/110934/image","Western United FC":"https://api.sofascore.app/api/v1/team/598019/image","Wiener Neustadt":"https://api.sofascore.app/api/v1/team/28023/image","Zalaegerszeg":"https://api.sofascore.app/api/v1/team/44405/image","Zemplin Michalovce":"https://media.api-sports.io/football/teams/3552.png","Zweigen Kanazawa":"https://api.sofascore.app/api/v1/team/152216/image","Çorum FK":"https://media.api-sports.io/football/teams/6343.png","Östers IF":"https://media.api-sports.io/football/teams/2174.png","Şanlıurfaspor":"https://media.api-sports.io/football/teams/3613.png","ASJ Soyaux":"https://api.sofascore.app/api/v1/team/47006/image","Abha":"https://media.api-sports.io/football/teams/2951.png","Akwa United":"https://media.api-sports.io/football/teams/5172.png","Al Ain":"https://media.api-sports.io/football/teams/2865.png","Al Akhdoud":"https://api.sofascore.app/api/v1/team/306692/image","Al Ansar":"https://media.api-sports.io/football/teams/4569.png","Al Batin":"https://api.sofascore.app/api/v1/team/101592/image","Al Khaleej":"https://media.api-sports.io/football/teams/4912.png","Al Kholood":"https://media.api-sports.io/football/teams/10509.png","Al Nahdha Dammam":"https://api.sofascore.app/api/v1/team/26555/image","Al Taee":"https://media.api-sports.io/football/teams/2942.png","Al-Adalah":"https://media.api-sports.io/football/teams/2950.png","Al-Faisaly":"https://media.api-sports.io/football/teams/4531.png","Al-Fayha":"https://media.api-sports.io/football/teams/2944.png","Al-Orobah FC":"https://api.sofascore.app/api/v1/team/26558/image","Alessandria":"https://media.api-sports.io/football/teams/878.png","AmaZulu FC":"https://api.sofascore.app/api/v1/team/21272/image","Barito Putera":"https://media.api-sports.io/football/teams/2453.png","Benfica B":"https://media.api-sports.io/football/teams/229.png","Bidvest Wits":"https://media.api-sports.io/football/teams/2695.png","Braga B":"https://api.sofascore.app/api/v1/team/8278/image","CD Jaguares":"https://api.sofascore.app/api/v1/team/14038/image","CF Os Belenenses":"https://media.api-sports.io/football/teams/17692.png","Cape Town City FC":"https://api.sofascore.app/api/v1/team/90636/image","Cape Town Spurs":"https://api.sofascore.app/api/v1/team/21274/image","Carrarese":"https://media.api-sports.io/football/teams/1581.png","Ceramica Cleopatra":"https://media.api-sports.io/football/teams/14651.png","Chertanovo Moscow":"https://media.api-sports.io/football/teams/2014.png","Chippa United":"https://media.api-sports.io/football/teams/2698.png","Como Women":"https://api.sofascore.app/api/v1/team/272042/image","Difaa El Jadida":"https://media.api-sports.io/football/teams/964.png","Eastern Company SC":"https://api.sofascore.app/api/v1/team/36508/image","El Entag El Harby":"https://media.api-sports.io/football/teams/1034.png","Enyimba":"https://media.api-sports.io/football/teams/5177.png","FC Porto B":"https://media.api-sports.io/football/teams/243.png","FC Volgar":"https://api.sofascore.app/api/v1/team/3560/image","Fleury Merogis U.S":"https://api.sofascore.app/api/v1/team/130530/image","GPSO 92 Issy":"https://api.sofascore.app/api/v1/team/147803/image","Ghazl Al Mahalla":"https://api.sofascore.app/api/v1/team/36510/image","Junior FC":"https://api.sofascore.app/api/v1/team/14040/image","Juve Stabia":"https://media.api-sports.io/football/teams/863.png","KACM":"https://api.sofascore.app/api/v1/team/31260/image","Kano Pillars":"https://media.api-sports.io/football/teams/5183.png","Lecco":"https://media.api-sports.io/football/teams/6379.png","Lobi Stars":"https://media.api-sports.io/football/teams/5186.png","Luch Energiya Vladivostok":"https://api.sofascore.app/api/v1/team/3544/image","MAS Fes":"https://api.sofascore.app/api/v1/team/31261/image","MCO Oujda":"https://api.sofascore.app/api/v1/team/31262/image","Mafra":"https://media.api-sports.io/football/teams/245.png","Marumo Gallants":"https://media.api-sports.io/football/teams/2682.png","Misr Lel Makkasa SC":"https://api.sofascore.app/api/v1/team/36515/image","Modern Sport FC":"https://api.sofascore.app/api/v1/team/130700/image","Mordovya":"https://api.sofascore.app/api/v1/team/3547/image","Moroka Swallows":"https://media.api-sports.io/football/teams/10563.png","Najran SC":"https://api.sofascore.app/api/v1/team/26552/image","National Bank":"https://api.sofascore.app/api/v1/team/36516/image","OCK Khouribga":"https://api.sofascore.app/api/v1/team/31263/image","OL Lyonnes":"https://api.sofascore.app/api/v1/team/47002/image","PSIS":"https://api.sofascore.app/api/v1/team/121238/image","PSS Sleman":"https://media.api-sports.io/football/teams/3882.png","Persela Lamongan":"https://media.api-sports.io/football/teams/2450.png","Persipura Jayapura":"https://media.api-sports.io/football/teams/2440.png","Persita":"https://media.api-sports.io/football/teams/4244.png","Pharco FC":"https://api.sofascore.app/api/v1/team/84674/image","Polokwane City":"https://media.api-sports.io/football/teams/2693.png","Pomigliano Calcio":"https://api.sofascore.app/api/v1/team/199063/image","Pordenone Calcio":"https://api.sofascore.app/api/v1/team/8877/image","Pyramids FC":"https://media.api-sports.io/football/teams/1036.png","RANS Nusantara":"https://api.sofascore.app/api/v1/team/307007/image","RSB Berkane":"https://api.sofascore.app/api/v1/team/31265/image","Raja Beni Mellal":"https://media.api-sports.io/football/teams/3455.png","Reggiana":"https://media.api-sports.io/football/teams/880.png","Richards Bay":"https://media.api-sports.io/football/teams/10567.png","Rodez Aveyron":"https://api.sofascore.app/api/v1/team/47007/image","Royal AM":"https://media.api-sports.io/football/teams/10566.png","San Marino Academy":"https://media.api-sports.io/football/teams/22179.png","Sekhukhune United":"https://media.api-sports.io/football/teams/15537.png","Shinnik Yaroslavl":"https://media.api-sports.io/football/teams/1998.png","Shooting Stars":"https://media.api-sports.io/football/teams/5430.png","Sibir Novosibirsk":"https://api.sofascore.app/api/v1/team/3554/image","Sporting CP B":"https://media.api-sports.io/football/teams/761.png","Sunshine Stars":"https://media.api-sports.io/football/teams/5193.png","Swallows FC":"https://api.sofascore.app/api/v1/team/21279/image","Tom Tomsk":"https://media.api-sports.io/football/teams/1081.png","Tosno":"https://api.sofascore.app/api/v1/team/140754/image","Vilaverdense FC":"https://api.sofascore.app/api/v1/team/30475/image","Virtus Entella":"https://media.api-sports.io/football/teams/527.png","Wydad Casablanca":"https://api.sofascore.app/api/v1/team/31269/image","Wydad Fes":"https://media.api-sports.io/football/teams/3459.png","ZED FC":"https://api.sofascore.app/api/v1/team/236914/image","Anderlecht Futures":"https://api.sofascore.app/api/v1/team/23956/image","Avranches":"https://media.api-sports.io/football/teams/1303.png","Banik Ostrava B":"https://api.sofascore.app/api/v1/team/36962/image","Beerschot":"https://media.api-sports.io/football/teams/4654.png","Bohemians Prague":"https://api.sofascore.app/api/v1/team/3624/image","Cannes":"https://media.api-sports.io/football/teams/9932.png","Chernomorets Novorossiysk":"https://api.sofascore.app/api/v1/team/2908/image","Cholet":"https://media.api-sports.io/football/teams/1292.png","Club Brugge NXT":"https://api.sofascore.app/api/v1/team/36996/image","Concarneau":"https://media.api-sports.io/football/teams/1300.png","Dynamo Briansk":"https://api.sofascore.app/api/v1/team/36824/image","Epinal":"https://media.api-sports.io/football/teams/1309.png","FC Alania Vladikavkaz":"https://api.sofascore.app/api/v1/team/2901/image","FC Krasnodar II":"https://api.sofascore.app/api/v1/team/36823/image","FC Wacker Innsbruck":"https://api.sofascore.app/api/v1/team/3517/image","FK Borac Banja Luka":"https://api.sofascore.app/api/v1/team/3576/image","FK Varnsdorf":"https://api.sofascore.app/api/v1/team/3633/image","FK Zeljeznicar":"https://api.sofascore.app/api/v1/team/3581/image","Floridsdorfer AC":"https://media.api-sports.io/football/teams/1395.png","Gueugnon":"https://media.api-sports.io/football/teams/3056.png","Le Puy":"https://api.sofascore.app/api/v1/team/44153/image","Les Herbiers":"https://media.api-sports.io/football/teams/1308.png","Lommel SK":"https://api.sofascore.app/api/v1/team/5980/image","Lyon La Duchere":"https://api.sofascore.app/api/v1/team/44154/image","Mattersburg":"https://api.sofascore.app/api/v1/team/3520/image","Olimpik Sarajevo":"https://media.api-sports.io/football/teams/4282.png","PFC Kuban":"https://api.sofascore.app/api/v1/team/2909/image","Patro Eisden Maasmechelen":"https://api.sofascore.app/api/v1/team/23285/image","Radnik Bijeljina":"https://media.api-sports.io/football/teams/3359.png","Rapid Wien II":"https://media.api-sports.io/football/teams/8247.png","Roeselare":"https://media.api-sports.io/football/teams/264.png","SV Horn":"https://media.api-sports.io/football/teams/1397.png","SV Stripfing":"https://api.sofascore.app/api/v1/team/36869/image","Sint-Truiden":"https://api.sofascore.app/api/v1/team/3032/image","Slavia Prague B":"https://api.sofascore.app/api/v1/team/36964/image","Slavija Sarajevo":"https://api.sofascore.app/api/v1/team/3579/image","Spartak Moscow II":"https://api.sofascore.app/api/v1/team/36832/image","Stade Briochin":"https://media.api-sports.io/football/teams/3229.png","Trinec":"https://media.api-sports.io/football/teams/3727.png","US Colomiers":"https://api.sofascore.app/api/v1/team/12082/image","Versailles":"https://media.api-sports.io/football/teams/3131.png","Villefranche Beaujolais":"https://api.sofascore.app/api/v1/team/12084/image","Vorwärts Steyr":"https://api.sofascore.app/api/v1/team/3522/image","Waasland-Beveren":"https://media.api-sports.io/football/teams/738.png","Znojmo":"https://media.api-sports.io/football/teams/3734.png",
+"AB Argir":"https://api.sofascore.app/api/v1/team/10580/image",
+"ACS Poli Timisoara":"https://media.api-sports.io/football/teams/2588.png",
+"AS Ain M'lila":"https://api.sofascore.app/api/v1/team/58044/image",
+"AS Sale":"https://media.api-sports.io/football/teams/3448.png",
+"AZAL PFC Baku":"https://api.sofascore.app/api/v1/team/46944/image",
+"Aduana Stars":"https://media.api-sports.io/football/teams/8079.png",
+"Airdrieonians":"https://api.sofascore.app/api/v1/team/39416/image",
+"Al Naft":"https://api.sofascore.app/api/v1/team/68400/image",
+"Alashkert":"https://media.api-sports.io/football/teams/582.png",
+"Alloa Athletic":"https://media.api-sports.io/football/teams/1391.png",
+"Aluminij":"https://media.api-sports.io/football/teams/4358.png",
+"Ankaran Hrvatini":"https://media.api-sports.io/football/teams/4380.png",
+"Aqvital FC Csakvar":"https://api.sofascore.app/api/v1/team/55748/image",
+"Arbroath":"https://media.api-sports.io/football/teams/4249.png",
+"Arsenal Kyiv":"https://media.api-sports.io/football/teams/3614.png",
+"Asante Kotoko SC":"https://api.sofascore.app/api/v1/team/10279/image",
+"Ashanti Gold":"https://media.api-sports.io/football/teams/8056.png",
+"Astra Giurgiu":"https://api.sofascore.app/api/v1/team/40280/image",
+"Azam FC":"https://api.sofascore.app/api/v1/team/68200/image",
+"B68 Toftir":"https://api.sofascore.app/api/v1/team/10581/image",
+"BFC Siofok":"https://api.sofascore.app/api/v1/team/24093/image",
+"BSK Borca":"https://media.api-sports.io/football/teams/2635.png",
+"BVSC Zuglo":"https://api.sofascore.app/api/v1/team/24105/image",
+"Backa Backa Palanka":"https://api.sofascore.app/api/v1/team/107697/image",
+"Baden":"https://media.api-sports.io/football/teams/12699.png",
+"Ballinamallard United":"https://media.api-sports.io/football/teams/5339.png",
+"Balmazujvaros":"https://media.api-sports.io/football/teams/2397.png",
+"Banga Gargzdai":"https://api.sofascore.app/api/v1/team/47480/image",
+"Barry Town":"https://media.api-sports.io/football/teams/361.png",
+"Bechem United":"https://media.api-sports.io/football/teams/8099.png",
+"Belshina Bobruisk":"https://api.sofascore.app/api/v1/team/47001/image",
+"Bendel Insurance":"https://media.api-sports.io/football/teams/5173.png",
+"Berekum Chelsea":"https://media.api-sports.io/football/teams/12244.png",
+"Biel/Bienne":"https://api.sofascore.app/api/v1/team/10461/image",
+"Borac Cacak":"https://media.api-sports.io/football/teams/2649.png",
+"Botev Vratsa":"https://media.api-sports.io/football/teams/859.png",
+"Botosani":"https://api.sofascore.app/api/v1/team/39764/image",
+"Brabrand":"https://media.api-sports.io/football/teams/2071.png",
+"Brechin City":"https://api.sofascore.app/api/v1/team/30856/image",
+"Buducnost":"https://api.sofascore.app/api/v1/team/47060/image",
+"CA Bordj Bou Arreridj":"https://api.sofascore.app/api/v1/team/14301/image",
+"CODM Meknes":"https://media.api-sports.io/football/teams/22218.png",
+"CS Constantine":"https://media.api-sports.io/football/teams/911.png",
+"CS Fola Esch":"https://api.sofascore.app/api/v1/team/10568/image",
+"CS Hammam-Lif":"https://media.api-sports.io/football/teams/1191.png",
+"CSM Politehnica Iasi":"https://api.sofascore.app/api/v1/team/48015/image",
+"Caernarfon":"https://api.sofascore.app/api/v1/team/46671/image",
+"Cardiff Met University":"https://api.sofascore.app/api/v1/team/71490/image",
+"Carrick Rangers":"https://media.api-sports.io/football/teams/5350.png",
+"Chabab Mohammedia":"https://media.api-sports.io/football/teams/6387.png",
+"Chernomorets Burgas":"https://media.api-sports.io/football/teams/17023.png",
+"Cibalia":"https://api.sofascore.app/api/v1/team/2818/image",
+"Concordia Chiajna":"https://api.sofascore.app/api/v1/team/40279/image",
+"Connah's Quay Nomads":"https://api.sofascore.app/api/v1/team/46672/image",
+"DRB Tadjenanet":"https://api.sofascore.app/api/v1/team/35849/image",
+"Dacia Buiucani":"https://media.api-sports.io/football/teams/5375.png",
+"Decic Tuzi":"https://api.sofascore.app/api/v1/team/47545/image",
+"Dinamo Batumi":"https://media.api-sports.io/football/teams/705.png",
+"Dnyapro Mogilev":"https://api.sofascore.app/api/v1/team/47003/image",
+"Dreams FC":"https://api.sofascore.app/api/v1/team/68146/image",
+"Dubnica":"https://media.api-sports.io/football/teams/10532.png",
+"Duhok":"https://media.api-sports.io/football/teams/20463.png",
+"Dukla Banska Bystrica":"https://media.api-sports.io/football/teams/10533.png",
+"Dumbarton":"https://media.api-sports.io/football/teams/1382.png",
+"ES Setif":"https://media.api-sports.io/football/teams/905.png",
+"Egersund":"https://media.api-sports.io/football/teams/6976.png",
+"Egnatia":"https://api.sofascore.app/api/v1/team/46812/image",
+"El Kanemi Warriors":"https://media.api-sports.io/football/teams/5175.png",
+"Elbasani":"https://media.api-sports.io/football/teams/3328.png",
+"Erbil":"https://media.api-sports.io/football/teams/11070.png",
+"Etoile Metlaoui":"https://api.sofascore.app/api/v1/team/68096/image",
+"F91 Dudelange":"https://media.api-sports.io/football/teams/578.png",
+"FC Ajka":"https://api.sofascore.app/api/v1/team/57062/image",
+"FC Flora":"https://api.sofascore.app/api/v1/team/47220/image",
+"FC Guria Lanchkhuti":"https://api.sofascore.app/api/v1/team/47272/image",
+"FC Helsingør":"https://media.api-sports.io/football/teams/2062.png",
+"FC København":"https://api.sofascore.app/api/v1/team/2752/image",
+"FC Levadia":"https://api.sofascore.app/api/v1/team/47221/image",
+"FC Milsami Orhei":"https://api.sofascore.app/api/v1/team/47525/image",
+"FC Petrzalka 1898":"https://api.sofascore.app/api/v1/team/10392/image",
+"FC Progrès Niederkorn":"https://api.sofascore.app/api/v1/team/10571/image",
+"FC Rapperswil-Jona":"https://api.sofascore.app/api/v1/team/10456/image",
+"FC Roskilde":"https://api.sofascore.app/api/v1/team/10196/image",
+"FC Shirak":"https://api.sofascore.app/api/v1/team/46926/image",
+"FC Stade Lausanne-Ouchy":"https://api.sofascore.app/api/v1/team/291836/image",
+"FC Timisoara":"https://api.sofascore.app/api/v1/team/6978/image",
+"FC Vaslui":"https://api.sofascore.app/api/v1/team/24213/image",
+"FC Vestsjælland":"https://api.sofascore.app/api/v1/team/77993/image",
+"FC Zürich":"https://media.api-sports.io/football/teams/783.png",
+"FCV Farul Constanta":"https://api.sofascore.app/api/v1/team/39763/image",
+"FH Hafnarfjordur":"https://media.api-sports.io/football/teams/270.png",
+"FK Baku":"https://api.sofascore.app/api/v1/team/46943/image",
+"FK Besa":"https://api.sofascore.app/api/v1/team/47550/image",
+"FK Borec":"https://api.sofascore.app/api/v1/team/47551/image",
+"FK Bregalnica Stip":"https://api.sofascore.app/api/v1/team/47552/image",
+"FK Buducnost Podgorica":"https://api.sofascore.app/api/v1/team/47540/image",
+"FK Donji Srem":"https://api.sofascore.app/api/v1/team/61742/image",
+"FK Iskra":"https://api.sofascore.app/api/v1/team/47541/image",
+"FK Lovcen":"https://api.sofascore.app/api/v1/team/47542/image",
+"FK Metalurg Skopje":"https://api.sofascore.app/api/v1/team/47553/image",
+"FK Qabala":"https://api.sofascore.app/api/v1/team/46950/image",
+"FK Radnik Surdulica":"https://api.sofascore.app/api/v1/team/40419/image",
+"FK Smederevo 1924":"https://api.sofascore.app/api/v1/team/19775/image",
+"FK Suduva":"https://api.sofascore.app/api/v1/team/47481/image",
+"FK Vardar Skopje":"https://api.sofascore.app/api/v1/team/47554/image",
+"FK Zalgiris Vilnius":"https://media.api-sports.io/football/teams/586.png",
+"Fram Reykjavik":"https://media.api-sports.io/football/teams/2117.png",
+"Fremad Amager":"https://media.api-sports.io/football/teams/2065.png",
+"GKS Belchatow":"https://api.sofascore.app/api/v1/team/10043/image",
+"GKS Tychy":"https://api.sofascore.app/api/v1/team/10054/image",
+"Gaz Metan Medias":"https://media.api-sports.io/football/teams/2577.png",
+"Great Olympics":"https://media.api-sports.io/football/teams/12248.png",
+"Gyirmot":"https://api.sofascore.app/api/v1/team/57061/image",
+"Györi ETO":"https://api.sofascore.app/api/v1/team/3720/image",
+"HB Køge":"https://media.api-sports.io/football/teams/2063.png",
+"HK Kopavogs":"https://api.sofascore.app/api/v1/team/10602/image",
+"Heartland Owerri":"https://api.sofascore.app/api/v1/team/10285/image",
+"Hoverla Uzhhorod":"https://api.sofascore.app/api/v1/team/47882/image",
+"Humenne":"https://media.api-sports.io/football/teams/14068.png",
+"IA Akranes":"https://media.api-sports.io/football/teams/827.png",
+"IBV Vestmannaeyjar":"https://media.api-sports.io/football/teams/268.png",
+"IK Oddevold":"https://api.sofascore.app/api/v1/team/108408/image",
+"IR Reykjavik":"https://media.api-sports.io/football/teams/2122.png",
+"Institute":"https://media.api-sports.io/football/teams/5353.png",
+"Ittihad Tanger":"https://media.api-sports.io/football/teams/974.png",
+"JKT Tanzania":"https://media.api-sports.io/football/teams/12190.png",
+"Jagiellonia Bialystok":"https://api.sofascore.app/api/v1/team/10036/image",
+"Jagodina":"https://media.api-sports.io/football/teams/2632.png",
+"KA Akureyri":"https://media.api-sports.io/football/teams/272.png",
+"KAC Kenitra":"https://media.api-sports.io/football/teams/979.png",
+"KR Reykjavik":"https://media.api-sports.io/football/teams/271.png",
+"Kaposvari":"https://api.sofascore.app/api/v1/team/24098/image",
+"Karlovac":"https://media.api-sports.io/football/teams/5709.png",
+"Khazar Lenkoran":"https://api.sofascore.app/api/v1/team/46948/image",
+"Kolding IF":"https://media.api-sports.io/football/teams/4676.png",
+"Kolkheti-1913 Poti":"https://api.sofascore.app/api/v1/team/47273/image",
+"Kozarmisleny":"https://api.sofascore.app/api/v1/team/55750/image",
+"Kriens":"https://api.sofascore.app/api/v1/team/10455/image",
+"Kuwait SC":"https://api.sofascore.app/api/v1/team/2840/image",
+"Larne":"https://media.api-sports.io/football/teams/5354.png",
+"Le Mont LS":"https://api.sofascore.app/api/v1/team/10457/image",
+"Leiknir Reykjavik":"https://api.sofascore.app/api/v1/team/130683/image",
+"Liberty Professionals":"https://media.api-sports.io/football/teams/12254.png",
+"Liptovsky Mikulas":"https://media.api-sports.io/football/teams/10536.png",
+"Ljungskile":"https://api.sofascore.app/api/v1/team/10263/image",
+"Lokomotiva Zvolen":"https://media.api-sports.io/football/teams/10552.png",
+"Lokomotivi Tbilisi":"https://media.api-sports.io/football/teams/3500.png",
+"Lombard":"https://api.sofascore.app/api/v1/team/48002/image",
+"Lucko":"https://media.api-sports.io/football/teams/1477.png",
+"Luftetari":"https://media.api-sports.io/football/teams/17740.png",
+"MAT Tetouan":"https://api.sofascore.app/api/v1/team/14299/image",
+"MC El Eulma":"https://api.sofascore.app/api/v1/team/14302/image",
+"MC Saida":"https://media.api-sports.io/football/teams/934.png",
+"Macva Sabac":"https://api.sofascore.app/api/v1/team/43248/image",
+"Medeama SC":"https://api.sofascore.app/api/v1/team/45023/image",
+"Metalurg Donetsk":"https://api.sofascore.app/api/v1/team/47884/image",
+"Metalurh Zaporizhzhia":"https://api.sofascore.app/api/v1/team/47885/image",
+"Miedź Legnica":"https://media.api-sports.io/football/teams/335.png",
+"Minyor Pernik":"https://api.sofascore.app/api/v1/team/47096/image",
+"Mladost Lucani":"https://media.api-sports.io/football/teams/699.png",
+"Motor Lublin":"https://media.api-sports.io/football/teams/14562.png",
+"Mouloudia Oujda":"https://media.api-sports.io/football/teams/1075.png",
+"Mura":"https://media.api-sports.io/football/teams/4197.png",
+"NA Hussein Dey":"https://api.sofascore.app/api/v1/team/2957/image",
+"ND Triglav":"https://api.sofascore.app/api/v1/team/19826/image",
+"NK Bravo":"https://api.sofascore.app/api/v1/team/163994/image",
+"NK Hrvatski Dragovoljac":"https://api.sofascore.app/api/v1/team/39200/image",
+"NK Krka":"https://api.sofascore.app/api/v1/team/19830/image",
+"NK Krsko":"https://api.sofascore.app/api/v1/team/19831/image",
+"NK Lokomotiva":"https://api.sofascore.app/api/v1/team/10316/image",
+"NK Zadar":"https://media.api-sports.io/football/teams/1484.png",
+"NSI Runavik":"https://media.api-sports.io/football/teams/682.png",
+"Naftan Novopolotsk":"https://api.sofascore.app/api/v1/team/47004/image",
+"Napredak":"https://media.api-sports.io/football/teams/2655.png",
+"Nasarawa United":"https://media.api-sports.io/football/teams/5188.png",
+"Neftchi Baku":"https://media.api-sports.io/football/teams/2270.png",
+"Niger Tornadoes":"https://media.api-sports.io/football/teams/5189.png",
+"Nistru Otaci":"https://api.sofascore.app/api/v1/team/47526/image",
+"Njardvik":"https://media.api-sports.io/football/teams/2123.png",
+"Nomme JK Kalju":"https://api.sofascore.app/api/v1/team/47222/image",
+"Novi Pazar":"https://media.api-sports.io/football/teams/2643.png",
+"Nyiregyhaza Spartacus FC":"https://api.sofascore.app/api/v1/team/55753/image",
+"Nykøbing FC":"https://media.api-sports.io/football/teams/2064.png",
+"Obolon Kyiv":"https://api.sofascore.app/api/v1/team/47886/image",
+"Odds Ballklubb":"https://api.sofascore.app/api/v1/team/10217/image",
+"Odra Opole":"https://media.api-sports.io/football/teams/3488.png",
+"Okzhetpes Kokshetau":"https://api.sofascore.app/api/v1/team/47380/image",
+"Otelul Galati":"https://api.sofascore.app/api/v1/team/3736/image",
+"PFC Lokomotiv Plovdiv":"https://api.sofascore.app/api/v1/team/47097/image",
+"Pandurii":"https://api.sofascore.app/api/v1/team/39762/image",
+"Paradou AC":"https://media.api-sports.io/football/teams/915.png",
+"Pecsi MFC":"https://media.api-sports.io/football/teams/5130.png",
+"Penybont":"https://media.api-sports.io/football/teams/2191.png",
+"Platinum Stars":"https://media.api-sports.io/football/teams/2701.png",
+"Posusje":"https://media.api-sports.io/football/teams/14146.png",
+"Povazska Bystrica":"https://media.api-sports.io/football/teams/14062.png",
+"RFK Novi Sad":"https://media.api-sports.io/football/teams/20391.png",
+"RNK Split":"https://media.api-sports.io/football/teams/1022.png",
+"RS Berkane":"https://api.sofascore.app/api/v1/team/14290/image",
+"Racing de Casablanca":"https://media.api-sports.io/football/teams/966.png",
+"Radnicki Nis":"https://media.api-sports.io/football/teams/2254.png",
+"Radomlje":"https://media.api-sports.io/football/teams/4378.png",
+"Raków Częstochowa":"https://media.api-sports.io/football/teams/3491.png",
+"Ranheim":"https://media.api-sports.io/football/teams/322.png",
+"Raufoss":"https://media.api-sports.io/football/teams/2153.png",
+"Resovia":"https://api.sofascore.app/api/v1/team/10057/image",
+"Rogaska":"https://media.api-sports.io/football/teams/4379.png",
+"Rudes":"https://media.api-sports.io/football/teams/1019.png",
+"SC Brühl":"https://api.sofascore.app/api/v1/team/10463/image",
+"Samtredia":"https://media.api-sports.io/football/teams/581.png",
+"Sandnes Ulf":"https://media.api-sports.io/football/teams/2146.png",
+"Sandvikens IF":"https://api.sofascore.app/api/v1/team/10270/image",
+"Schaffhausen":"https://api.sofascore.app/api/v1/team/10454/image",
+"Sheriff Tiraspol":"https://media.api-sports.io/football/teams/568.png",
+"Simba SC":"https://api.sofascore.app/api/v1/team/45310/image",
+"Sioni Bolnisi":"https://api.sofascore.app/api/v1/team/47276/image",
+"Slavoj Trebisov":"https://media.api-sports.io/football/teams/10543.png",
+"Sloga Doboj":"https://media.api-sports.io/football/teams/8504.png",
+"Sogndal":"https://media.api-sports.io/football/teams/758.png",
+"Soroksár SC":"https://api.sofascore.app/api/v1/team/55754/image",
+"Stade Nyonnais":"https://media.api-sports.io/football/teams/6646.png",
+"Stal Mielec":"https://media.api-sports.io/football/teams/3493.png",
+"Stara Lubovna":"https://media.api-sports.io/football/teams/19398.png",
+"Stomil Olsztyn":"https://media.api-sports.io/football/teams/3494.png",
+"Strømmen":"https://media.api-sports.io/football/teams/2147.png",
+"Sutjeska Niksic":"https://api.sofascore.app/api/v1/team/47544/image",
+"TNS":"https://api.sofascore.app/api/v1/team/17452/image",
+"TSC Backa Topola":"https://media.api-sports.io/football/teams/2646.png",
+"Tabor":"https://api.sofascore.app/api/v1/team/19827/image",
+"Tavriia":"https://api.sofascore.app/api/v1/team/47888/image",
+"Teteks":"https://media.api-sports.io/football/teams/4347.png",
+"Teuta Durres":"https://media.api-sports.io/football/teams/3320.png",
+"Thor Akureyri":"https://media.api-sports.io/football/teams/2116.png",
+"Throttur Reykjavik":"https://media.api-sports.io/football/teams/829.png",
+"Tiszakecske":"https://api.sofascore.app/api/v1/team/55755/image",
+"Torpedo Zhodino":"https://media.api-sports.io/football/teams/385.png",
+"Travnik":"https://media.api-sports.io/football/teams/4297.png",
+"US Monastir":"https://api.sofascore.app/api/v1/team/68094/image",
+"US Tataouine":"https://media.api-sports.io/football/teams/1190.png",
+"USM Bel Abbes":"https://media.api-sports.io/football/teams/917.png",
+"Union Titus Pétange":"https://media.api-sports.io/football/teams/2032.png",
+"Unirea Urziceni":"https://media.api-sports.io/football/teams/14595.png",
+"Vikingur Reykjavik":"https://media.api-sports.io/football/teams/278.png",
+"Vitez":"https://media.api-sports.io/football/teams/4288.png",
+"Vozdovac":"https://api.sofascore.app/api/v1/team/43244/image",
+"WAFA":"https://media.api-sports.io/football/teams/12256.png",
+"Wigry Suwalki":"https://media.api-sports.io/football/teams/3497.png",
+"Wikki Tourist":"https://media.api-sports.io/football/teams/5194.png",
+"Wisła Płock":"https://media.api-sports.io/football/teams/341.png",
+"Wohlen":"https://api.sofascore.app/api/v1/team/10462/image",
+"Young Africans":"https://media.api-sports.io/football/teams/5370.png",
+"Zavrc":"https://media.api-sports.io/football/teams/19732.png",
+"Zawisza Bydgoszcz":"https://media.api-sports.io/football/teams/13843.png",
+"Zeleziarne Podbrezova":"https://api.sofascore.app/api/v1/team/10404/image",
+"Zhetysu Taldykorgan":"https://api.sofascore.app/api/v1/team/47381/image",
+"Zimbru Chisinau":"https://api.sofascore.app/api/v1/team/47528/image",
+"Zlatibor":"https://api.sofascore.app/api/v1/team/66944/image",
+"Åsane":"https://media.api-sports.io/football/teams/2148.png",
+"ŁKS Łódź":"https://media.api-sports.io/football/teams/3498.png",
+"RC Strasbourg Alsace":"https://api.sofascore.app/api/v1/team/1659/image",
+"Heracles Almelo":"https://api.sofascore.app/api/v1/team/2977/image",
+"Atletico Mineiro":"https://media.api-sports.io/football/teams/117.png",
+"New York City":"https://api.sofascore.app/api/v1/team/187643/image",
+"New York City FC":"https://media.api-sports.io/football/teams/1604.png",
+"Columbus Crew":"https://media.api-sports.io/football/teams/1613.png",
+"Alverca":"https://media.api-sports.io/football/teams/4724.png",
+"FC Alverca":"https://api.sofascore.app/api/v1/team/190328/image",
+"Clube do Remo":"https://api.sofascore.app/api/v1/team/2012/image",
+"Al Taawoun":"https://api.sofascore.app/api/v1/team/56021/image",
+"NEOM":"https://media.api-sports.io/football/teams/10513.png",
+"Al-Najmah":"https://api.sofascore.app/api/v1/team/395831/image",
+"Al Najma":"https://media.api-sports.io/football/teams/2992.png",
+"Al-Taawoun":"https://api.sofascore.app/api/v1/team/56021/image",
+"Al-Orobah":"assets/logos/teams/saudi-arabia_al-orobah_256x256.football-logos.cc.png",
+"Austin":"https://media.api-sports.io/football/teams/16489.png",
+"Charlotte":"https://media.api-sports.io/football/teams/18310.png",
+"Chicago Fire":"https://media.api-sports.io/football/teams/1607.png",
+"Colorado Rapids":"https://media.api-sports.io/football/teams/1610.png",
+"DC United":"https://media.api-sports.io/football/teams/1615.png",
+"D.C. United":"https://api.sofascore.app/api/v1/team/2502/image",
+"Cincinnati":"https://api.sofascore.app/api/v1/team/215167/image",
+"Dallas":"https://media.api-sports.io/football/teams/25980.png",
+"Houston Dynamo":"https://media.api-sports.io/football/teams/1600.png",
+"Inter Miami":"https://media.api-sports.io/football/teams/9568.png",
+"Los Angeles":"https://api.sofascore.app/api/v1/team/274650/image",
+"LA Galaxy":"https://api.sofascore.app/api/v1/team/2513/image",
+"Minnesota United":"https://api.sofascore.app/api/v1/team/41618/image",
+"Nashville":"https://media.api-sports.io/football/teams/4002.png",
+"New England Revolution":"https://media.api-sports.io/football/teams/1609.png",
+"New York Red Bulls":"https://media.api-sports.io/football/teams/1602.png",
+"Orlando City":"https://api.sofascore.app/api/v1/team/52237/image",
+"Philadelphia Union":"https://media.api-sports.io/football/teams/1599.png",
+"Portland Timbers":"https://media.api-sports.io/football/teams/1617.png",
+"Real Salt Lake":"https://media.api-sports.io/football/teams/1606.png",
+"San Diego":"https://media.api-sports.io/football/teams/25484.png",
+"San Jose Earthquakes":"https://media.api-sports.io/football/teams/1596.png",
+"Seattle Sounders":"https://media.api-sports.io/football/teams/1595.png",
+"Sporting Kansas City":"https://media.api-sports.io/football/teams/1611.png",
+"St. Louis City":"https://media.api-sports.io/football/teams/20787.png",
+"Vancouver Whitecaps":"https://media.api-sports.io/football/teams/1603.png",
+"Montréal":"https://api.sofascore.app/api/v1/team/22006/image",
+"CF Montréal":"https://media.api-sports.io/football/teams/1614.png",
+"Club America":"https://media.api-sports.io/football/teams/2287.png",
+"Pachuca":"https://media.api-sports.io/football/teams/2292.png",
+"Pumas UNAM":"https://api.sofascore.app/api/v1/team/1933/image",
+"Deportivo Toluca":"https://api.sofascore.app/api/v1/team/1931/image",
+"Machida Zelvia":"https://media.api-sports.io/football/teams/303.png",
+"Kyoto Sanga":"https://media.api-sports.io/football/teams/302.png",
+"Tokyo Verdy":"https://media.api-sports.io/football/teams/306.png",
+"Vissel Kobe":"https://media.api-sports.io/football/teams/289.png"
+};
+
+  var CACHE = {};
+  var PENDING = {};
+
+  // Supprime les suffixes/préfixes FC, AFC, SC, CF, UD, FK, SK ajoutés par Polymarket
+  function cleanTeamName(n) {
+    if (!n) return n;
+    // Suffixes: AFC, FC, SC, CF, UD, FK, SK, BK, IF, GF
+    n = n.replace(/\s+(?:A\.?F\.?C\.?|F\.?C\.?|S\.?C\.?|C\.?F\.?|U\.?D\.?|F\.?K\.?|S\.?K\.?|B\.?K\.?|I\.?F\.?|G\.?F\.?)$/i, '');
+    // Prefixes: CA, AS, RC, CD, SD, FK, SK, FC
+    n = n.replace(/^(?:C\.?A\.?|A\.?S\.?|R\.?C\.?|C\.?D\.?|S\.?D\.?|F\.?K\.?|S\.?K\.?|F\.?C\.?)\s+/i, '');
+    return n.trim();
+  }
+  window.cleanTeamName = cleanTeamName;
+
+  function resolve(name) {
+    return NAME_MAP[name] || name;
+  }
+
+  // Noms d'usage : les classements portent le nom administratif complet
+  // ("Heart Of Midlothian"), alors que tout le monde dit "Hearts".
+  var NOM_USAGE = {
+    // nom d'usage plutot que denomination administrative
+    'Heart Of Midlothian': 'Hearts',
+    'Heart of Midlothian': 'Hearts',
+    // exonymes francais : le site s'adresse a un public francophone
+    'Mallorca': 'Majorque',
+    'RCD Mallorca': 'Majorque',
+    'Alaves': 'Alavés',
+    'Deportivo Alaves': 'Alavés',
+    'Sevilla': 'Séville',
+    'Sevilla FC': 'Séville',
+    'Athletic Club': 'Athletic Bilbao',
+    'Bayern München': 'Bayern Munich',
+    'Bayern Munchen': 'Bayern Munich',
+    'FC Koln': 'Cologne',
+    '1. FC Köln': 'Cologne',
+    'Borussia Mönchengladbach': 'Mönchengladbach',
+    'Internazionale': 'Inter Milan',
+    'Napoli': 'Naples',
+    'Torino': 'Turin',
+    'Genoa': 'Gênes',
+    'Venezia': 'Venise',
+    'Roma': 'AS Roma',
+    'FC Porto': 'Porto',
+    'Sporting CP': 'Sporting Portugal',
+    'Anderlecht': 'Anderlecht',
+    'Standard Liege': 'Standard de Liège',
+    'Antwerp': 'Anvers',
+    'Club Brugge KV': 'Bruges',
+    'Basel': 'Bâle',
+    'Zurich': 'Zurich',
+    'Young Boys': 'Young Boys',
+    // exonymes francais / accents (ajout 26/07/2026)
+    'FC Copenhagen': 'Copenhague', 'Copenhagen': 'Copenhague', 'FC København': 'Copenhague', 'FC Kobenhavn': 'Copenhague',
+    '1. FC Nürnberg': 'Nuremberg', 'Nürnberg': 'Nuremberg', '1. FC Nurnberg': 'Nuremberg',
+    'Cadiz': 'Cadix', 'Cádiz': 'Cadix', 'Cadiz CF': 'Cadix',
+    'Cordoba': 'Cordoue', 'Córdoba': 'Cordoue', 'Cordoba CF': 'Cordoue',
+    'Deportivo La Coruña': 'La Corogne', 'Deportivo La Coruna': 'La Corogne',
+    'Hellas Verona': 'Vérone', 'Verona': 'Vérone',
+    'Bologna': 'Bologne',
+    'KAA Gent': 'Gand', 'Gent': 'Gand',
+    'Rapid Wien': 'Rapid Vienne', 'SK Rapid Wien': 'Rapid Vienne', 'Rapid Vienna': 'Rapid Vienne',
+    'Austria Wien': 'Austria Vienne', 'FK Austria Wien': 'Austria Vienne',
+    'RB Salzburg': 'RB Salzbourg', 'Red Bull Salzburg': 'RB Salzbourg', 'FC Salzburg': 'RB Salzbourg',
+    'AEK Athens': 'AEK Athènes', 'AEK Athens FC': 'AEK Athènes',
+    'Panathinaikos': 'Panathinaïkos',
+    'Legia Warszawa': 'Legia Varsovie', 'Legia Warsaw': 'Legia Varsovie',
+    'Wisla Krakow': 'Wisła Cracovie', 'Wisła Kraków': 'Wisła Cracovie',
+    'Slavia Praha': 'Slavia Prague', 'SK Slavia Praha': 'Slavia Prague',
+    'Sparta Praha': 'Sparta Prague', 'AC Sparta Praha': 'Sparta Prague',
+    'Spartak Moscow': 'Spartak Moscou', 'CSKA Moscow': 'CSKA Moscou',
+    'Dynamo Moscow': 'Dynamo Moscou', 'Lokomotiv Moscow': 'Lokomotiv Moscou',
+    'Zenit St. Petersburg': 'Zénith Saint-Pétersbourg', 'Zenit St Petersburg': 'Zénith Saint-Pétersbourg',
+    'Dynamo Kyiv': 'Dynamo Kiev', 'FC Dynamo Kyiv': 'Dynamo Kiev',
+    'Crvena Zvezda': 'Étoile Rouge de Belgrade', 'FK Crvena Zvezda': 'Étoile Rouge de Belgrade', 'Red Star Belgrade': 'Étoile Rouge de Belgrade',
+    'Fenerbahce': 'Fenerbahçe', 'Besiktas': 'Beşiktaş',
+    'Steaua Bucuresti': 'Steaua Bucarest', 'FCSB': 'FCSB',
+    // --- checkup complet exonymes (27/07/2026) : championnat par championnat ---
+    // Espagne
+    'Zaragoza': 'Saragosse',
+    // Allemagne
+    'Werder Bremen': 'Werder Brême', 'Werder Bremen II': 'Werder Brême II',
+    'Eintracht Braunschweig': 'Eintracht Brunswick',
+    'Alemannia Aachen': 'Alemannia Aix-la-Chapelle',
+    'Hannover 96': 'Hanovre 96', 'Hannover 96 II': 'Hanovre 96 II',
+    'Hamburger SV': 'Hambourg SV',
+    'TSV 1860 München': '1860 Munich', 'TSV 1860 Munich': '1860 Munich',
+    '1.FC Köln': 'Cologne',
+    'Borussia Monchengladbach': 'Mönchengladbach',
+    'Fortuna Köln': 'Fortuna Cologne', 'Fortuna Koln': 'Fortuna Cologne',
+    'FC Viktoria Köln': 'Viktoria Cologne', 'FC Viktoria Koln': 'Viktoria Cologne',
+    // Italie
+    'Palermo': 'Palerme', 'Padova': 'Padoue', 'Mantova': 'Mantoue',
+    'Como': 'Côme', 'como': 'Côme',
+    // Belgique (public francophone)
+    'KV Mechelen': 'Malines', 'Kortrijk': 'Courtrai', 'Oostende': 'Ostende',
+    'OH Leuven': 'OH Louvain', 'Oud-Heverlee Leuven II': 'OH Louvain II',
+    'St. Truiden': 'Saint-Trond',
+    'Cercle Brugge': 'Cercle Bruges', 'Cercle Brugge II': 'Cercle Bruges II',
+    'Club Brugge II': 'Bruges II', 'Royal Antwerp II': 'Anvers II',
+    'KAA Gent II': 'Gand II', 'Roeselare': 'Roulers',
+    // Pays-Bas
+    'ADO Den Haag': 'ADO La Haye',
+    // Grèce
+    'Olympiakos Piraeus': 'Olympiakos', 'Olympiakos Piraeus II': 'Olympiakos II',
+    'Aris Thessalonikis': 'Aris Salonique',
+    // Russie
+    'Zenit Saint Petersburg': 'Zénith Saint-Pétersbourg', 'Zenit': 'Zénith',
+    'Torpedo Moskva': 'Torpedo Moscou', 'Rodina Moskva': 'Rodina Moscou',
+    'Chertanovo Moscow': 'Chertanovo Moscou', 'Dinamo Moscow': 'Dynamo Moscou',
+    // Serbie
+    'OFK Beograd': 'OFK Belgrade',
+    // Roumanie
+    'Dinamo Bucuresti': 'Dinamo Bucarest', 'CS Dinamo București': 'Dinamo Bucarest',
+    'CSA Steaua Bucureşti': 'Steaua Bucarest', 'Juventus Bucuresti': 'Juventus Bucarest',
+    // Pologne
+    'Cracovia Krakow': 'Cracovia Cracovie', 'Polonia Warszawa': 'Polonia Varsovie',
+    'Wieczysta Kraków': 'Wieczysta Cracovie', 'Garbarnia Kraków': 'Garbarnia Cracovie',
+    // Tchéquie
+    'Dukla Praha': 'Dukla Prague', 'Dukla Praha II': 'Dukla Prague II',
+    'Slavia Praha II': 'Slavia Prague II', 'Sparta Praha II': 'Sparta Prague II',
+    // Autriche
+    'Austria Vienna': 'Austria Vienne', 'Rapid Wien II': 'Rapid Vienne II',
+    'Austria Salzburg': 'Austria Salzbourg',
+    // Suisse (public francophone)
+    'FC Basel 1893': 'FC Bâle 1893', 'Basel II': 'Bâle II',
+    'FC Luzern': 'FC Lucerne', 'Luzern II': 'Lucerne II',
+    'FC ST. Gallen': 'FC Saint-Gall', 'FC St. Gallen': 'FC Saint-Gall', 'St. Gallen II': 'Saint-Gall II',
+    'FC Thun': 'FC Thoune', 'Bellinzona': 'Bellinzone',
+  };
+  window.NS_NOM_USAGE = NOM_USAGE;
+
+  // Clubs dont le suffixe est le SEUL element distinctif : le retirer les
+  // ferait passer pour un homonyme celebre. "Barcelona SC" est le club de
+  // Guayaquil, pas le FC Barcelone ; "Santos FC" est sud-africain, pas
+  // bresilien. On garde donc leur denomination complete.
+  var GARDER_ENTIER = {
+    'Barcelona SC': 1,        // Equateur, a ne pas confondre avec le FC Barcelone
+    'Santos FC': 1,           // Afrique du Sud, a ne pas confondre avec Santos (Bresil)
+    'Rangers FC': 1,          // Hong Kong, a ne pas confondre avec les Rangers (Ecosse)
+    'Arsenal FC': 1,          // homonymes en Bielorussie et au Ghana
+    'Everton FC': 1,          // homonyme au Chili
+    'Liverpool FC': 1,        // homonyme en Uruguay
+    'Nacional FC': 1,
+    'America FC': 1,
+  };
+
+  // Affichage : cleanTeamName uniquement (sans NAME_MAP, pour garder les noms en français)
+  window.displayTeamName = function(n) {
+    if (!n) return n;
+    if (NOM_USAGE[n]) return NOM_USAGE[n];
+    if (GARDER_ENTIER[n]) return n;
+    var c = cleanTeamName(n);
+    // Retirer le suffixe peut transformer un club en nom de pays :
+    // "Bahrain SC" devenait "Bahrain". On garde alors le nom complet.
+    if (c !== n && window.NS_MANIFEST) {
+      var cn = c.toLowerCase();
+      for (var k in window.NS_MANIFEST.pays) {
+        if (k.replace(/-/g, ' ').toLowerCase() === cn
+            || String(window.NS_MANIFEST.pays[k].nom).toLowerCase() === cn) return n;
+      }
+    }
+    return c;
+  };
+
+  function fetchLogo(name) {
+    var key = resolve(name);
+    if (key in CACHE) return Promise.resolve(CACHE[key]);
+    if (key in PENDING) return PENDING[key];
+
+    var clean     = cleanTeamName(name);
+    var cleanKey  = resolve(clean);
+
+    // 1. club_logos_metadata (inline, highest priority) — essaie nom brut puis sans FC
+    var p = Promise.resolve().then(function() {
+      var url = CLUB_LOGOS[name] || CLUB_LOGOS[key]
+             || CLUB_LOGOS[clean] || CLUB_LOGOS[cleanKey];
+      if (url) { CACHE[key] = url; return url; }
+
+      // 2. Vérifier si on a un logo connu dans LOGOS
+      if (key in LOGOS) {
+        CACHE[key] = LOGOS[key];
+        return LOGOS[key];
+      }
+      if (cleanKey in LOGOS) {
+        CACHE[key] = LOGOS[cleanKey];
+        return LOGOS[cleanKey];
+      }
+
+      // 3. Écussons API-Football : 6 015 équipes issues des classements.
+      //    Local, immédiat, et il couvre les championnats de niche où
+      //    TheSportsDB ne renvoie rien — on l'interroge donc avant le réseau.
+      return (window.NS_ensureLogos ? window.NS_ensureLogos()
+                                    : Promise.resolve({}))
+        .catch(function() { return {}; })
+        .then(function(NL) {
+          NL = NL || {};
+          var u = NL[name] || NL[key] || NL[clean] || NL[cleanKey];
+          if (u) { CACHE[key] = u; return u; }
+          return null;
+        })
+        .then(function(trouve) {
+          if (trouve) return trouve;
+      // 4. Dernier recours : TheSportsDB
+      return fetch(
+        'https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=' +
+        encodeURIComponent(cleanKey || key)
+      )
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var teams = (data && data.teams) || [];
+          var result = null;
+
+          if (teams && teams.length > 0) {
+            // Chercher une correspondance exacte
+            for (var i = 0; i < teams.length; i++) {
+              if (teams[i].strTeam && teams[i].strTeam.toLowerCase() === key.toLowerCase()) {
+                result = teams[i].strBadge || teams[i].strLogo;
+                break;
+              }
+            }
+
+          }
+
+          CACHE[key] = result || null;
+          return result;
+        })
+        .catch(function(e) {
+          CACHE[key] = null;
+          return null;
+        });
+        });
+    });
+
+    PENDING[key] = p;
+    return p;
+  }
+
+  // Composant React – résout le logo puis affiche img ou fallback initiales
+  function TeamLogo(props) {
+    var name   = props.name   || '';
+    var color  = props.color  || '#888';
+    var size   = props.size   || 28;
+    // Lettre fallback : utilise le nom nettoyé (sans FC/SC/CF)
+    var displayName = cleanTeamName(name) || name;
+    var letter = props.letter || (displayName[0] || '?');
+
+    var key = resolve(name);
+    // src impose : le contexte connait le bon ecusson (classement d'un pays)
+    var initial = props.src || ((key in CACHE) ? CACHE[key] : undefined);
+
+    var st = React.useState(initial);
+    var logoUrl  = st[0];
+    var setLogo  = st[1];
+
+    var se = React.useState(false);
+    var imgError = se[0];
+    var setError = se[1];
+
+    // Certains ecussons arrivent sur une toile plus large que haute, avec de
+    // la transparence sur les cotes : Swansea fait 267x150 pour un blason de
+    // 135x134 centre. Avec objectFit:contain on met la toile entiere a
+    // l'echelle, donc le blason tombe a la moitie de la taille demandee.
+    var sl = React.useState(false);
+    var large = sl[0];
+    var setLarge = sl[1];
+
+    React.useEffect(function() {
+      // props.src doit figurer dans les dependances : les ecussons du pays
+      // arrivent APRES le premier rendu du tableau. Sans lui, l'effet ne
+      // rejouait pas et la ligne restait sur son initiale, au hasard de la
+      // vitesse du reseau.
+      setError(false);
+      if (props.src) { setLogo(props.src); return; }
+      // strict : le contexte est seul juge. Sans ecusson fourni on affiche
+      // l'initiale plutot que de risquer le blason d'un club homonyme.
+      if (props.strict) { setLogo(null); return; }
+      if (key in CACHE) { setLogo(CACHE[key]); return; }
+      var alive = true;
+      fetchLogo(name).then(function(url) {
+        if (alive) setLogo(url);
+      });
+      return function() { alive = false; };
+    }, [key, props.src, props.strict]);
+
+    if (logoUrl && !imgError) {
+      var img = React.createElement('img', {
+        src:     logoUrl,
+        alt:     name,
+        style:   large
+          ? { height: size, width: 'auto', maxWidth: 'none', display: 'block' }
+          : { width: size, height: size, objectFit: 'contain',
+              flexShrink: 0, display: 'block' },
+        onLoad: function(e) {
+          var im = e.target;
+          // toile nettement plus large que haute : on cale sur la hauteur et
+          // on rogne la transparence laterale
+          if (im.naturalWidth > im.naturalHeight * 1.12 && !large) setLarge(true);
+        },
+        onError: function() {
+          // Une URL peut etre morte (Sofascore bloque le hotlinking, certains
+          // fichiers ont disparu). Avant de tomber sur l'initiale, on tente
+          // l'ecusson API-Football, qui couvre 6 000 equipes.
+          var essaie = function(m) {
+            var u = m && (m[name] || m[displayName]);
+            if (u && u !== logoUrl) { CACHE[key] = u; setLogo(u); return true; }
+            return false;
+          };
+          if (props.strict) { setError(true); return; }
+          if (window.NS_LOGOS) { if (!essaie(window.NS_LOGOS)) setError(true); return; }
+          if (window.NS_ensureLogos) {
+            window.NS_ensureLogos().then(function(m) { if (!essaie(m)) setError(true); });
+            return;
+          }
+          setError(true);
+        },
+      });
+      if (!large) return img;
+      return React.createElement('span', {
+        style: {
+          width: size, height: size, flexShrink: 0, overflow: 'hidden',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        },
+      }, img);
+    }
+
+    // Fallback : cercle initiales (même style que TeamCircle)
+    return React.createElement('div', {
+      style: {
+        width: size, height: size,
+        borderRadius: '50%',
+        background:   'linear-gradient(135deg, ' + color + '22, ' + color + '44)',
+        border:       '2px solid ' + color + '66',
+        display:      'flex',
+        alignItems:   'center',
+        justifyContent: 'center',
+        fontSize:     size * 0.38,
+        fontWeight:   700,
+        color:        color,
+        flexShrink:   0,
+      }
+    }, letter);
+  }
+
+  // Resolution de logo utilisable hors React (SVG momentum, canvas...)
+  window.NS_logoUrl = function(n){ try { var k = resolve(n); return (k in CACHE) ? CACHE[k] : null; } catch(e) { return null; } };
+  window.NS_logoResolve = function(n){ try { return fetchLogo(n); } catch(e) { return Promise.resolve(null); } };
+  window.TeamLogo = TeamLogo;
+
+  // ── League logos ─────────────────────────────────────────────────────────
+  var FM = 'https://images.fotmob.com/image_resources/logo/leaguelogo/';
+  var LEAGUE_LOGOS = {
+    // ── Angleterre ──
+    'Premier League':            FM+'47.png',
+    'EFL Championship':          FM+'48.png',
+    'Championship':              FM+'48.png',
+    // ── Espagne ──
+    'La Liga':                   FM+'87.png',
+    'LaLiga':                    FM+'87.png',
+    // ── Italie ──
+    'Serie A':                   FM+'55.png',
+    'Serie B Italie':            FM+'86.png',
+    // ── France ──
+    'Ligue 1':                   FM+'53.png',
+    'Ligue 2':                   FM+'110.png',
+    'Ligue 1 Algerie':           '/assets/logos/leagues/algeria_ligue-1_256x256.football-logos.cc.png',
+    // ── Allemagne ──
+    'Bundesliga':                FM+'54.png',
+    '2. Bundesliga':             FM+'146.png',
+    // ── UEFA ──
+    'Champions League':          'https://media.api-sports.io/football/leagues/2.png',
+    'Ligue des Champions':       'https://media.api-sports.io/football/leagues/2.png',
+    'UEFA Champions League':     'https://media.api-sports.io/football/leagues/2.png',
+    'Europa League':             'https://media.api-sports.io/football/leagues/3.png',
+    'Ligue Europa':              'https://media.api-sports.io/football/leagues/3.png',
+    'UEFA Europa League':        'https://media.api-sports.io/football/leagues/3.png',
+    'Conférence League':         'https://media.api-sports.io/football/leagues/848.png',
+    'Ligue Conférence':          'https://media.api-sports.io/football/leagues/848.png',
+    'UEFA Conference League':    'https://media.api-sports.io/football/leagues/848.png',
+    'Ligue des Nations':         'https://media.api-sports.io/football/leagues/5.png',
+    'UEFA Nations League':       'https://media.api-sports.io/football/leagues/5.png',
+    'EURO 2024':                 'https://media.api-sports.io/football/leagues/4.png',
+    'Coupe du Monde':            '/assets/logos/leagues/worldcup.svg',
+    'Coupe du Monde 2026':       '/assets/logos/leagues/worldcup.svg',
+    'Copa América':              'https://media.api-sports.io/football/leagues/9.png',
+    'CAN':                       'https://media.api-sports.io/football/leagues/6.png',
+    // ── Basketball — Coupes continentales ──
+    'EuroLeague Basket':             'https://media.api-sports.io/basketball/leagues/10.png',
+    'EuroCup Basket':                'https://media.api-sports.io/basketball/leagues/11.png',
+    'Basketball Champions League':   'https://media.api-sports.io/basketball/leagues/212.png',
+    'EuroLeague Women Basket':       'https://media.api-sports.io/basketball/leagues/13.png',
+    'BAL Basketball':                'https://media.api-sports.io/basketball/leagues/370.png',
+    // ── Basketball — Ligues nationales ──
+    'NBA':                           'https://media.api-sports.io/basketball/leagues/12.png',
+    'WNBA':                          'https://media.api-sports.io/basketball/leagues/14.png',
+    'NBA G League':                  'https://media.api-sports.io/basketball/leagues/15.png',
+    'Liga ACB':                      'https://media.api-sports.io/basketball/leagues/116.png',
+    'Betclic Élite':                 'https://media.api-sports.io/basketball/leagues/100.png',
+    'Pro B':                         'https://media.api-sports.io/basketball/leagues/101.png',
+    'Lega Basket Serie A':           'https://media.api-sports.io/basketball/leagues/131.png',
+    'BBL':                           'https://media.api-sports.io/basketball/leagues/112.png',
+    'Turkish Super League':          'https://media.api-sports.io/basketball/leagues/186.png',
+    'Greek Basket League':           'https://media.api-sports.io/basketball/leagues/120.png',
+    'ABA Liga':                      'https://media.api-sports.io/basketball/leagues/91.png',
+    'VTB United League':             'https://media.api-sports.io/basketball/leagues/158.png',
+    'Israeli Premier League':        'https://media.api-sports.io/basketball/leagues/128.png',
+    'PLK':                           'https://media.api-sports.io/basketball/leagues/152.png',
+    'CBA':                           'https://media.api-sports.io/basketball/leagues/20.png',
+    'B.League':                      'https://media.api-sports.io/basketball/leagues/30.png',
+    'KBL':                           'https://media.api-sports.io/basketball/leagues/32.png',
+    'NBL':                           'https://media.api-sports.io/basketball/leagues/50.png',
+    'NBB':                           'https://media.api-sports.io/basketball/leagues/66.png',
+    // ── Coupes Nationales ──
+    'FA Cup':                    FM+'32.png',
+    'EFL Cup':                   'https://api.sofascore.app/api/v1/unique-tournament/57/image',
+    'Copa del Rey':              FM+'34.png',
+    'DFB Pokal':                 FM+'33.png',
+    'Coupe de France':           FM+'36.png',
+    'Coppa Italia':              FM+'35.png',
+    'Taça de Portugal':          'https://api.sofascore.app/api/v1/unique-tournament/238/image',
+    'KNVB Beker':                'https://api.sofascore.app/api/v1/unique-tournament/37/image',
+    'Coupe de Belgique':         'https://api.sofascore.app/api/v1/unique-tournament/144/image',
+    'Scottish Cup':              'https://api.sofascore.app/api/v1/unique-tournament/195/image',
+    'ÖFB Cup':                   'https://api.sofascore.app/api/v1/unique-tournament/153/image',
+    'Coupe de Suisse':           'https://api.sofascore.app/api/v1/unique-tournament/55/image',
+    'Türkiye Kupası':            'https://api.sofascore.app/api/v1/unique-tournament/258/image',
+    'Coupe de Grèce':            'https://api.sofascore.app/api/v1/unique-tournament/59/image',
+    // ── Pays-Bas ──
+    'Eredivisie':                FM+'57.png',
+    'Eredivisie Pays-Bas':       FM+'57.png',
+    'Eerste Divisie Pays-Bas':   FM+'111.png',
+    // ── Portugal ──
+    'Liga Portugal':             FM+'61.png',
+    'Liga Portugal 2':           FM+'185.png',
+    // ── Autriche ──
+    'Bundesliga Autriche':       FM+'38.png',
+    '2. Liga Autriche':          FM+'119.png',
+    // ── Suisse ──
+    'Super League Suisse':       FM+'69.png',
+    'Challenge League Suisse':   FM+'163.png',
+    // ── Belgique ──
+    'First Division A':          FM+'4.png',
+    'First Division B Belgique': FM+'5.png',
+    // ── Écosse ──
+    'Premiership':               FM+'60.png',
+    'Championship Ecosse':       FM+'123.png',
+    // ── Russie ──
+    'Premier League Russie':     FM+'63.png',
+    '1. Division Russie':        FM+'253.png',
+    // ── Ukraine ──
+    'Premier League Ukraine':    FM+'441.png',
+    // ── Azerbaïdjan ──
+    'Premier League Azerbaidjan':FM+'228.png',
+    // ── Géorgie ──
+    'Erovnuli Liga Georgie':     FM+'439.png',
+    // ── Arménie ──
+    'Premier League Armenie':    FM+'118.png',
+    // ── Norvège ──
+    'Eliteserien Norvege':       FM+'59.png',
+    '1. Divisjon Norvege':       FM+'203.png',
+    // ── Suède ──
+    'Allsvenskan Suede':         FM+'67.png',
+    'Superettan Suede':          FM+'168.png',
+    // ── Danemark ──
+    'Superligaen':               FM+'46.png',
+    '1. Division Danemark':      FM+'85.png',
+    // ── Turquie ──
+    'Super Lig':                 FM+'71.png',
+    '1. Lig Turquie':            FM+'165.png',
+    // ── Finlande ──
+    'Veikkausliiga':             FM+'51.png',
+    // ── Hongrie ──
+    'NB I Hongrie':              FM+'212.png',
+    // ── Grèce ──
+    'Super League 1 Grece':      FM+'135.png',
+    // ── Slovénie ──
+    'Prva Liga Slovenie':        FM+'173.png',
+    // ── Tchéquie ──
+    'FNL Tcheque':               FM+'123.png',
+    '1. Liga Tcheque':           FM+'122.png',
+    // ── Slovaquie ──
+    '1. liga Slovaquie':         FM+'176.png',
+    '2. liga Slovaquie':         FM+'8973.png',
+    // ── Pologne ──
+    'Ekstraklasa Pologne':       FM+'196.png',
+    'I Liga Pologne':            FM+'197.png',
+    // ── Roumanie ──
+    'Liga I Roumanie':           FM+'189.png',
+    // ── Serbie ──
+    'Super Liga Serbie':         FM+'182.png',
+    // ── Croatie ──
+    'HNL Croatie':               FM+'271.png',
+    // ── Bosnie ──
+    'Premier League Bosnie':     FM+'267.png',
+    // ── Bulgarie ──
+    'First Professional League Bulgarie': FM+'270.png',
+    'Second Professional League Bulgarie': FM+'266.png',
+    // ── Albanie ──
+    'Kategoria Superiore':       FM+'260.png',
+    // ── Moldavie ──
+    'National Division Moldavie':FM+'231.png',
+    // ── Lituanie ──
+    'A Lyga Lituanie':           FM+'256.png',
+    // ── Lettonie ──
+    'Virsliga Lettonie':         FM+'226.png',
+    // ── Estonie ──
+    'Premium liiga Estonie':     FM+'248.png',
+    // ── Biélorussie ──
+    'Premier League Bielorussie':FM+'263.png',
+    // ── Luxembourg ──
+    'National Division Luxembourg': FM+'229.png',
+    // ── Pays de Galles ──
+    'Cymru Premier Pays de Galles': FM+'116.png',
+    // ── Irlande du Nord ──
+    'Premiership Irlande du Nord': FM+'129.png',
+    // ── Irlande ──
+    'Premier Division Irlande':  FM+'126.png',
+    'First Division Irlande':    FM+'218.png',
+    // ── Îles Féroé ──
+    'Premier League Iles Feroe': FM+'250.png',
+    // ── Grèce (D2) ──
+    'Super League 2 Grece':      FM+'8815.png',
+    // ── Hongrie (D2) ──
+    'NB II Hongrie':             FM+'9117.png',
+    // ── France (D3) ──
+    'Ligue 3 France':            FM+'8970.png',
+    // ── Monténégro ──
+    '1. CFL Montenegro':         FM+'232.png',
+    // ── Macédoine du Nord ──
+    'Prva Liga Macedoine du Nord': FM+'249.png',
+    // ── Islande ──
+    'Besta deildin Islande':     FM+'215.png',
+    '1. Deild Islande':          FM+'216.png',
+    // ── Kazakhstan ──
+    'Premier League Kazakhstan': FM+'225.png',
+    // ── Irak ──
+    'Stars League Irak':         FM+'524.png',
+    // ── Iran ──
+    'Persian Gulf Iran':         FM+'523.png',
+    'Azadegan League Iran':      FM+'9372.png',
+    // ── Koweït ──
+    'Premier League Koweit':     FM+'529.png',
+    // ── Émirats ──
+    'Pro League Emirats':        FM+'538.png',
+    // ── Ouzbékistan ──
+    'Superliga Ouzbekistan':     FM+'540.png',
+    // ── Qatar ──
+    'Qatar Stars League':        FM+'535.png',
+    // ── Tunisie ──
+    'Ligue 1 Tunisie':           FM+'544.png',
+    // ── Egypte ──
+    'Premier League Egypte':     FM+'519.png',
+    // ── Ghana ──
+    'Premier League Ghana':      FM+'522.png',
+    // ── Nigeria ──
+    'Professional Football League Nigeria': FM+'533.png',
+    // ── Tanzanie ──
+    'Premier League Tanzanie':   FM+'9066.png',
+    // ── Uruguay ──
+    'Primera Division Uruguay':  FM+'161.png',
+    // ── Colombie ──
+    'Primera A Colombie':        FM+'274.png',
+    // ── Bolivie ──
+    'Primera Division Bolivie':  FM+'144.png',
+    // ── Paraguay ──
+    'Division Profesional Paraguay': FM+'199.png',
+    // ── Chili ──
+    'Liga de Primera Chili':     FM+'273.png',
+    // ── Pérou ──
+    'Liga 1 Perou':              FM+'131.png',
+    // ── Chine ──
+    'Super League Chine':        FM+'120.png',
+    // ── Japon ──
+    'J. League 2 Japon':         FM+'125.png',
+    'J. League 3 Japon':         FM+'126.png',
+    // ── Corée du Sud ──
+    'K League 1 Coree du Sud':      FM+'9080.png',
+    'K League 2 Coree du Sud':      FM+'9116.png',
+    'K League 3 Coree du Sud':   FM+'9537.png',
+    // ── Thaïlande ──
+    'Thai League Thailande':     FM+'8984.png',
+    'Thai League 2 Thailande':   FM+'9498.png',
+    // ── Vietnam ──
+    'V-League Vietnam':          FM+'9088.png',
+    // ── Indonésie ──
+    'Super League Indonesie':    FM+'8983.png',
+    'Liga 2':                    FM+'10056.png',
+    // ── Malaisie ──
+    'Liga Super Malaisie':       FM+'8985.png',
+    // ── Singapour ──
+    'Premier League Singapour':  FM+'461.png',
+    // ── Inde ──
+    'Indian Super League Inde':  FM+'9478.png',
+    'Indian Football League Inde': FM+'8982.png',
+    // ── Australie ──
+    'A-League Australie':        FM+'113.png',
+    // ── Nouvelle-Zélande ──
+    'Championship NZ':           FM+'8870.png',
+    // ── Canada ──
+    'Premier League Canada':     FM+'9986.png',
+    // ── Argentine ──
+    'Liga Profesional Argentine':FM+'112.png',
+    // ── Brésil ──
+    'Serie A Brasil':            FM+'268.png',
+    'Serie B Brasil':            FM+'8814.png',
+    // ── Maroc ──
+    'Botola Pro':                FM+'530.png',
+    // ── Arabie saoudite ──
+    'Saudi Pro League':          '/assets/logos/leagues/saudi-arabia_saudi-professional-league_256x256.football-logos.cc.png',
+    // ── Afrique du Sud ──
+    'Premier Soccer League':     '/assets/logos/leagues/south-africa_premier-soccer-league_256x256.football-logos.cc.png',
+    // ── MLS ──
+    'MLS':                       FM+'130.png',
+    // ── Football féminin ──
+    'Premiere Ligue Feminine France': FM+'9677.png',
+    'Serie A Femminile Italie':  FM+'10178.png',
+    // ── Tennis ATP niveaux ──
+    'Masters 1000':  '/assets/logos/tennis/atp_masters-1000.png',
+    'ATP 500':       '/assets/logos/tennis/atp_500.png',
+    'ATP 250':       '/assets/logos/tennis/atp_250.png',
+    'ATP Challenger':'/assets/logos/tennis/atp_challenger.png',
+    'WTA':           '/assets/logos/tennis/wta.png',
+    'WTA 125':       '/assets/logos/tennis/wta_125.png',
+    // ── Tennis Grand Chelem / tournois : logos Sofascore retires le 12/09/2026 (HTTP 403) ; le calendrier affiche le drapeau du pays ──
+    // ── Tennis tournois spécifiques ──
+    // ── Tennis Masters 1000 ──
+    'WTA 1000':        '/assets/logos/tennis/wta.png',
+    'WTA 500':         '/assets/logos/tennis/wta.png',
+    // ── Basketball ──
+    'NBA':             'https://api.sofascore.app/api/v1/unique-tournament/132/image',
+    'Euroleague':      'https://api.sofascore.app/api/v1/unique-tournament/138/image',
+    // ── Hockey sur glace ──
+    'NHL':             'https://api.sofascore.app/api/v1/unique-tournament/234/image',
+    'KHL':             'https://api.sofascore.app/api/v1/unique-tournament/268/image',
+    'Ligue Magnus':    'https://api.sofascore.app/api/v1/unique-tournament/599/image',
+    'AHL':             'https://api.sofascore.app/api/v1/unique-tournament/844/image',
+    'SHL':             'https://api.sofascore.app/api/v1/unique-tournament/1209/image',
+    'Liiga':           'https://api.sofascore.app/api/v1/unique-tournament/1210/image',
+    'DEL':             'https://api.sofascore.app/api/v1/unique-tournament/1211/image',
+    'NLA':             'https://api.sofascore.app/api/v1/unique-tournament/1212/image',
+    'Extraliga':       'https://api.sofascore.app/api/v1/unique-tournament/1213/image',
+    'PWHL':            'https://api.sofascore.app/api/v1/unique-tournament/17945/image',
+    'IIHF':            'https://api.sofascore.app/api/v1/unique-tournament/483/image',
+    // ── Rugby ──
+    'Top 14':                'https://api.sofascore.app/api/v1/unique-tournament/420/image',
+    'Six Nations':           'https://api.sofascore.app/api/v1/unique-tournament/423/image',
+    'Champions Cup':         'https://api.sofascore.app/api/v1/unique-tournament/401/image',
+    'Gallagher Premiership': 'https://api.sofascore.app/api/v1/unique-tournament/424/image',
+    'Pro D2':                'https://api.sofascore.app/api/v1/unique-tournament/1147/image',
+    'Super Rugby Pacific':   'https://api.sofascore.app/api/v1/unique-tournament/422/image',
+    // ── Aliases noms Polymarket / Calendrier ──
+    'Chinese Super League': FM+'70.png',
+    'Süper Lig':            FM+'71.png',
+    'J. League':            FM+'223.png',
+    'Brasileirão':          'https://api.sofascore.app/api/v1/unique-tournament/325/image',
+    'Serie B':              FM+'86.png',
+    'Liga MX':              FM+'230.png',
+      // ── Logos manquants ajoutes 27/07/2026 (source API-Football, verifies non-placeholder) ──
+    'J.League Japon':                'https://media.api-sports.io/football/leagues/98.png',
+    'J.League':                      'https://media.api-sports.io/football/leagues/98.png',
+    'Serie C Italie':                'https://media.api-sports.io/football/leagues/138.png',
+    'Liga II Roumanie':              'https://media.api-sports.io/football/leagues/284.png',
+    'Ligat Haal Israel':             'https://media.api-sports.io/football/leagues/383.png',
+    'Leumit League Israel':          'https://media.api-sports.io/football/leagues/382.png',
+    'Primera Federacion Espagne':    'https://media.api-sports.io/football/leagues/435.png',
+    'Primera B Colombie':            'https://media.api-sports.io/football/leagues/240.png',
+    'Segunda Division Uruguay':      'https://media.api-sports.io/football/leagues/269.png',
+    'Primera Division Costa Rica':   'https://media.api-sports.io/football/leagues/162.png',
+    'Primera Division Salvador':     'https://media.api-sports.io/football/leagues/370.png',
+    'Primera Division Venezuela':    'https://media.api-sports.io/football/leagues/299.png',
+    'Liga Nacional Guatemala':       'https://media.api-sports.io/football/leagues/339.png',
+    'Liga Nacional Honduras':        'https://media.api-sports.io/football/leagues/234.png',
+    'LPF Panama':                    'https://media.api-sports.io/football/leagues/304.png',
+    '1. Division Chypre':            'https://media.api-sports.io/football/leagues/318.png',
+    '2. Division Chypre':            'https://media.api-sports.io/football/leagues/319.png',
+    'Liga Profesional':              'https://media.api-sports.io/football/leagues/128.png',
+    'Liga De Primera':               'https://media.api-sports.io/football/leagues/265.png',
+};
+
+  // Un logo de championnat ne peut pas se deduire du seul nom : 28 pays ont
+  // une "Premier League", 9 une "Ligue 1". Sans le pays, l'Algerie affichait
+  // le logo de la Ligue 1 francaise et le Ghana celui de la Premier League
+  // anglaise. Ces libelles generiques n'ont donc le droit d'etre servis que
+  // pour le pays auquel l'entree appartient reellement.
+  var LEAGUE_AMBIGUS = {
+    'premier league':        'Angleterre',
+    'ligue 1':               'France',
+    'ligue 2':               'France',
+    'championship':          'Angleterre',
+    'premiership':           'Écosse',
+    'premier soccer league': 'Afrique du Sud',
+    'bundesliga':            'Allemagne',
+    'serie a':               'Italie',
+    'serie b':               'Italie',
+  };
+  function _nrmLg(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+  }
+
+  // Table pays -> championnat -> logo, deduite des cles deja suffixees du pays
+  // ("Ligue 1 Algerie", "Bundesliga Autriche"). Elle a besoin des noms de pays
+  // du manifeste, qui arrive apres ce script : on la construit a la demande.
+  var _logosParPays = null;
+  var SUFFIXE_ALIAS = { brasil: 'bresil' };   // la cle dit "Brasil", le site "Brésil"
+  function logosParPays() {
+    if (_logosParPays) return _logosParPays;
+    var m = window.NS_MANIFEST;
+    if (!m || !m.pays) return null;           // pas encore charge, on reessaiera
+    var noms = [];
+    for (var c in m.pays) noms.push(m.pays[c].nom);
+    var t = {};
+    Object.keys(LEAGUE_LOGOS).forEach(function (k) {
+      var nk = _nrmLg(k);
+      noms.forEach(function (p) {
+        var np = _nrmLg(p);
+        var suffixes = [np];
+        for (var a in SUFFIXE_ALIAS) if (SUFFIXE_ALIAS[a] === np) suffixes.push(a);
+        suffixes.forEach(function (suf) {
+          if (nk.length > suf.length + 1 && nk.slice(-(suf.length + 1)) === ' ' + suf) {
+            var lig = k.slice(0, k.length - suf.length - 1).trim();
+            (t[np] = t[np] || {})[_nrmLg(lig)] = LEAGUE_LOGOS[k];
+          }
+        });
+      });
+    });
+    _logosParPays = t;
+    return t;
+  }
+
+  function LeagueLogo(props) {
+    var name  = props.name  || '';
+    var size  = props.size  || 20;
+    var blend = props.blend || 'normal';
+    var key   = name.split(' · ')[0].trim();
+    // Le logo fourni par le fournisseur est indexe par IDENTIFIANT de
+    // competition : il ne peut pas se tromper de championnat. La table
+    // curatee, elle, resout par nom et s'est revelee fausse a repetition
+    // (17 identifiants Fotmob errones corriges, dont la K League 1 qui
+    // affichait la 2. Bundesliga). Le fournisseur passe donc en premier.
+    var src   = props.src || null;
+    var pays  = props.country ? _nrmLg(props.country) : '';
+    if (!src && pays) {
+      var t = logosParPays();
+      if (t && t[pays] && t[pays][_nrmLg(key)]) src = t[pays][_nrmLg(key)];
+    }
+    // Nom ambigu : « Serie A » existe en Italie ET au Bresil, « Premier
+    // League » dans une douzaine de pays. La table par nom ne peut pas
+    // trancher — elle rend toujours le championnat le plus connu.
+    var proprio = LEAGUE_AMBIGUS[_nrmLg(key)];
+    if (!src && proprio) {
+      // Pays connu et different du proprietaire du nom : on n'affiche rien.
+      if (pays && _nrmLg(proprio) !== pays) return null;
+      // Pays INCONNU : c'est le cas qui produisait le logo italien sur la
+      // Serie A bresilienne. L'appelant n'a transmis ni le logo du
+      // fournisseur ni le pays, donc rien ne permet de savoir de quel
+      // championnat il s'agit. Mieux vaut aucun ecusson qu'un faux.
+      if (!pays) return null;
+    }
+    if (!src) src = LEAGUE_LOGOS[key] || _llNorm()[_nrmLg(key)];
+    if (!src) return null;
+    return React.createElement('img', {
+      src:    src,
+      alt:    key,
+      width:  size,
+      height: size,
+      style: {
+        width: size, height: size,
+        objectFit: 'contain',
+        flexShrink: 0,
+        display: 'block',
+        mixBlendMode: blend,
+      },
+      onError: function(e) { e.target.style.display = 'none'; },
+    });
+  }
+
+  window.LeagueLogo    = LeagueLogo;
+  window.LEAGUE_LOGOS  = LEAGUE_LOGOS;
+
+  // Index normalise (casse/accents) : favoris + recherche resolvaient le logo
+  // par cle EXACTE de LEAGUE_LOGOS -> 22 championnats sans logo pour un simple
+  // ecart de casse ('Fnl Tcheque' vs 'FNL Tcheque', 'Mls' vs 'MLS'...).
+  // Ce fallback normalise resout tout d'un coup et evite les recidives.
+  var _llNrmCache = null;
+  function _llNorm() {
+    if (_llNrmCache) return _llNrmCache;
+    _llNrmCache = {};
+    Object.keys(LEAGUE_LOGOS).forEach(function (k) {
+      var n = _nrmLg(k);
+      if (!(n in _llNrmCache)) _llNrmCache[n] = LEAGUE_LOGOS[k];
+    });
+    return _llNrmCache;
+  }
+  window.NS_hasLeagueLogo = function (name) {
+    if (!name) return false;
+    var key = String(name).split(' · ')[0].trim();
+    return !!(LEAGUE_LOGOS[key] || _llNorm()[_nrmLg(key)]);
+  };
+
+  // ── Hockey team logos ─────────────────────────────────────────────────────
+  var ESPN_NHL = 'https://a.espncdn.com/i/teamlogos/nhl/500/';
+  var WM_EN    = 'https://upload.wikimedia.org/wikipedia/en/';
+  var WM_CMN   = 'https://upload.wikimedia.org/wikipedia/commons/';
+  window.HOCKEY_TEAM_LOGOS = {
+    // ── NHL (ESPN CDN) ──
+    'BOS': ESPN_NHL+'bos.png',
+    'BUF': ESPN_NHL+'buf.png',
+    'CAR': ESPN_NHL+'car.png',
+    'CBJ': ESPN_NHL+'cbj.png',
+    'CGY': ESPN_NHL+'cgy.png',
+    'CHI': ESPN_NHL+'chi.png',
+    'COL': ESPN_NHL+'col.png',
+    'DAL': ESPN_NHL+'dal.png',
+    'DET': ESPN_NHL+'det.png',
+    'EDM': ESPN_NHL+'edm.png',
+    'FLA': ESPN_NHL+'fla.png',
+    'LAK': ESPN_NHL+'la.png',
+    'MIN': ESPN_NHL+'min.png',
+    'MTL': ESPN_NHL+'mtl.png',
+    'NJD': ESPN_NHL+'nj.png',
+    'NSH': ESPN_NHL+'nsh.png',
+    'NYI': ESPN_NHL+'nyi.png',
+    'NYR': ESPN_NHL+'nyr.png',
+    'OTT': ESPN_NHL+'ott.png',
+    'PHI': ESPN_NHL+'phi.png',
+    'PIT': ESPN_NHL+'pit.png',
+    'SEA': ESPN_NHL+'sea.png',
+    'SJS': ESPN_NHL+'sj.png',
+    'STL': ESPN_NHL+'stl.png',
+    'TBL': ESPN_NHL+'tb.png',
+    'TOR': ESPN_NHL+'tor.png',
+    'UTA': ESPN_NHL+'utah.png',
+    'VAN': ESPN_NHL+'van.png',
+    'VGK': ESPN_NHL+'vgk.png',
+    'WPG': ESPN_NHL+'wpg.png',
+    'WSH': ESPN_NHL+'wsh.png',
+    'ANA': ESPN_NHL+'ana.png',
+    // ── KHL (Wikipedia) ──
+    'AKB': WM_EN+'thumb/1/11/Ak_Bars_Kazan_logo.svg/120px-Ak_Bars_Kazan_logo.svg.png',
+    'MMG': WM_EN+'9/98/HC_Metallurg_Magnitogorsk.png',
+    'AVA': WM_EN+'thumb/f/f1/Avangard_Omsk_logo.svg/120px-Avangard_Omsk_logo.svg.png',
+    'EKB': WM_EN+'thumb/0/0a/Avtomobilist_Yekaterinburg_Logo.png/120px-Avtomobilist_Yekaterinburg_Logo.png',
+    'LOK': WM_EN+'thumb/1/14/Lokomotiv_Yaroslavl_Logo.svg/120px-Lokomotiv_Yaroslavl_Logo.svg.png',
+    'SKA': WM_CMN+'c/c6/HC_SKA_Logo_2023.svg',
+    'CSK': WM_EN+'f/fa/CSKA_Moscow_logo.png',
+    'DYN': WM_EN+'5/51/MGO_Dynamo_logo.png',
+    // ── Ligue Magnus (Wikipedia) ───────────────────────────────────────────
+    'GRE': 'https://upload.wikimedia.org/wikipedia/en/d/da/Br%C3%BBleurs_de_Loups_logo.png',
+    'ANJ': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8d/Ducs_D%27Angers_Logo.png/250px-Ducs_D%27Angers_Logo.png',
+    'BDX': 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/Boxers_de_Bordeaux_logo.png/250px-Boxers_de_Bordeaux_logo.png',
+    'ROU': 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Dragons_de_Rouen_logo.svg/120px-Dragons_de_Rouen_logo.svg.png',
+    'AMI': 'https://upload.wikimedia.org/wikipedia/en/8/85/Gothiques_d%27Amiens_logo_2015.png',
+    'MRS': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Spartiates_de_Marseille_2016_logo.png/250px-Spartiates_de_Marseille_2016_logo.png',
+    'CHX': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/58/Pionniers_de_Chamonix_Mont-Blanc_logo.png/250px-Pionniers_de_Chamonix_Mont-Blanc_logo.png',
+    'NIC': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d1/Nice_Aigles_2014_Logo.png/250px-Nice_Aigles_2014_Logo.png',
+    'BRI': 'https://upload.wikimedia.org/wikipedia/en/6/67/Diables_Rouges_de_Brian%C3%A7on_logo.png',
+    'CPT': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/45/Jokers_de_Cergy-Pontoise_logo.png/250px-Jokers_de_Cergy-Pontoise_logo.png',
+    'AGL': 'https://upload.wikimedia.org/wikipedia/en/thumb/0/06/Anglet_Hormadi_%C3%89lite_logo.png/250px-Anglet_Hormadi_%C3%89lite_logo.png',
+    'GAP': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d7/Rapaces_de_Gap_logo.svg/120px-Rapaces_de_Gap_logo.svg.png',
+  };
+
+  // ── LivescoreWidget — real match livescore via Polymarket series_id ─────
+  var LS_SPORTS = [
+    { id: 'soccer',     label: 'Football',   icon: '⚽' },
+    { id: 'basketball', label: 'Basketball', icon: '🏀' },
+    { id: 'tennis',     label: 'Tennis',     icon: '🎾' },
+    { id: 'hockey',     label: 'Hockey',     icon: '🏒' },
+    { id: 'mma',        label: 'MMA',        icon: '🥊' },
+  ];
+
+  var STATUS_COLORS = { live: '#EF4444', upcoming: '#F59E0B', ended: '#9CA3AF' };
+  var STATUS_LABELS = { live: '● Live', upcoming: 'À venir', ended: 'Terminé' };
+
+  // ── Tennis live backend (Vercel serverless functions) ────────────────────
+  var TENNIS_API = '';  // même domaine → /api/tennis-*
+
+  function fetchTennisComps() {
+    return Promise.all([
+      fetch('/api/tennis-livescore').then(function(r) { return r.json(); }),
+      fetch('/api/tennis-fixtures').then(function(r) { return r.json(); })
+    ]).then(function(res) {
+      var live = Array.isArray(res[0]) ? res[0] : [];
+      var fixtures = Array.isArray(res[1]) ? res[1] : [];
+      var liveKeys = {};
+      live.forEach(function(m) { liveKeys[m.event_key] = true; });
+      var upcoming = fixtures.filter(function(m) { return !liveKeys[m.event_key]; });
+      var allMatches = live.concat(upcoming);
+
+      var byTournament = {};
+      allMatches.forEach(function(m) {
+        var key = m.tournament_name || 'Autre';
+        if (!byTournament[key]) byTournament[key] = [];
+        byTournament[key].push(m);
+      });
+
+      var ORDER = { live: 0, upcoming: 1, ended: 2 };
+      return Object.keys(byTournament).map(function(name) {
+        return {
+          competition: name,
+          matches: byTournament[name].map(function(m) {
+            var isLive = m.event_live === '1';
+            var done = ['Finished', 'Retired', 'Walkover'].indexOf(m.event_status) >= 0;
+            return {
+              eventId: m.event_key,
+              homeTeam: m.event_first_player,
+              awayTeam: m.event_second_player,
+              status: isLive ? 'live' : (done ? 'ended' : 'upcoming'),
+              eventStatus: m.event_status,
+              gameResult: m.event_game_result,
+              finalResult: m.event_final_result,
+              scores: m.scores || [],
+              time: m.event_time,
+              round: m.tournament_round,
+              serve: m.event_serve,
+              isTennis: true,
+            };
+          }).sort(function(a, b) { return (ORDER[a.status] || 1) - (ORDER[b.status] || 1); })
+        };
+      }).sort(function(a, b) {
+        var aL = a.matches.filter(function(m) { return m.status === 'live'; }).length;
+        var bL = b.matches.filter(function(m) { return m.status === 'live'; }).length;
+        return bL - aL;
+      });
+    });
+  }
+
+  function TennisCard(props) {
+    var m = props.m; var t = props.t; var accent = props.accent;
+    var isLive = m.status === 'live';
+    var isEnded = m.status === 'ended';
+    var scColor = isLive ? '#EF4444' : (isEnded ? '#9CA3AF' : '#F59E0B');
+    var statusLabel = isLive ? '● LIVE' : (isEnded ? 'Terminé' : (m.time || 'À venir'));
+    var scores = m.scores || [];
+    var gameParts = (m.gameResult || '').split(' - ');
+    var p1G = gameParts[0] || ''; var p2G = gameParts[1] || '';
+    var finalParts = (m.finalResult || '').split(' - ');
+    var p1Sets = parseInt(finalParts[0]) || 0; var p2Sets = parseInt(finalParts[2] || finalParts[1]) || 0;
+    var p1Wins = isEnded && p1Sets > p2Sets; var p2Wins = isEnded && p2Sets > p1Sets;
+    var serve1 = m.serve === 'First Player'; var serve2 = m.serve === 'Second Player';
+
+    function PlayerRow(name, sets, game, serving, wins, idx) {
+      return React.createElement('div', {
+        key: idx,
+        style: { display: 'flex', alignItems: 'center', gap: 5, padding: '3px 0' }
+      },
+        React.createElement('span', {
+          style: { width: 7, flexShrink: 0, fontSize: 7, color: '#F59E0B', opacity: serving ? 1 : 0, lineHeight: 1 }
+        }, '●'),
+        React.createElement('span', {
+          style: {
+            flex: 1, fontSize: 12, fontWeight: wins ? 800 : 500,
+            color: wins ? (t.text || '#111') : (t.textSec || '#777'),
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }
+        }, name),
+        sets.map(function(s, i) {
+          return React.createElement('span', {
+            key: i,
+            style: { fontSize: 13, fontWeight: 600, color: t.text || '#111', minWidth: 14, textAlign: 'center' }
+          }, s.score_first !== undefined ? (idx === 0 ? s.score_first : s.score_second) : s);
+        }),
+        isLive && game ? React.createElement('span', {
+          style: {
+            fontSize: 12, fontWeight: 700, color: accent,
+            minWidth: 22, textAlign: 'center',
+            borderLeft: '1px solid ' + (t.border || '#eee'), paddingLeft: 6, marginLeft: 2,
+          }
+        }, game) : null
+      );
+    }
+
+    return React.createElement('div', {
+      key: m.eventId,
+      style: {
+        background: t.card || '#fff', borderRadius: 14,
+        border: '1px solid ' + (isLive ? '#EF444440' : (t.border || '#eee')),
+        marginBottom: 8, padding: '9px 12px',
+        boxShadow: isLive ? '0 2px 12px #EF444420' : 'none',
+      }
+    },
+      React.createElement('div', {
+        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }
+      },
+        React.createElement('span', {
+          style: {
+            fontSize: 9, fontWeight: 700, color: scColor,
+            background: scColor + '18', borderRadius: 8, padding: '2px 7px',
+          }
+        }, statusLabel),
+        React.createElement('span', { style: { fontSize: 9, color: t.textSec || '#888' } }, m.round || '')
+      ),
+      PlayerRow(m.homeTeam, scores, p1G, serve1, p1Wins, 0),
+      PlayerRow(m.awayTeam, scores, p2G, serve2, p2Wins, 1)
+    );
+  }
+
+  function fmtTime(date) {
+    if (!date || !(date instanceof Date) || isNaN(date)) return '';
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+  }
+
+  function fmtDate(date) {
+    if (!date || !(date instanceof Date) || isNaN(date)) return '';
+    var today = new Date();
+    var diff = Math.round((date - today) / 86400000);
+    if (diff === 0) return 'Aujourd\'hui';
+    if (diff === 1) return 'Demain';
+    if (diff === -1) return 'Hier';
+    return date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  function LivescoreWidget(props) {
+    var accent = props.accent || '#6133E0';
+    var t      = props.t     || {};
+    var isDark = props.isDark || false;
+
+    var _sportS = React.useState('soccer');
+    var sport   = _sportS[0]; var setSport = _sportS[1];
+
+    var _dataS  = React.useState({ competitions: [], loading: true, error: null });
+    var data    = _dataS[0]; var setData  = _dataS[1];
+
+    React.useEffect(function() {
+      setData(function(d) { return Object.assign({}, d, { loading: true, error: null }); });
+
+      if (sport === 'tennis') {
+        fetchTennisComps()
+          .then(function(comps) {
+            setData({ competitions: comps, loading: false, error: null });
+          })
+          .catch(function(err) {
+            setData({ competitions: [], loading: false, error: 'Backend tennis indisponible — lance npm run dev' });
+          });
+        return;
+      }
+
+      if (!window.PolymarketService) {
+        setData({ competitions: [], loading: false, error: 'Service Polymarket non disponible' });
+        return;
+      }
+      window.PolymarketService.getLivescoreForSport(sport)
+        .then(function(comps) {
+          setData({ competitions: comps, loading: false, error: null });
+        })
+        .catch(function(err) {
+          setData({ competitions: [], loading: false, error: err.message });
+        });
+    }, [sport]);
+
+    // Sport tab bar
+    var tabs = React.createElement('div', {
+      style: { display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 12,
+               msOverflowStyle: 'none', scrollbarWidth: 'none' }
+    },
+      LS_SPORTS.map(function(s) {
+        var active = sport === s.id;
+        return React.createElement('button', {
+          key: s.id,
+          onClick: function() { setSport(s.id); },
+          style: {
+            flexShrink: 0, padding: '5px 11px', borderRadius: 20, border: 'none',
+            background: active ? accent : (t.card || '#fff'),
+            color:      active ? '#fff' : (t.textSec || '#888'),
+            fontSize: 11, fontWeight: active ? 700 : 500, cursor: 'pointer',
+            boxShadow: active ? '0 2px 8px ' + accent + '44' : '0 1px 3px rgba(0,0,0,0.08)',
+            transition: 'all 0.15s',
+          }
+        }, s.icon + ' ' + s.label);
+      })
+    );
+
+    if (data.loading) {
+      return React.createElement('div', null, tabs,
+        React.createElement('div', { style: { padding: '16px 0', textAlign: 'center', color: t.textSec } },
+          React.createElement('div', { style: { fontSize: 22, marginBottom: 6 } }, '⏳'),
+          React.createElement('div', { style: { fontSize: 12 } }, 'Chargement des matchs…')
+        )
+      );
+    }
+    if (data.error) {
+      return React.createElement('div', null, tabs,
+        React.createElement('div', { style: { padding: 16, textAlign: 'center', color: t.textSec } },
+          React.createElement('div', { style: { fontSize: 11 } }, '⚠️ ' + data.error)
+        )
+      );
+    }
+    if (!data.competitions.length) {
+      return React.createElement('div', null, tabs,
+        React.createElement('div', { style: { padding: 20, textAlign: 'center', color: t.textSec } },
+          React.createElement('div', { style: { fontSize: 20, marginBottom: 6 } }, '📅'),
+          React.createElement('div', { style: { fontSize: 12 } }, 'Aucun match dans les prochaines 72h')
+        )
+      );
+    }
+
+    var leagueRank = function(n) {
+      var nm = (n || '').toLowerCase();
+      if (/champions.league/.test(nm)) return 0;
+      if (/europa.league/.test(nm))   return 1;
+      if (/conference.league/.test(nm)) return 2;
+      if (/^premier league($|\s[\·\-])/.test(nm)) return 3;
+      if (/^ligue 1($|\s[\·\-])/.test(nm)) return 4;
+      if (/^la liga|^laliga/.test(nm)) return 5;
+      if (/^bundesliga/.test(nm))     return 6;
+      if (/^serie a($|\s[\·\-])/.test(nm)) return 7;
+      if (/^eredivisie/.test(nm))     return 8;
+      if (/^liga portugal($|\s[\·\-])/.test(nm)) return 9;
+      if (/^super lig/.test(nm))      return 10;
+      if (/serie a brasil/.test(nm))  return 11;
+      if (/saudi pro league/.test(nm)) return 12;
+      if (/^mls/.test(nm))            return 13;
+      if (/j1 league|j\.\s*league japon/.test(nm)) return 14;
+      return 999;
+    };
+    var sortedComps = data.competitions.slice().sort(function(a, b) {
+      return leagueRank(a.competition) - leagueRank(b.competition);
+    });
+
+    return React.createElement('div', { style: { paddingBottom: 4 } },
+      tabs,
+      sortedComps.map(function(comp) {
+        return React.createElement('div', { key: comp.competition, style: { marginBottom: 14 } },
+          // ── Competition header ──────────────────────────────────────
+          React.createElement('div', {
+            style: {
+              display: 'flex', alignItems: 'center', gap: 8,
+              marginBottom: 6, paddingLeft: 2,
+            }
+          },
+            window.LeagueLogo && React.createElement(window.LeagueLogo, { name: comp.competition, size: 16 }),
+            React.createElement('span', {
+              style: { fontSize: 11, fontWeight: 700, color: t.textSec || '#888', textTransform: 'uppercase', letterSpacing: '0.04em' }
+            }, comp.competition),
+            React.createElement('div', { style: { flex: 1, height: 1, background: t.border || '#eee', marginLeft: 4 } })
+          ),
+          // ── Match cards ─────────────────────────────────────────────
+          comp.matches.map(function(m) {
+            if (m.isTennis) return React.createElement(TennisCard, { key: m.eventId, m: m, t: t, accent: accent });
+            var isLive     = m.status === 'live';
+            var isEnded    = m.status === 'ended';
+            var scColor    = STATUS_COLORS[m.status] || '#9CA3AF';
+            var homeWins   = m.homePct > m.awayPct;
+            var awayWins   = m.awayPct > m.homePct;
+            var hasDraw    = m.drawPct != null && m.drawPct > 0;
+
+            return React.createElement('div', {
+              key: m.eventId || m.slug,
+              style: {
+                background: t.card || '#fff',
+                borderRadius: 14,
+                border: '1px solid ' + (isLive ? scColor + '44' : (t.border || '#eee')),
+                marginBottom: 8,
+                overflow: 'hidden',
+                boxShadow: isLive ? '0 2px 12px ' + scColor + '22' : 'none',
+              }
+            },
+              // ── Match row ─────────────────────────────────────────
+              React.createElement('div', { style: { padding: '10px 12px 8px' } },
+                // Time / status row
+                React.createElement('div', {
+                  style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }
+                },
+                  React.createElement('span', {
+                    style: {
+                      fontSize: 9, fontWeight: 700, color: scColor,
+                      background: scColor + '18', borderRadius: 8, padding: '2px 7px',
+                    }
+                  }, STATUS_LABELS[m.status] || m.status),
+                  React.createElement('span', {
+                    style: { fontSize: 10, color: t.textSec || '#888' }
+                  }, fmtDate(m.startDate) + (m.startDate ? ' · ' + fmtTime(m.startDate) : ''))
+                ),
+                // Teams row
+                React.createElement('div', {
+                  style: { display: 'flex', alignItems: 'center', gap: 8 }
+                },
+                  // Home team
+                  React.createElement('div', { style: { flex: 1 } },
+                    React.createElement('div', {
+                      style: {
+                        fontSize: 13, fontWeight: homeWins ? 800 : 500,
+                        color: homeWins ? (t.text || '#111') : (t.textSec || '#888'),
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }
+                    }, m.homeTeam),
+                    React.createElement('div', { style: { fontSize: 11, color: accent, fontWeight: 700, marginTop: 1 } },
+                      m.homePct + '%',
+                      m.homeOdds ? React.createElement('span', { style: { fontWeight: 400, color: t.textTer || '#bbb', marginLeft: 4 } }, 'x' + m.homeOdds) : null
+                    )
+                  ),
+                  // Centre: probability bars + draw
+                  React.createElement('div', { style: { flex: 1.2, display: 'flex', flexDirection: 'column', gap: 3 } },
+                    // Home bar
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                      React.createElement('div', {
+                        style: { flex: 1, height: 5, background: t.border || '#eee', borderRadius: 3, overflow: 'hidden' }
+                      },
+                        React.createElement('div', {
+                          style: { height: '100%', width: m.homePct + '%', borderRadius: 3,
+                                   background: homeWins ? accent : (isDark ? '#444' : '#D1D5DB'),
+                                   transition: 'width 0.5s' }
+                        })
+                      )
+                    ),
+                    // Draw bar (soccer)
+                    hasDraw ? React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                      React.createElement('div', {
+                        style: { flex: 1, height: 3, background: t.border || '#eee', borderRadius: 3, overflow: 'hidden' }
+                      },
+                        React.createElement('div', {
+                          style: { height: '100%', width: m.drawPct + '%', borderRadius: 3,
+                                   background: isDark ? '#666' : '#E5E7EB', transition: 'width 0.5s' }
+                        })
+                      ),
+                      React.createElement('span', { style: { fontSize: 9, color: t.textTer || '#bbb', flexShrink: 0 } },
+                        'N ' + m.drawPct + '%'
+                      )
+                    ) : null,
+                    // Away bar
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
+                      React.createElement('div', {
+                        style: { flex: 1, height: 5, background: t.border || '#eee', borderRadius: 3, overflow: 'hidden', direction: 'rtl' }
+                      },
+                        React.createElement('div', {
+                          style: { height: '100%', width: m.awayPct + '%', borderRadius: 3,
+                                   background: awayWins ? '#F59E0B' : (isDark ? '#444' : '#D1D5DB'),
+                                   transition: 'width 0.5s' }
+                        })
+                      )
+                    )
+                  ),
+                  // Away team
+                  React.createElement('div', { style: { flex: 1, textAlign: 'right' } },
+                    React.createElement('div', {
+                      style: {
+                        fontSize: 13, fontWeight: awayWins ? 800 : 500,
+                        color: awayWins ? (t.text || '#111') : (t.textSec || '#888'),
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }
+                    }, m.awayTeam),
+                    React.createElement('div', { style: { fontSize: 11, color: '#F59E0B', fontWeight: 700, marginTop: 1 } },
+                      m.awayPct + '%',
+                      m.awayOdds ? React.createElement('span', { style: { fontWeight: 400, color: t.textTer || '#bbb', marginLeft: 4 } }, 'x' + m.awayOdds) : null
+                    )
+                  )
+                )
+              ),
+              // ── Footer: volume ──────────────────────────────────
+              m.volume24h > 500 ? React.createElement('div', {
+                style: {
+                  padding: '4px 12px 6px',
+                  borderTop: '1px solid ' + (t.border || '#f0f0f0'),
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }
+              },
+                React.createElement('img', {
+                  src: 'https://polymarket.com/favicon.ico', width: 10, height: 10,
+                  style: { borderRadius: 2, opacity: 0.6 },
+                  onError: function(e) { e.target.style.display = 'none'; }
+                }),
+                React.createElement('span', { style: { fontSize: 9, color: t.textTer || '#bbb' } },
+                  m.formattedVolume24h + ' misés aujourd\'hui'
+                )
+              ) : null
+            );
+          })
+        );
+      })
+    );
+  }
+
+  window.LivescoreWidget = LivescoreWidget;
+
+  // Alias for backward compat
+  window.PolymarketWidget = LivescoreWidget;
+})();

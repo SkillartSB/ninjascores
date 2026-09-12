@@ -2,7 +2,7 @@
 //
 // Le bundle a deja un mode tennis dans le calendrier (activeSport === 'tennis')
 // qui attend window.NinjaTennisAPI.fetchComps(dateSel) -> [{competition:'ATP'|'WTA',
-// matches:[{homeTeam:'<Tournoi> (<Pays>), <surface>: <Joueur 1>', awayTeam, apiScore:
+// matches:[{homeTeam:'<Tournoi>: <Joueur 1>', awayTeam, apiScore:
 // '6-3,3-6', status:'upcoming'|'live'|'ended', apiPeriod, apiTier, startDate, slug}]}].
 // C'est un prototype de juillet : on le nourrit tel quel ici, on le remplacera par
 // un rendu propre (drapeaux, photos, point par point) a l'etape 3.
@@ -66,7 +66,9 @@
     var nom = String(x.tournament_name || 'Tournoi').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim();
     var paysNom = t.pays && PAYS[t.pays];
     var surf = SURFACE[t.surface] || null;
-    var entete = nom + (paysNom ? ' (' + paysNom + ')' : '') + (surf ? ', ' + surf : '');
+    // L'en-tete de groupe (renderTennisTournaments) est le nom seul ; pays et surface
+    // sont affiches en sous-titre a partir de tennis{}.
+    var entete = nom;
     var statut = statutDe(x);
     var heure = (x.event_time || '00:00');
     return {
@@ -83,7 +85,7 @@
       // Champs a nous, pour la fiche match (etape 3) : cles joueurs, photos, tour.
       tennis: {
         cle: x.event_key, tournoiCle: x.tournament_key, tournoi: nom, cat: cat, rang: t.rang || 5,
-        surface: t.surface || null, pays: t.pays || null, tour: x.tournament_round || null,
+        surface: t.surface || null, surfaceFr: surf, pays: t.pays || null, paysNom: paysNom || null, tour: x.tournament_round || null,
         j1: { cle: x.first_player_key, nom: x.event_first_player, photo: x.event_first_player_logo || null },
         j2: { cle: x.second_player_key, nom: x.event_second_player, photo: x.event_second_player_logo || null },
         serveur: x.event_serve || null, jeu: x.event_game_result || null, statutBrut: x.event_status || ''
