@@ -234,6 +234,58 @@
     return (ordre[a.status] - ordre[b.status]) || (a.apiTier - b.apiTier) || String(a.startDate).localeCompare(String(b.startDate));
   }
 
+  // ── Ligne de match tennis du calendrier (13/09/2026, style Flashscore) ───────
+  // Appelee par renderTennisTournaments (bundle) pour chaque match ayant m.tennis :
+  // etoile | drapeau + nom (2 lignes) | S1 / heure / Termine | balle du serveur |
+  // points du jeu (live) | une colonne par set (set en cours en rouge, vainqueur en gras).
+  window.NS_LIGNE_TENNIS = function (m, ctx) {
+    var t = ctx.t, accent = ctx.accent, tx = m.tennis || {};
+    var live = m.status === 'live', ended = m.status === 'ended';
+    var lire = function (v) { var mm = /^(\d+)\((\d+)\)$/.exec(String(v || '').trim()); return mm ? { j: +mm[1], tb: +mm[2] } : { j: parseInt(v, 10) || 0, tb: null }; };
+    var sets = String(m.apiScore || '').split(',').filter(Boolean).map(function (x) { var p = x.split('-'); return { a: lire(p[0]), b: lire(p[1]) }; });
+    var gagnesA = 0, gagnesB = 0;
+    sets.forEach(function (x, i) { var dernier = live && i === sets.length - 1; if (dernier) return; if (x.a.j > x.b.j) gagnesA++; else if (x.b.j > x.a.j) gagnesB++; });
+    var nomA = (tx.j1 && tx.j1.nom) || String(m.homeTeam || '').split(': ').slice(1).join(': ') || '?';
+    var nomB = (tx.j2 && tx.j2.nom) || m.awayTeam || '?';
+    var flagA = (tx.j1 && tx.j1.pays) ? drapeau(tx.j1.pays) : (ctx.gf ? ctx.gf(nomA) : '');
+    var flagB = (tx.j2 && tx.j2.pays) ? drapeau(tx.j2.pays) : (ctx.gf ? ctx.gf(nomB) : '');
+    var servA = live && tx.serveur === 'First Player', servB = live && tx.serveur === 'Second Player';
+    var jeu = (live && tx.jeu && tx.jeu !== '-') ? String(tx.jeu).split('-').map(function (x) { return x.trim(); }) : null;
+    var setNum = live ? ((/set\s*(\d)/i.exec(tx.statutBrut || '') || [])[1] || null) : null;
+    var gagneA = ended && gagnesA > gagnesB, gagneB = ended && gagnesB > gagnesA;
+    var H = 22;
+    var col = function (haut, bas, opts) {
+      opts = opts || {};
+      var cell = function (v, fort, rouge) { return h('div', { style: { height: H, lineHeight: H + 'px', fontSize: 13, fontWeight: fort ? 900 : 600, color: rouge ? '#EF4444' : (fort ? t.text : t.textSec), textAlign: 'center', fontVariantNumeric: 'tabular-nums' } }, v); };
+      return h('div', { style: { width: opts.width || 20, flexShrink: 0 } }, cell(haut, opts.fortA, opts.rouge), cell(bas, opts.fortB, opts.rouge));
+    };
+    var ligneNom = function (nom, flag, fort, serveur) {
+      return h('div', { style: { height: H, display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
+        flag ? h('span', { style: { fontSize: 14, lineHeight: 1, fontFamily: EMOJI, flexShrink: 0, width: 18, textAlign: 'center' } }, flag) : h('span', { style: { width: 18, flexShrink: 0 } }),
+        h('span', { style: { fontSize: 13, fontWeight: fort ? 800 : 600, color: (ended && !fort) ? t.textSec : t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, nom));
+    };
+    var balle = function (on) { return h('div', { style: { height: H, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, on ? h('span', { style: { fontSize: 11, lineHeight: 1, fontFamily: EMOJI } }, '🎾') : null); };
+    var heure = (function () { try { return new Date(m.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: window._NS_TZ || 'Europe/Paris' }); } catch (e) { return '--:--'; } })();
+    var estFav = !!(window.FavMatchesStore && window.FavMatchesStore.has && window.FavMatchesStore.has(m));
+    return h('div', { key: m.eventId || m.id, onClick: function () { ctx.onMatchClick && ctx.onMatchClick(Object.assign({}, m, { sport: 'tennis' })); },
+      style: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px 7px 6px', borderTop: ctx.premier ? 'none' : '1px solid ' + t.divider, cursor: 'pointer', background: live ? 'rgba(239,68,68,0.05)' : 'transparent' } },
+      h('button', { onClick: function (e) { e.stopPropagation(); if (window.FavMatchesStore) window.FavMatchesStore.toggle(m); }, 'aria-label': estFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+        style: { width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 17, color: estFav ? '#F59E0B' : t.textTer, flexShrink: 0, padding: 0, fontFamily: 'inherit' } }, estFav ? '★' : '☆'),
+      h('div', { style: { flex: 1, minWidth: 0 } }, ligneNom(nomA, flagA, gagneA || (live && servA), servA), ligneNom(nomB, flagB, gagneB || (live && servB), servB)),
+      live ? h('div', { style: { width: 26, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: '#EF4444' } }, setNum ? 'S' + setNum : 'LIVE')
+        : ended ? h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 600, color: t.textTer } }, 'Terminé')
+        : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),
+      live ? h('div', { style: { width: 16, flexShrink: 0 } }, balle(servA), balle(servB)) : null,
+      (live && jeu && jeu.length === 2) ? col(jeu[0], jeu[1], { width: 26 }) : null,
+      sets.map(function (x, i) {
+        var dernier = live && i === sets.length - 1;
+        var c = col(x.a.j, x.b.j, { width: 20, rouge: dernier, fortA: !dernier && x.a.j > x.b.j, fortB: !dernier && x.b.j > x.a.j });
+        return h('div', { key: i, style: { position: 'relative' } }, c,
+          (x.a.tb != null || x.b.tb != null) ? h('span', { style: { position: 'absolute', right: -3, top: (x.a.j < x.b.j ? 0 : H) + 1, fontSize: 7.5, color: t.textTer, fontWeight: 700 } }, x.a.j < x.b.j ? x.a.tb : x.b.tb) : null);
+      }),
+      (!live && !ended && !sets.length) ? null : h('div', { style: { width: 2 } }));
+  };
+
   // ── Accueil tennis ────────────────────────────────────────────────────────
   window.NS_AccueilTennis = function (props) {
     var t = props.t, accent = props.accent;
