@@ -78,7 +78,7 @@ export default async function handler(req, res) {
       return;
     }
     // Repli REST : on reutilise le chemin get_livescore (cache Redis 20 s, detail garde).
-    req.query = { method: 'get_livescore', match_key: mk || undefined, detail: '1' };
+    req.query = { method: 'get_livescore', match_key: mk || undefined, detail: mk ? '1' : undefined }; // liste allegee, detail seulement par match
     res.setHeader('X-Tennis-Live', 'rest');
     return handler(req, res);
   }
