@@ -172,8 +172,18 @@
               circuit: circuit, cat: cat, tier: TIER[cat] || 4, surface: t.surface || null, pays: t.pays || null, debut: x.debut, fin: x.fin, n: x.n, live: x.live,
               enCours: x.debut <= auj };
           })
-          .sort(function (a, b) { return (a.tier - b.tier) || (b.n - a.n); }).slice(0, 12);
-        setEtat({ liste: liste, chargement: false, auj: auj });
+          .sort(function (a, b) { return (a.tier - b.tier) || (b.n - a.n); });
+        // L'API separe ATP et WTA d'un meme tournoi (US Open x2) : une seule carte « ATP · WTA ».
+        var parNom = {}, fusion = [];
+        liste.forEach(function (g) {
+          var k = g.nom.toLowerCase() + '|' + g.cat;
+          var e = parNom[k];
+          if (!e) { parNom[k] = g; fusion.push(g); return; }
+          if (e.circuit !== g.circuit) e.circuit = 'ATP · WTA';
+          if (g.debut < e.debut) e.debut = g.debut; if (g.fin > e.fin) e.fin = g.fin;
+          e.n += g.n; e.live += g.live; e.enCours = e.enCours || g.enCours;
+        });
+        setEtat({ liste: fusion.slice(0, 12), chargement: false, auj: auj });
       });
       return function () { vif = false; };
     }, []);
@@ -247,7 +257,7 @@
       : semaine.liste.length ? h('div', { style: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 12, scrollbarWidth: 'none' } },
           semaine.liste.map(function (g) {
             var surf = g.surface ? ({ 'Hard': 'Dur', 'Hard (Indoor)': 'Dur indoor', 'Clay': 'Terre battue', 'Grass': 'Gazon', 'Carpet': 'Moquette', 'Carpet (Indoor)': 'Moquette' })[g.surface] || g.surface : '';
-            var cat = g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || 'ATP');
+            var cat = g.circuit === 'ATP · WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'ATP · WTA 1000', '500': 'ATP · WTA 500', '250': 'ATP · WTA 250', CH: 'Challenger' })[g.cat] || 'ATP · WTA' : g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || 'ATP');
             var quand = g.live ? g.live + ' en direct' : g.enCours ? (g.fin === semaine.auj ? 'Dernier jour' : 'Jusqu’au ' + dateCourte(g.fin)) : 'Dès ' + dateCourte(g.debut);
             return h('div', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
               style: { flex: '0 0 auto', width: 156, background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, padding: '12px 12px', cursor: 'pointer',
