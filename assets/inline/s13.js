@@ -198,6 +198,7 @@
         return [{ competition: 'ATP', seriesId: null, matches: atp }, { competition: 'WTA', seriesId: null, matches: wta }].filter(function (c) { return c.matches.length; });
       });
     },
-    dateDe: dateDe
+    dateDe: dateDe,
+    tournois: tournois
   };
 })();

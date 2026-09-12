@@ -61,12 +61,15 @@ export default async function handler(req, res) {
   const qs = new URLSearchParams();
   spec.params.slice().sort().forEach((p) => { if (q[p] != null && q[p] !== '') qs.set(p, String(q[p])); });
   // Le fuseau : on demande UTC et on convertit cote client, comme au foot.
-  const cleRedis = 'tennis:' + methode + '?' + qs.toString() + (q.detail === '1' ? '&detail=1' : '');
+  const resume = methode === 'get_fixtures' && q.resume === '1';
+  const cleRedis = 'tennis:' + methode + '?' + qs.toString() + (q.detail === '1' ? '&detail=1' : '') + (resume ? '&resume=1' : '');
+  // Le resume (tournois d'une periode, pour l'accueil) change peu : 30 min.
+  const ttl = resume ? 1800 : spec.ttl;
 
   const lu = await redisPipeline([['GET', cleRedis]]);
   const stocke = lu && lu[0] && lu[0].result;
   if (stocke) {
-    res.setHeader('Cache-Control', `public, s-maxage=${spec.ttl}, stale-while-revalidate=${spec.ttl * 2}`);
+    res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 2}`);
     res.setHeader('X-Cache-Tennis', 'redis');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.status(200).send(stocke);
@@ -86,6 +89,21 @@ export default async function handler(req, res) {
       json.result.forEach((m) => { delete m.pointbypoint; delete m.statistics; });
       corps = JSON.stringify(json);
     }
+    // ?resume=1 : un objet par tournoi (cle, nom, type, premiere/derniere date, nombre
+    // de matchs, matchs en direct). Sert « Tournois cette semaine » sur l'accueil
+    // sans transporter 7 jours de matchs.
+    if (resume && json && json.success === 1 && Array.isArray(json.result)) {
+      const agg = {};
+      json.result.forEach((m) => {
+        const k = String(m.tournament_key);
+        const a = agg[k] || (agg[k] = { cle: m.tournament_key, nom: m.tournament_name, type: m.event_type_type, debut: m.event_date, fin: m.event_date, n: 0, live: 0 });
+        a.n++;
+        if (String(m.event_live) === '1') a.live++;
+        if (m.event_date < a.debut) a.debut = m.event_date;
+        if (m.event_date > a.fin) a.fin = m.event_date;
+      });
+      corps = JSON.stringify({ success: 1, resume: true, result: Object.values(agg) });
+    }
     // API-Tennis repond 200 avec success:0 en cas d'erreur (cle, methode).
     if (!r.ok || !json || json.success !== 1) {
       res.setHeader('Cache-Control', 'public, s-maxage=30');
@@ -94,9 +112,9 @@ export default async function handler(req, res) {
     }
     const compteur = 'footcnt:' + jour + ':tennis:' + methode;
     const ops = [['INCR', compteur], ['EXPIRE', compteur, 604800]];
-    if (corps.length < REDIS_VAL_MAX) ops.push(['SETEX', cleRedis, spec.ttl, corps]);
+    if (corps.length < REDIS_VAL_MAX) ops.push(['SETEX', cleRedis, ttl, corps]);
     await redisPipeline(ops);
-    res.setHeader('Cache-Control', `public, s-maxage=${spec.ttl}, stale-while-revalidate=${spec.ttl * 2}`);
+    res.setHeader('Cache-Control', `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 2}`);
     res.setHeader('X-Cache-Tennis', 'amont');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.status(200).send(corps);

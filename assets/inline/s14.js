@@ -142,6 +142,65 @@
     return etat;
   }
 
+  var TIER = { GS: 1, FINALS: 1, OLY: 1, M1000: 2, '500': 3, TEAM: 3, '250': 4, CH: 5 };
+  var JOURS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+  var MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  function dateCourte(iso) { var d = new Date(iso + 'T12:00:00Z'); return JOURS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MOIS[d.getUTCMonth()]; }
+  function plusJours(iso, n) { var d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+
+  // Tournois de la semaine (aujourd'hui + 6 jours), via le resume du proxy.
+  function useSemaine() {
+    var st = R.useState({ liste: [], chargement: true, auj: null });
+    var etat = st[0], setEtat = st[1];
+    R.useEffect(function () {
+      var vif = true;
+      if (!window.NinjaTennisAPI || !window.NinjaTennisAPI.dateDe) { setEtat({ liste: [], chargement: false, auj: null }); return; }
+      var auj = window.NinjaTennisAPI.dateDe('today')[0];
+      var fin = plusJours(auj, 6);
+      Promise.all([
+        fetch('/api/tennis/?method=get_fixtures&date_start=' + auj + '&date_stop=' + fin + '&resume=1').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return (j && j.result) || []; }).catch(function () { return []; }),
+        window.NinjaTennisAPI.tournois ? window.NinjaTennisAPI.tournois() : Promise.resolve({})
+      ]).then(function (r) {
+        if (!vif) return;
+        var T = r[1] || {};
+        var liste = r[0].filter(function (x) { return /^(Atp|Wta|Challenger (Men|Women)) Singles$/i.test(x.type || ''); })
+          .map(function (x) {
+            var t = T[String(x.cle)] || {};
+            var circuit = /wta|women/i.test(x.type) ? 'WTA' : 'ATP';
+            var cat = t.cat || (/Challenger/i.test(x.type) ? 'CH' : '250');
+            return { cle: x.cle, nom: String(x.nom || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim(),
+              circuit: circuit, cat: cat, tier: TIER[cat] || 4, surface: t.surface || null, pays: t.pays || null, debut: x.debut, fin: x.fin, n: x.n, live: x.live,
+              enCours: x.debut <= auj };
+          })
+          .sort(function (a, b) { return (a.tier - b.tier) || (b.n - a.n); }).slice(0, 12);
+        setEtat({ liste: liste, chargement: false, auj: auj });
+      });
+      return function () { vif = false; };
+    }, []);
+    return etat;
+  }
+
+  // Actualites tennis (Google News via /api/news, cache CDN 30 min).
+  function useActus() {
+    var st = R.useState({ liste: [], chargement: true });
+    var etat = st[0], setEtat = st[1];
+    R.useEffect(function () {
+      var vif = true;
+      fetch('/api/news/?q=tennis&sport=tennis').then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (vif) setEtat({ liste: (d && d.articles) || [], chargement: false }); })
+        .catch(function () { if (vif) setEtat({ liste: [], chargement: false }); });
+      return function () { vif = false; };
+    }, []);
+    return etat;
+  }
+  function ilYA(dateStr) {
+    var d = new Date(dateStr); if (isNaN(d)) return '';
+    var m = Math.round((Date.now() - d.getTime()) / 60000);
+    if (m < 60) return 'il y a ' + Math.max(1, m) + ' min';
+    var hh = Math.round(m / 60); if (hh < 24) return 'il y a ' + hh + ' h';
+    var j = Math.round(hh / 24); return 'il y a ' + j + ' j';
+  }
+
   function classer(a, b) {
     var ordre = { live: 0, upcoming: 1, ended: 2 };
     return (ordre[a.status] - ordre[b.status]) || (a.apiTier - b.apiTier) || String(a.startDate).localeCompare(String(b.startDate));
@@ -151,23 +210,13 @@
   window.NS_AccueilTennis = function (props) {
     var t = props.t, accent = props.accent;
     var etat = useMatchsDuJour();
+    var semaine = useSemaine();
+    var actus = useActus();
     var simples = etat.matchs.filter(function (m) { return !estDouble(m); }).sort(classer);
     // Affiche du jour : le tournoi le plus haut d'abord (US Open avant un Challenger),
     // puis le direct avant l'a-venir, puis l'heure.
     var parNiveau = function (a, b) { return (a.apiTier - b.apiTier) || classer(a, b); };
     var vedette = simples.filter(function (m) { return m.status !== 'ended'; }).sort(parNiveau)[0] || simples[0] || null;
-    var aVenir = simples.filter(function (m) { return m.status === 'upcoming' && m !== vedette; }).slice(0, 6);
-    var enDirect = simples.filter(function (m) { return m.status === 'live' && m !== vedette; }).slice(0, 6);
-
-    // Tournois du jour : regroupement par tournoi, ordonne par niveau.
-    var tournois = {};
-    etat.matchs.forEach(function (m) {
-      var k = (m.tennis && m.tennis.tournoiCle) || tournoiDe(m);
-      var g = tournois[k] || (tournois[k] = { m: m, n: 0, live: 0 });
-      g.n++; if (m.status === 'live') g.live++;
-    });
-    var listeTournois = Object.keys(tournois).map(function (k) { return tournois[k]; })
-      .sort(function (a, b) { return (a.m.apiTier - b.m.apiTier) || (b.n - a.n); }).slice(0, 10);
 
     var vide = h('div', { style: { padding: 32, textAlign: 'center', color: t.textSec, fontSize: 13 } }, etat.chargement ? 'Chargement…' : (etat.erreur || 'Aucun match aujourd’hui'));
 
@@ -192,27 +241,31 @@
             h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, textAlign: 'center' } }, joueur2(vedette))))
       ) : carte(t, vide),
 
-      listeTournois.length ? h(R.Fragment, null,
-        titre(t, accent, 'Tournois du jour', function () { versCalendrier(false); }, 'Calendrier'),
-        h('div', { style: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 12, scrollbarWidth: 'none' } },
-          listeTournois.map(function (g) {
-            var tx = g.m.tennis || {};
-            return h('div', { key: (tx.tournoiCle || tournoiDe(g.m)) + (g.m.competition || ''), onClick: function () { versCalendrier(false); },
-              style: { flex: '0 0 auto', width: 150, background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, padding: '12px 12px', cursor: 'pointer',
-                borderLeft: '4px solid ' + (g.m.competition === 'WTA' ? '#EC4899' : (g.m.apiTier >= 5 ? '#F59E0B' : accent)) } },
-              h('div', { style: { fontSize: 26, lineHeight: 1, marginBottom: 8, fontFamily: EMOJI } }, tx.pays ? drapeau(tx.pays) : '🎾'),
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tournoiDe(g.m)),
-              h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [catLabel(g.m), surfaceLabel(g.m)].filter(Boolean).join(' · ')),
-              h('div', { style: { fontSize: 11, fontWeight: 700, color: g.live ? '#EF4444' : t.textTer, marginTop: 6 } }, g.live ? g.live + ' en direct' : g.n + (g.n > 1 ? ' matchs' : ' match')));
-          }))) : null,
+      titre(t, accent, 'Tournois cette semaine', function () { versCalendrier(false); }, 'Calendrier'),
+      semaine.chargement ? carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Chargement…'))
+      : semaine.liste.length ? h('div', { style: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 12, scrollbarWidth: 'none' } },
+          semaine.liste.map(function (g) {
+            var surf = g.surface ? ({ 'Hard': 'Dur', 'Hard (Indoor)': 'Dur indoor', 'Clay': 'Terre battue', 'Grass': 'Gazon', 'Carpet': 'Moquette', 'Carpet (Indoor)': 'Moquette' })[g.surface] || g.surface : '';
+            var cat = g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || 'ATP');
+            var quand = g.live ? g.live + ' en direct' : g.enCours ? (g.fin === semaine.auj ? 'Dernier jour' : 'Jusqu’au ' + dateCourte(g.fin)) : 'Dès ' + dateCourte(g.debut);
+            return h('div', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
+              style: { flex: '0 0 auto', width: 156, background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, padding: '12px 12px', cursor: 'pointer',
+                borderLeft: '4px solid ' + (g.circuit === 'WTA' ? '#EC4899' : (g.tier >= 5 ? '#F59E0B' : accent)) } },
+              h('div', { style: { fontSize: 26, lineHeight: 1, marginBottom: 8, fontFamily: EMOJI } }, g.pays ? drapeau(g.pays) : '🎾'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, g.nom),
+              h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [cat, surf].filter(Boolean).join(' · ')),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: g.live ? '#EF4444' : (g.enCours ? accent : t.textTer), marginTop: 6 } }, quand));
+          }))
+      : carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Aucun tournoi cette semaine')),
 
-      enDirect.length ? h(R.Fragment, null,
-        titre(t, accent, 'En direct', function () { versCalendrier(true); }, 'Tout le live'),
-        carte(t, enDirect.map(function (m, i) { return h('div', { key: m.id }, h(EnteteTournoi, { m: m, t: t, tour: tourCourt(m) }), h(LigneMatch, { m: m, t: t, accent: accent, premier: true, onMatchClick: props.onMatchClick })); }))) : null,
-
-      aVenir.length ? h(R.Fragment, null,
-        titre(t, accent, 'Prochains matchs', function () { versCalendrier(false); }, 'Voir tout'),
-        carte(t, aVenir.map(function (m, i) { return h(LigneMatch, { key: m.id, m: m, t: t, accent: accent, premier: i === 0, onMatchClick: props.onMatchClick }); }))) : null,
+      titre(t, accent, 'Actualités tennis', null, null),
+      actus.chargement ? carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Chargement…'))
+      : actus.liste.length ? carte(t, actus.liste.slice(0, 8).map(function (a, i) {
+          return h('a', { key: i, href: a.link, target: '_blank', rel: 'noopener', style: { display: 'block', padding: '11px 14px', borderTop: i ? '1px solid ' + t.divider : 'none', textDecoration: 'none' } },
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: t.text, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } }, a.title),
+            h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textTer, marginTop: 4 } }, [a.source, ilYA(a.date)].filter(Boolean).join(' · ')));
+        }))
+      : carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Pas d’actualité pour le moment')),
 
       h('div', { onClick: function () { versCalendrier(false); }, style: { marginBottom: 24, padding: '13px 16px', borderRadius: 14, background: accent, color: '#fff', textAlign: 'center', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: t.shadowCard } }, 'Tout le calendrier tennis')
     );
