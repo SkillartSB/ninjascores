@@ -52,8 +52,6 @@ export default async function handler(req, res) {
     res.status(200).json({ jour, appels: out });
     return;
   }
-  const spec = METHODES[methode];
-  if (!spec) { res.status(400).json({ error: 'Methode non autorisee', autorisees: Object.keys(METHODES) }); return; }
   // ── Direct (etape 2) : tennis:live est alimente par services/tennis-live (WebSocket
   // API-Tennis -> Redis, 1 ecriture/s). Ici : une lecture Redis, 3 s de cache CDN, donc
   // tous les visiteurs partagent le meme appel. Sans cle (service arrete, perime > 90 s) on
@@ -85,6 +83,8 @@ export default async function handler(req, res) {
     return handler(req, res);
   }
 
+  const spec = METHODES[methode];
+  if (!spec) { res.status(400).json({ error: 'Methode non autorisee', autorisees: Object.keys(METHODES) }); return; }
   const cle = process.env.API_TENNIS_KEY;
   if (!cle) { res.status(500).json({ error: 'API_TENNIS_KEY absente' }); return; }
 
