@@ -64,7 +64,38 @@
       referee: f.fixture.referee || null,
       round: f.league.round || null,
       homeId: f.teams.home.id, awayId: f.teams.away.id,
+      // Cartons rouges (rouge direct ou 2e jaune, un par joueur) : seul le flux
+      // direct porte les evenements ; pour un match termine, voir fusionRouges.
+      homeRed: Array.isArray(f.events) ? rouges(f, 'home') : undefined,
+      awayRed: Array.isArray(f.events) ? rouges(f, 'away') : undefined,
     };
+  }
+  function rouges(f, cote) {
+    var idEq = f.teams[cote].id, vus = {};
+    f.events.forEach(function (e) {
+      if (!e || e.type !== 'Card' || !/red|second yellow/i.test(e.detail || '')) return;
+      if (!e.team || e.team.id !== idEq) return;
+      vus[(e.player && (e.player.id || e.player.name)) || ('t' + (e.time && e.time.elapsed))] = 1;
+    });
+    return Object.keys(vus).length;
+  }
+  // Cartons rouges memorises cote serveur pendant le direct (api/push-goals.js),
+  // pour les matchs du jour deja termines ou en cours.
+  function fusionRouges(date, comps) {
+    var auj = new Date().toLocaleDateString('en-CA', { timeZone: window._NS_TZ || 'Europe/Paris' });
+    if (date > auj) return Promise.resolve(comps);   // pas encore joue
+    return fetch('/api/foot/?path=rouges&date=' + date)
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (map) {
+        comps.forEach(function (c) {
+          c.matches.forEach(function (m) {
+            var v = map && map[m.eventId];
+            if (v && m.homeRed === undefined) { m.homeRed = v[0]; m.awayRed = v[1]; }
+          });
+        });
+        return comps;
+      })
+      .catch(function () { return comps; });
   }
 
   // ── Tendances des 2 equipes sur leurs derniers matchs ────────────────────
@@ -2082,7 +2113,8 @@
           });
           return { id: c.seriesId, season: s, fixtures: c.matches.map(function (m) { return m.eventId; }) };
         });
-        return cotesJour(cle, ligues).then(function (cotes) {
+        return Promise.all([cotesJour(cle, ligues), fusionRouges(cle, comps)]).then(function (tout) {
+          var cotes = tout[0];
           comps.forEach(function (c) {
             c.matches.forEach(function (m) {
               var k = cotes[m.eventId];

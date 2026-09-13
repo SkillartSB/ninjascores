@@ -291,6 +291,29 @@ export default async function handler(req, res) {
   // qu'UNE requête. On ne garde que le marché Match Winner des bookmakers que
   // les préférences GEO du client connaissent (s6.js) : le choix final par
   // pays reste côté client, la donnée voyage compacte.
+  // Cartons rouges memorises par api/push-goals.js pendant le direct :
+  // /api/foot/?path=rouges&date=AAAA-MM-JJ -> { "<fixture>": [dom, ext] }.
+  // On lit aussi la veille et le lendemain (fuseaux Afrique / matchs de nuit).
+  if (path === 'rouges') {
+    const date = String(params.date || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { res.status(400).json({ error: 'date invalide (AAAA-MM-JJ)' }); return; }
+    const d0 = new Date(date + 'T12:00:00Z');
+    const jours = [-1, 0, 1].map((k) => new Date(d0.getTime() + k * 86400000).toISOString().slice(0, 10));
+    const lu = await redisPipeline(jours.map((j) => ['HGETALL', 'foot:rouges:' + j]));
+    const out = {};
+    (lu || []).forEach((r) => {
+      const v = r && r.result;
+      if (!Array.isArray(v)) return;
+      for (let i = 0; i + 1 < v.length; i += 2) {
+        const p = String(v[i + 1]).split('-');
+        out[v[i]] = [Number(p[0]) || 0, Number(p[1]) || 0];
+      }
+    });
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    res.status(200).json(out);
+    return;
+  }
+
   if (path === 'cotes-jour') {
     const date = String(params.date || '');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { res.status(400).json({ error: 'date invalide (AAAA-MM-JJ)' }); return; }

@@ -143,8 +143,19 @@ function concerne(ab, f) {
 }
 
 // ── Flux direct ────────────────────────────────────────────────────────────
+// Cartons rouges par équipe (rouge direct ou 2e jaune), un par joueur.
+function rougesDe(f) {
+  const vus = { h: new Set(), a: new Set() };
+  (f.events || []).forEach((e) => {
+    if (!e || e.type !== 'Card' || !/red|second yellow/i.test(e.detail || '')) return;
+    const cote = e.team && f.teams && e.team.id === f.teams.away.id ? 'a' : 'h';
+    vus[cote].add((e.player && (e.player.id || e.player.name)) || (e.time && e.time.elapsed) || Math.random());
+  });
+  return { rh: vus.h.size, ra: vus.a.size };
+}
 function compacter(response) {
   return (response || []).map((f) => ({
+    ...rougesDe(f), ts: (f.fixture && f.fixture.timestamp) || null,
     id: f.fixture.id, st: (f.fixture.status && f.fixture.status.short) || '', min: (f.fixture.status && f.fixture.status.elapsed) || null,
     h: Number(f.goals && f.goals.home) || 0, a: Number(f.goals && f.goals.away) || 0,
     dom: { id: f.teams.home.id, nom: f.teams.home.name }, ext: { id: f.teams.away.id, nom: f.teams.away.name },
@@ -250,9 +261,32 @@ async function envoyer(abonnes, ev, resume) {
 }
 
 // ── Un passage ─────────────────────────────────────────────────────────────
+// Mémoire des cartons rouges pour le calendrier (/api/foot/?path=rouges) : le
+// flux par date d'API-Football n'a pas les événements, un match terminé perdait
+// donc ses cartons. Hash foot:rouges:<jour Paris du coup d'envoi> fixture -> "h-a".
+const rougesEcrits = new Map();   // instance chaude : n'écrire que les changements (quota Upstash)
+async function memoriserRouges(live) {
+  const cmds = [];
+  const jours = new Set();
+  live.forEach((f) => {
+    const jour = new Date(((f.ts || Date.now() / 1000)) * 1000).toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' });
+    if (!f.rh && !f.ra) {   // carton annulé (VAR) après écriture
+      if (rougesEcrits.has(f.id)) { rougesEcrits.delete(f.id); cmds.push(['HDEL', 'foot:rouges:' + jour, String(f.id)]); }
+      return;
+    }
+    if (rougesEcrits.get(f.id) === f.rh + '-' + f.ra) return;
+    rougesEcrits.set(f.id, f.rh + '-' + f.ra);
+    cmds.push(['HSET', 'foot:rouges:' + jour, String(f.id), f.rh + '-' + f.ra]);
+    jours.add(jour);
+  });
+  jours.forEach((j) => cmds.push(['EXPIRE', 'foot:rouges:' + j, 259200]));
+  if (cmds.length) await redis(cmds).catch(() => {});
+}
+
 async function unTick(abonnes, resume) {
-  if (!abonnes.length) return;
   const live = await lireLive(resume);
+  await memoriserRouges(live);
+  if (!abonnes.length) return;
   const parId = new Map(live.map((f) => [f.id, f]));
   const suivis = live.filter((f) => abonnes.some((ab) => concerne(ab, f)));
   const encours = (await redis([['SMEMBERS', 'push:encours']]))[0] || [];

@@ -104,3 +104,21 @@
     return h(R.Fragment, { key: k }, i === 1 ? carte(t, accent, k + '-c') : null, flou(el, k + '-f'));
   };
 })();
+
+// ── Cartons rouges à côté du nom d'équipe (calendrier foot) ──────────────────
+// 13/09/2026. m.homeRed / m.awayRed viennent du flux direct (s6.js convertir)
+// ou de la mémoire serveur pour les matchs terminés (/api/foot/?path=rouges).
+// 1 carton = un rectangle rouge ; 2 et plus = le rectangle suivi de « ×2 ».
+(function () {
+  'use strict';
+  var R = window.React; if (!R) return;
+  var h = R.createElement;
+  window.NS_CARTONS_ROUGES = function (m, cote) {
+    var n = m && Number(cote === 'away' ? m.awayRed : m.homeRed);
+    if (!n || n < 1) return null;
+    var titre = n > 1 ? n + ' cartons rouges' : '1 carton rouge';
+    return h('span', { key: 'rouge-' + cote, title: titre, 'aria-label': titre, style: { display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0, marginLeft: 1 } },
+      h('span', { style: { display: 'inline-block', width: 8, height: 11, borderRadius: 1.5, background: '#E11D2E', boxShadow: '0 0 0 0.5px rgba(0,0,0,0.12)', transform: 'rotate(6deg)' } }),
+      n > 1 ? h('span', { style: { fontSize: 10, fontWeight: 800, color: '#E11D2E', lineHeight: 1 } }, '×' + n) : null);
+  };
+})();
