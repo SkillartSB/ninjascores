@@ -4092,7 +4092,7 @@ if(!_majOkP)return React.createElement('div',{className:'screen-enter',style:{pa
  React.createElement('div',{style:{marginBottom:14,display:'flex',justifyContent:'center'}},NS_ICO('info',34,t.textSec)),
  React.createElement('div',{style:{fontSize:16,fontWeight:800,color:t.text,marginBottom:8}},'Réservé aux majeurs'),
  React.createElement('div',{style:{fontSize:13,color:t.textSec,lineHeight:1.6,maxWidth:320,margin:'0 auto'}},
-  "Les cotes et pronostics sont accessibles aux utilisateurs de 18 ans et plus. Connecte-toi et renseigne ta date de naissance pour y accéder."),
+  (window.NS_IOS_NATIF?"Les cotes et pronostics sont réservés aux membres. Connecte-toi pour y accéder.":"Les cotes et pronostics sont accessibles aux utilisateurs de 18 ans et plus. Connecte-toi et renseigne ta date de naissance pour y accéder.")),
  React.createElement('button',{onClick:function(){try{window.NS_ouvrirCompte&&window.NS_ouvrirCompte();}catch(e){}},
   style:{marginTop:18,padding:'11px 22px',borderRadius:22,border:'none',cursor:'pointer',fontFamily:'inherit',
   fontSize:14,fontWeight:800,background:accent,color:'#fff'}},'Se connecter'));

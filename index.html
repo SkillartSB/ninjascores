@@ -30,6 +30,20 @@ window.NS_NATIF = (function () {
     return natif;
   } catch (e) { return false; }
 })();
+// App iOS uniquement (13/09/2026). L'app iOS est classee 18+ sur l'App Store : un
+// mineur ne peut pas la telecharger. On n'y demande donc pas la date de naissance
+// et un compte connecte y est majeur. Android et le web gardent l'etape.
+// Detection durable : ?source=ios-app (1er chargement) OU le pont natif WKWebView,
+// present sur toutes les pages de l'app iOS et jamais ailleurs.
+window.NS_IOS_NATIF = (function () {
+  try {
+    if (sessionStorage.getItem('ns_natif_ios') === '1') return true;
+    var ios = /[?&]source=ios-app\b/.test(location.search)
+      || !!(window.webkit && window.webkit.messageHandlers && (window.webkit.messageHandlers.ninjaAppleSignIn || window.webkit.messageHandlers.ninjaLiveActivity));
+    if (ios) sessionStorage.setItem('ns_natif_ios', '1');
+    return ios;
+  } catch (e) { return false; }
+})();
 </script>
 <title>NinjaScores — Résultats de foot en direct, classements et pronostics</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
@@ -1023,7 +1037,7 @@ window.NS_FAV_TEAMS = (function () {
 </script>
 <script>(function(){var m={FR:'Europe/Paris',CI:'Africa/Abidjan',CM:'Africa/Douala',SN:'Africa/Dakar',CD:'Africa/Kinshasa',ML:'Africa/Bamako'};var c;try{c=localStorage.getItem('ns_geo_pays');}catch(e){}window._NS_TZ=m[c]||'Europe/Paris';})();</script>
 <script src="/assets/inline/s12.js?v=4"></script>
-<script src="/app.compiled.js?v=789"></script>
+<script src="/app.compiled.js?v=790"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -1063,7 +1077,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s10.js?v=1"></script>
 
 <!-- ══ ONBOARDING (apps natives uniquement) ══ -->
-<script src="/assets/inline/s11.js?v=105"></script>
+<script src="/assets/inline/s11.js?v=106"></script>
 <script>
   // Déclenche l'onboarding sur iOS/Android si l'utilisateur n'a pas
   // encore complété le flow (email + âge + favoris + notifs).
@@ -1132,7 +1146,11 @@ window.NS_pulse = function(x, y){
           window.NS_STREAM = window.NS_STREAM_OK && nsStreamLu();
           // Date de naissance absente = onboarding non termine : on ne peut pas
           // affirmer la majorite, donc on ne l'accorde pas.
-          window.NS_MAJEUR_OK = !!(d && d.date_of_birth && !d.is_minor);
+          // Sauf app iOS (classee 18+, date non demandee) : connecte = majeur,
+          // a moins qu'une date de naissance enregistree dise le contraire.
+          window.NS_MAJEUR_OK = window.NS_IOS_NATIF
+            ? !(d && d.is_minor)
+            : !!(d && d.date_of_birth && !d.is_minor);
           nsDiffuserAge();
         })
         .catch(function () { window.NS_MAJEUR_OK = !window.NS_NATIF; window.NS_STREAM_OK = false; window.NS_STREAM = false; nsDiffuserAge(); });

@@ -461,10 +461,14 @@
       var nom = meta.full_name || meta.name || '';
       state.firstName = String(nom).trim().split(/\s+/)[0] || '';
     }
-    return SB.from('profiles').select('id, first_name, date_of_birth').eq('id', state.userId).maybeSingle()
+    return SB.from('profiles').select('id, first_name, date_of_birth, onboarding_completed').eq('id', state.userId).maybeSingle()
       .then(function (r) {
         var d = r && r.data;
-        if (d && d.date_of_birth) { quitterOnboarding(); setTimeout(function () { window.location.reload(); }, 300); return; }
+        // Compte deja termine : on entre directement. Sur iOS la date n'existe pas,
+        // on se fie a onboarding_completed ou a l'anciennete du compte (> 10 min).
+        var ancien = u && u.created_at && (Date.now() - new Date(u.created_at).getTime() > 10 * 60 * 1000);
+        var termine = d && (d.date_of_birth || (window.NS_IOS_NATIF && (d.onboarding_completed || ancien)));
+        if (termine) { quitterOnboarding(); setTimeout(function () { window.location.reload(); }, 300); return; }
         if (d && d.first_name && !state.firstName) state.firstName = d.first_name;
         confetti();
         currentStep = 1;
@@ -548,6 +552,18 @@
 
   // ── Step 2: Date of birth ──────────────────────────────────────────────────
   function renderDOB() {
+    // App iOS (classee 18+) : pas de date de naissance, on passe aux favoris.
+    if (window.NS_IOS_NATIF) {
+      window.NS_MAJEUR_OK = true;
+      window.NS_HIDE_ODDS = false;
+      try { document.documentElement.classList.remove('ns-minor'); window.dispatchEvent(new CustomEvent('nsAgeChange')); } catch (e) {}
+      if (state.userId && state.firstName) {
+        SB.from('profiles').upsert({ id: state.userId, first_name: state.firstName, updated_at: new Date().toISOString() }).then(function () {}, function () {});
+      }
+      currentStep = 2;
+      renderFavorites();
+      return;
+    }
     var wrap = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '18px' } });
     var sub = el('div', { style: { fontSize: '14px', color: 'rgba(0,0,0,0.5)', lineHeight: '1.6', textAlign: 'center' } },
       ['Ça nous permet d\'adapter ton expérience.']);
@@ -1137,7 +1153,7 @@
     if (profile && profile.id) {
       state.userId = profile.id;
       if (profile.first_name) state.firstName = profile.first_name;
-      if (profile.date_of_birth) { currentStep = 2; renderFavorites(); return; }
+      if (profile.date_of_birth || window.NS_IOS_NATIF) { currentStep = 2; renderFavorites(); return; }
       currentStep = 1; renderDOB(); return;
     }
     currentStep = 0;
@@ -1159,7 +1175,7 @@
 
   // ── Platform detection ─────────────────────────────────────────────────────
   window.NS_IS_NATIVE = function () {
-    if (/[?&]source=ios-app/.test(window.location.search)) return 'ios';
+    if (window.NS_IOS_NATIF || /[?&]source=ios-app/.test(window.location.search)) return 'ios';
     if (window.NS_isTWA && window.NS_isTWA()) return 'android';
     try { if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.ninjaLiveActivity) return 'ios'; } catch (e) {}
     return false;
