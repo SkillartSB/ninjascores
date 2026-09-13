@@ -1031,6 +1031,8 @@ window.NS_FAV_TEAMS = (function () {
   // Client OAuth Google (Google Identity Services, bouton rendu sur notre
   // domaine). Vide = pas de bouton Google. Voir s11.js monterBoutonGoogle.
   window.NS_GOOGLE_CLIENT_ID = '351719532690-iukfuftcte377bl7fv6bmqoeg51tva8n.apps.googleusercontent.com';
+  // Client OAuth Google de type iOS (app native, pont ninjaGoogleSignIn, cree le 13/09/2026).
+  window.NS_GOOGLE_IOS_CLIENT_ID = '351719532690-0catmnhmtfmo4fgtqkvlsh0o4rj7vhge.apps.googleusercontent.com';
   window.NS_AUTH_READY = window.NS_SUPABASE.auth.getSession().then(function (r) {
     window.NS_AUTH_SESSION = (r && r.data && r.data.session) || null;
   }).catch(function () { window.NS_AUTH_SESSION = null; });
@@ -1077,7 +1079,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s10.js?v=2"></script>
 
 <!-- ══ ONBOARDING (apps natives uniquement) ══ -->
-<script src="/assets/inline/s11.js?v=107"></script>
+<script src="/assets/inline/s11.js?v=108"></script>
 <script>
   // Déclenche l'onboarding sur iOS/Android si l'utilisateur n'a pas
   // encore complété le flow (email + âge + favoris + notifs).

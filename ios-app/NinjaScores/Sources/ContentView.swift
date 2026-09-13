@@ -105,6 +105,125 @@ final class AppleSignInBridge: NSObject, WKScriptMessageHandler,
     }
 }
 
+// Pont JS → natif pour « Continuer avec Google » (version 1.2).
+// Google refuse sa connexion dans une WKWebView (erreur 403 disallowed_useragent) :
+// on passe par ASWebAuthenticationSession, la feuille de connexion du SYSTEME, que
+// Google autorise. Flux OAuth « code + PKCE » avec un identifiant client de type iOS.
+// L'identifiant client est fourni par le site au moment du clic
+// (window.NS_GOOGLE_IOS_CLIENT_ID dans index.html) : aucun identifiant dans le binaire,
+// on peut le changer sans nouvelle version. Reponse au site :
+// window.NS_GOOGLE_NATIF({idToken, nonce}) ou ({erreur:'annule'|'echec'|'config'}).
+// Le site termine avec supabase.auth.signInWithIdToken({provider:'google'}).
+final class GoogleSignInBridge: NSObject, WKScriptMessageHandler, ASWebAuthenticationPresentationContextProviding {
+    weak var webView: WKWebView?
+    private var session: ASWebAuthenticationSession?
+
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any],
+              body["action"] as? String == "start",
+              let clientId = body["clientId"] as? String,
+              clientId.hasSuffix(".apps.googleusercontent.com") else {
+            repondre(["erreur": "config"]); return
+        }
+        demarrer(clientId: clientId)
+    }
+
+    private func demarrer(clientId: String) {
+        let prefixe = String(clientId.dropLast(".apps.googleusercontent.com".count))
+        let schema = "com.googleusercontent.apps." + prefixe
+        let redirection = schema + ":/oauth2redirect"
+        let verificateur = GoogleSignInBridge.aleatoire(64)
+        let defi = GoogleSignInBridge.base64url(Data(SHA256.hash(data: Data(verificateur.utf8))))
+        let nonceBrut = GoogleSignInBridge.aleatoire(32)
+        let etat = GoogleSignInBridge.aleatoire(24)
+
+        var c = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
+        c.queryItems = [
+            URLQueryItem(name: "client_id", value: clientId),
+            URLQueryItem(name: "redirect_uri", value: redirection),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: "openid email profile"),
+            URLQueryItem(name: "code_challenge", value: defi),
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            // Comme pour Apple : Google recoit le SHA-256, Supabase le nonce brut.
+            URLQueryItem(name: "nonce", value: GoogleSignInBridge.sha256hex(nonceBrut)),
+            URLQueryItem(name: "state", value: etat),
+            URLQueryItem(name: "prompt", value: "select_account"),
+        ]
+        guard let url = c.url else { repondre(["erreur": "config"]); return }
+
+        let s = ASWebAuthenticationSession(url: url, callbackURLScheme: schema) { [weak self] retour, erreur in
+            guard let self = self else { return }
+            self.session = nil
+            if let e = erreur as? ASWebAuthenticationSessionError, e.code == .canceledLogin {
+                self.repondre(["erreur": "annule"]); return
+            }
+            guard let retour = retour,
+                  let items = URLComponents(url: retour, resolvingAgainstBaseURL: false)?.queryItems,
+                  items.first(where: { $0.name == "state" })?.value == etat,
+                  let code = items.first(where: { $0.name == "code" })?.value else {
+                self.repondre(["erreur": "echec"]); return
+            }
+            self.echanger(code: code, verificateur: verificateur, clientId: clientId, redirection: redirection, nonceBrut: nonceBrut)
+        }
+        s.presentationContextProvider = self
+        s.prefersEphemeralWebBrowserSession = false   // reutilise la session Google deja ouverte sur l'iPhone
+        session = s
+        DispatchQueue.main.async { _ = s.start() }
+    }
+
+    // Echange du code contre les jetons. Un client iOS n'a pas de secret : le PKCE suffit.
+    private func echanger(code: String, verificateur: String, clientId: String, redirection: String, nonceBrut: String) {
+        var req = URLRequest(url: URL(string: "https://oauth2.googleapis.com/token")!)
+        req.httpMethod = "POST"
+        req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        let champs = [
+            ("code", code), ("client_id", clientId), ("code_verifier", verificateur),
+            ("redirect_uri", redirection), ("grant_type", "authorization_code"),
+        ]
+        req.httpBody = champs.map { "\($0.0)=\(GoogleSignInBridge.encoder($0.1))" }.joined(separator: "&").data(using: .utf8)
+        URLSession.shared.dataTask(with: req) { [weak self] data, _, _ in
+            guard let self = self else { return }
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let idToken = json["id_token"] as? String else {
+                self.repondre(["erreur": "echec"]); return
+            }
+            self.repondre(["idToken": idToken, "nonce": nonceBrut])
+        }.resume()
+    }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        webView?.window ?? ASPresentationAnchor()
+    }
+
+    private func repondre(_ objet: [String: Any]) {
+        guard let data = try? JSONSerialization.data(withJSONObject: objet),
+              let json = String(data: data, encoding: .utf8) else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.webView?.evaluateJavaScript("window.NS_GOOGLE_NATIF && window.NS_GOOGLE_NATIF(\(json));", completionHandler: nil)
+        }
+    }
+
+    private static func aleatoire(_ longueur: Int) -> String {
+        let alphabet = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~")
+        var octets = [UInt8](repeating: 0, count: longueur)
+        _ = SecRandomCopyBytes(kSecRandomDefault, longueur, &octets)
+        return String(octets.map { alphabet[Int($0) % alphabet.count] })
+    }
+    private static func sha256hex(_ texte: String) -> String {
+        SHA256.hash(data: Data(texte.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+    private static func base64url(_ data: Data) -> String {
+        data.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+    }
+    private static func encoder(_ v: String) -> String {
+        var permis = CharacterSet.alphanumerics
+        permis.insert(charactersIn: "-._~")
+        return v.addingPercentEncoding(withAllowedCharacters: permis) ?? v
+    }
+}
+
 struct WebView: UIViewRepresentable {
     let url: URL
     var onPageLoaded: () -> Void
@@ -119,16 +238,20 @@ struct WebView: UIViewRepresentable {
         controller.add(NinjaBridge(), name: "ninjaLiveActivity")
         let apple = AppleSignInBridge()
         controller.add(apple, name: "ninjaAppleSignIn")
+        let google = GoogleSignInBridge()
+        controller.add(google, name: "ninjaGoogleSignIn")
         config.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: config)
         apple.webView = webView
+        google.webView = webView
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         webView.load(request)
         PushTokenBridge.shared.attach(webView)
+        NotificationRouter.shared.attach(webView)
         return webView
     }
 
@@ -147,6 +270,11 @@ struct WebView: UIViewRepresentable {
                 "window.NS_FIXTURES&&window.NS_FIXTURES(0);window.NS_FIXTURES&&window.NS_FIXTURES('live');",
                 completionHandler: nil
             )
+            // 1.2 : a CHAQUE chargement (1er lancement, rechargement apres connexion…)
+            // on redonne le jeton de notification au site — il se perdait s'il arrivait
+            // avant la page — et on ouvre le match d'une notification touchee app fermee.
+            PushTokenBridge.shared.pageLoaded(webView)
+            NotificationRouter.shared.pageLoaded(webView)
             onPageLoaded()
         }
     }
