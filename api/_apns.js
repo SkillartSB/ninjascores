@@ -84,6 +84,8 @@ export function sendApnsBatch(deviceTokens, { title, body, fixtureId, url, tag }
         'apns-topic': env('APNS_BUNDLE_ID'),
         'apns-push-type': 'alert',
         'content-type': 'application/json',
+        // meme tag = meme collapse-id : la notification du buteur remplace celle du but
+        ...(tag ? { 'apns-collapse-id': String(tag).slice(0, 64) } : {}),
       });
       let status = 0;
       let corps = '';

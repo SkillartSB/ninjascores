@@ -192,11 +192,13 @@ async function butsDuMatch(fid, resume) {
         equipeId: e.team && e.team.id, equipe: e.team && e.team.name,
         minute: e.time ? (e.time.elapsed || 0) + (e.time.extra ? '+' + e.time.extra : '') : null,
         detail: String(e.detail || '').toLowerCase(),
+        passeur: (e.assist && e.assist.name) || null,
       }));
   } catch (e) { return []; }
 }
 
 // ── Messages ───────────────────────────────────────────────────────────────
+function precisionBut(b) { return b.detail && b.detail.includes('own') ? ' (csc)' : b.detail && b.detail.includes('penalty') ? ' (pen.)' : ''; }
 function score(f) { return f.dom.nom + ' ' + f.h + ' - ' + f.a + ' ' + f.ext.nom; }
 function urlMatch(f) { return '/football/match/' + slug(f.dom.nom) + '-' + slug(f.ext.nom) + '-' + f.id + '/'; }
 function messagePour(ab, ev) {
@@ -211,12 +213,26 @@ function messagePour(ab, ev) {
     const equipe = marqueDom ? f.dom : f.ext;
     const favori = b.joueur ? ab.joueurs.find((j) => memeJoueur(b.joueur, j, b.equipe || equipe.nom)) : null;
     const suitButeur = !!favori;
-    const suitMarqueur = marqueDom ? suitDom : suitExt;
     if (!(suitMatch || suitDom || suitExt || suitButeur)) return null;
-    const precision = b.detail && b.detail.includes('own') ? ' (csc)' : b.detail && b.detail.includes('penalty') ? ' (pen.)' : '';
-    const buteur = b.joueur ? ' · ' + b.joueur + precision + (b.minute ? ' ' + b.minute + '\'' : '') : '';
-    const titre = suitButeur ? '⚽ ' + favori.nom + ' marque !' : suitMarqueur ? '⚽ But pour ' + equipe.nom + ' !' : '⚽ But ' + equipe.nom + ' !';
-    return Object.assign(base, { title: titre, body: score(f) + buteur, tag: 'ns-but-' + f.id + '-' + f.h + '-' + f.a });
+    const tag = 'ns-but-' + f.id + '-' + f.h + '-' + f.a;
+    // 1re notification, immédiate. Si le buteur est déjà connu, il y figure et
+    // aucune 2e notification ne suivra.
+    const titre = suitButeur ? '⚽ GOOOOALLL ! ' + favori.nom + ' marque !' : '⚽ GOOOOALLL ' + equipe.nom + ' !';
+    const minute = b.minute || f.min;
+    const detailButeur = b.joueur ? ' · ' + b.joueur + precisionBut(b) + (minute ? ' ' + minute + '\'' : '') + (b.passeur ? ' (passe de ' + b.passeur + ')' : '') : (minute ? ' · ' + minute + '\'' : '');
+    return Object.assign(base, { title: titre, body: score(f) + detailButeur, tag });
+  }
+  if (ev.type === 'buteur') {
+    // 2e notification, dès que l'API publie le buteur : même tag / collapse-id,
+    // elle REMPLACE la 1re dans le centre de notifications (une seule par but).
+    if (!ab.prefs.buts) return null;
+    const b = ev.but || {};
+    const equipe = ev.cote === 'dom' ? f.dom : f.ext;
+    const favori = b.joueur ? ab.joueurs.find((j) => memeJoueur(b.joueur, j, b.equipe || equipe.nom)) : null;
+    if (!(suitMatch || suitDom || suitExt || favori)) return null;
+    const titre = (favori ? '🎯 ' + favori.nom + ' marque !' : '🎯 But de ' + b.joueur + precisionBut(b)) + (b.minute ? ' · ' + b.minute + '\'' : '');
+    const corps = (b.passeur ? 'Passe décisive : ' + b.passeur + '\n' : '') + score(f);
+    return Object.assign(base, { title: titre, body: corps, tag: 'ns-but-' + f.id + '-' + f.h + '-' + f.a });
   }
   if (!(suitMatch || suitDom || suitExt)) return null;
   if (ev.type === 'mt') {
@@ -283,6 +299,39 @@ async function memoriserRouges(live) {
   if (cmds.length) await redis(cmds).catch(() => {});
 }
 
+// Buteurs en attente : pour chaque but annoncé sans buteur, on relit les
+// événements du match (au plus toutes les 30 s par match) pendant 6 min.
+const dernierAppelEvenements = new Map();
+async function buteursEnAttente(evenements, resume) {
+  const brut = (await redis([['HGETALL', 'push:attente']]))[0] || [];
+  if (!brut.length) return;
+  const parMatch = new Map();
+  for (let i = 0; i + 1 < brut.length; i += 2) {
+    let v; try { v = JSON.parse(brut[i + 1]); } catch (e) { v = null; }
+    const fid = Number(String(brut[i]).split(':')[0]);
+    if (!parMatch.has(fid)) parMatch.set(fid, []);
+    parMatch.get(fid).push({ champ: brut[i], v });
+  }
+  const suppr = [];
+  for (const [fid, liste] of parMatch) {
+    const vivants = liste.filter((x) => x.v && Date.now() - x.v.depuis < 6 * 60000);
+    liste.filter((x) => !vivants.includes(x)).forEach((x) => suppr.push(x.champ));
+    if (!vivants.length) continue;
+    if (Date.now() - (dernierAppelEvenements.get(fid) || 0) < 30000) continue;
+    dernierAppelEvenements.set(fid, Date.now());
+    const buts = await butsDuMatch(fid, resume);
+    for (const x of vivants) {
+      const f = x.v.f;
+      const b = buts[f.h + f.a - 1];
+      const equipeId = x.v.cote === 'dom' ? f.dom.id : f.ext.id;
+      if (!b || !b.joueur || b.equipeId !== equipeId) continue;
+      evenements.push({ type: 'buteur', cote: x.v.cote, but: b, f });
+      suppr.push(x.champ);
+    }
+  }
+  if (suppr.length) await redis([['HDEL', 'push:attente', ...suppr]]).catch(() => {});
+}
+
 async function unTick(abonnes, resume) {
   const live = await lireLive(resume);
   await memoriserRouges(live);
@@ -293,7 +342,12 @@ async function unTick(abonnes, resume) {
   const disparus = encours.map(Number).filter((id) => !parId.has(id));
   const ids = [...new Set(suivis.map((f) => f.id).concat(disparus))];
   resume.suivisEnDirect = Math.max(resume.suivisEnDirect, suivis.length);
-  if (!ids.length) return;
+  if (!ids.length) {   // plus de match suivi en direct : il peut rester des buteurs à annoncer
+    const evs = [];
+    await buteursEnAttente(evs, resume);
+    for (const ev of evs) { resume.evenements.push(ev.type + ' ' + ev.f.id + ' ' + ev.f.h + '-' + ev.f.a); await envoyer(abonnes, ev, resume); }
+    return;
+  }
 
   const etats = await redis(ids.map((id) => ['GET', 'push:etat:' + id]));
   const avant = {};
@@ -305,7 +359,8 @@ async function unTick(abonnes, resume) {
     avant[id] = { h, a, st, noms };
   });
 
-  const ecritures = [], evenements = [];
+  const ecritures = [], evenements = [], attentes = [];
+  await buteursEnAttente(evenements, resume);
   for (const f of suivis) {
     const p = avant[f.id];
     const valeur = f.h + '-' + f.a + '|' + f.st + '|' + encodeURIComponent(f.dom.id + ':' + f.dom.nom + '~' + f.ext.id + ':' + f.ext.nom);
@@ -313,16 +368,19 @@ async function unTick(abonnes, resume) {
     const nouveaux = (f.h + f.a) - ((p.h || 0) + (p.a || 0));
     if (nouveaux > 0) {
       const buts = await butsDuMatch(f.id, resume);
-      const recents = buts.slice(-nouveaux);
-      // Un but par notification ; si les événements ne sont pas encore à jour, on
-      // annonce le but sans buteur plutôt que d'attendre.
+      // Un but par notification. Le n-ième but du match est l'événement n-1 : si
+      // les événements sont en retard (fréquent, ~1 min), on annonce le but tout
+      // de suite et le buteur partira dans une 2e notification (file push:attente).
       let h = p.h || 0, a = p.a || 0;
       for (let i = 0; i < nouveaux; i++) {
-        const b = recents[i] || null;
-        let cote = b && b.equipeId === f.dom.id ? 'dom' : b && b.equipeId === f.ext.id ? 'ext' : null;
+        const candidat = buts[h + a] || null;
+        let cote = candidat && candidat.equipeId === f.dom.id ? 'dom' : candidat && candidat.equipeId === f.ext.id ? 'ext' : null;
         if (!cote) cote = f.h > h ? 'dom' : 'ext';
         if (cote === 'dom') h++; else a++;
-        evenements.push({ type: 'but', cote, but: b, f: Object.assign({}, f, { h: Math.min(h, f.h), a: Math.min(a, f.a) }) });
+        const b = candidat && ((cote === 'dom' && candidat.equipeId === f.dom.id) || (cote === 'ext' && candidat.equipeId === f.ext.id)) ? candidat : null;
+        const fb = Object.assign({}, f, { h: Math.min(h, f.h), a: Math.min(a, f.a) });
+        evenements.push({ type: 'but', cote, but: b, f: fb });
+        if (!b || !b.joueur) attentes.push(['HSET', 'push:attente', f.id + ':' + fb.h + '-' + fb.a, JSON.stringify({ cote, depuis: Date.now(), f: fb })]);
       }
     }
     if (f.st === 'HT' && p.st !== 'HT') evenements.push({ type: 'mt', f });
@@ -346,7 +404,7 @@ async function unTick(abonnes, resume) {
 
   // L'état est écrit AVANT l'envoi : si l'envoi plante, on perd une notification
   // plutôt que d'en répéter une à chaque minute.
-  if (ecritures.length) await redis(ecritures);
+  if (ecritures.length || attentes.length) await redis(ecritures.concat(attentes, attentes.length ? [['EXPIRE', 'push:attente', 1800]] : []));
   for (const ev of evenements) {
     resume.evenements.push(ev.type + ' ' + ev.f.id + ' ' + ev.f.h + '-' + ev.f.a);
     await envoyer(abonnes, ev, resume);
