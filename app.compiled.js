@@ -3058,6 +3058,8 @@ const[showLangPicker,setShowLangPicker]=useState(false);
 const[showOddsFmt,setShowOddsFmt]=useState(false);
 const[pushOn,setPushOn]=useState(false);
 const[pushBusy,setPushBusy]=useState(false);
+const[pushPrefs,setPushPrefs]=useState(function(){return window.NS_PUSH_PREFS?window.NS_PUSH_PREFS.get():{buts:true,mi_temps:true,fin:true};});
+const setPushPref=function(k,v){var n=Object.assign({},pushPrefs);n[k]=v;setPushPrefs(n);if(window.NS_PUSH_PREFS)window.NS_PUSH_PREFS.set(n);};
 useEffect(function(){window.NS_PUSH_STATE&&window.NS_PUSH_STATE().then(function(s){setPushOn(!!s.subscribed);}).catch(function(){});},[]);
 const togglePush=function(v){
 setPushBusy(true);
@@ -3160,9 +3162,7 @@ return/*#__PURE__*/React.createElement('div',{style:{flex:1,display:'flex',flexD
     ),
     SectionLabel({label:'NOTIFICATIONS'}),
     /*#__PURE__*/React.createElement('div',{style:{margin:'0 16px',borderRadius:14,overflow:'hidden',boxShadow:t.shadowCard,border:`1px solid ${t.border}`}},
-      Row({icon:'⚽',label:'Buts de mes favoris',border:false,
-        right:/*#__PURE__*/React.createElement(Toggle,{value:pushOn,disabled:pushBusy,onChange:togglePush})
-      })
+      Row({icon:'🔔',label:'Notifications en direct',border:pushOn,right:/*#__PURE__*/React.createElement(Toggle,{value:pushOn,disabled:pushBusy,onChange:togglePush})}),pushOn&&Row({icon:'⚽',label:'Buts',border:true,right:React.createElement(Toggle,{value:pushPrefs.buts!==false,onChange:function(v){setPushPref('buts',v);}})}),pushOn&&Row({icon:'⏸',label:'Mi-temps',border:true,right:React.createElement(Toggle,{value:pushPrefs.mi_temps!==false,onChange:function(v){setPushPref('mi_temps',v);}})}),pushOn&&Row({icon:'🏁',label:'Fin de match',border:false,right:React.createElement(Toggle,{value:pushPrefs.fin!==false,onChange:function(v){setPushPref('fin',v);}})})
     ),
     SectionLabel({label:'PARIS'}),
     /*#__PURE__*/React.createElement('div',{style:{margin:'0 16px',borderRadius:14,overflow:'hidden',boxShadow:t.shadowCard,border:`1px solid ${t.border}`}},
