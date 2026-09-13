@@ -578,11 +578,12 @@
           h('div', { style: { fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: .5, textTransform: 'uppercase' } }, 'Nos pronostics'),
           h('div', { style: { fontSize: 9.5, color: 'rgba(255,255,255,.75)', textAlign: 'right' } }, 'cote ≥ 1,30', h('br'), 'fréquence ≥ 7/10')),
         retenus.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10, marginBottom: 14 } }, retenus.map(function (c, i) {
-          return h('div', { key: i, style: { background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, overflow: 'hidden' } },
+          var carteProno = h('div', { key: i, style: { background: t.card, borderRadius: 14, border: '1px solid ' + t.border, boxShadow: t.shadowCard, overflow: 'hidden' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' } },
               h('div', { style: { flex: 1, minWidth: 0 } }, h('div', { style: { fontSize: 14, fontWeight: 800, color: t.text } }, c.label), h('div', { style: { fontSize: 11, color: t.textSec, marginTop: 3 } }, c.sous), h('div', { style: { fontSize: 10, color: t.textTer, marginTop: 2 } }, c.cote.b)),
               badgeCote(c.cote.o), barreConfiance(note(c.r))),
             bandeParier(i));
+          return window.NS_VERROU_CARTE ? window.NS_VERROU_CARTE(i, t, accent, carteProno) : carteProno;
         })) : h(Carte, { t: t, style: { borderRadius: '0 0 14px 14px', borderTop: 'none' } }, h('div', { style: { padding: '16px 14px', fontSize: 12.5, color: t.textSec, lineHeight: 1.5 } }, 'Aucun pronostic ne remplit nos critères sur ce match (cote ≥ 1,30 et fréquence ≥ 7/10 sur les 10 derniers matchs).')),
         h('div', { style: { fontSize: 10.5, color: t.textTer, lineHeight: 1.5, padding: '0 4px 12px' } }, 'Pronostics calculés automatiquement à partir des cotes, du tête-à-tête, de la forme et du classement, sans garantie. Jouer comporte des risques. Réservé aux +18 ans.'));
     };

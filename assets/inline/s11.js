@@ -464,17 +464,16 @@
     return SB.from('profiles').select('id, first_name, date_of_birth, onboarding_completed').eq('id', state.userId).maybeSingle()
       .then(function (r) {
         var d = r && r.data;
-        // Compte deja termine : on entre directement. Sur iOS la date n'existe pas,
-        // on se fie a onboarding_completed ou a l'anciennete du compte (> 10 min).
-        var ancien = u && u.created_at && (Date.now() - new Date(u.created_at).getTime() > 10 * 60 * 1000);
-        var termine = d && (d.date_of_birth || (window.NS_IOS_NATIF && (d.onboarding_completed || ancien)));
+        // Compte deja termine (date de naissance connue) : on entre directement.
+        if (window.NS_IOS_NATIF) { finirSansOnboardingIOS(); return; }   // iOS : jamais d'onboarding
+        var termine = d && d.date_of_birth;
         if (termine) { quitterOnboarding(); setTimeout(function () { window.location.reload(); }, 300); return; }
         if (d && d.first_name && !state.firstName) state.firstName = d.first_name;
         confetti();
         currentStep = 1;
         setTimeout(function () { slideToStep(renderDOB); }, 600);
       })
-      .catch(function () { currentStep = 1; slideToStep(renderDOB); });
+      .catch(function () { if (window.NS_IOS_NATIF) { finirSansOnboardingIOS(); return; } currentStep = 1; slideToStep(renderDOB); });
   }
 
   function pontAppleNatif() {
@@ -551,19 +550,21 @@
   }
 
   // ── Step 2: Date of birth ──────────────────────────────────────────────────
+  function finirSansOnboardingIOS() {
+    window.NS_MAJEUR_OK = true;
+    window.NS_HIDE_ODDS = false;
+    try { document.documentElement.classList.remove('ns-minor'); } catch (e) {}
+    var fin = function () { quitterOnboarding(); setTimeout(function () { window.location.reload(); }, 350); };
+    if (!state.userId || !SB) { fin(); return; }
+    var maj = { id: state.userId, onboarding_completed: true, updated_at: new Date().toISOString() };
+    if (state.firstName) maj.first_name = state.firstName;
+    Promise.resolve(SB.from('profiles').upsert(maj)).then(fin, fin);
+  }
+
   function renderDOB() {
-    // App iOS (classee 18+) : pas de date de naissance, on passe aux favoris.
-    if (window.NS_IOS_NATIF) {
-      window.NS_MAJEUR_OK = true;
-      window.NS_HIDE_ODDS = false;
-      try { document.documentElement.classList.remove('ns-minor'); window.dispatchEvent(new CustomEvent('nsAgeChange')); } catch (e) {}
-      if (state.userId && state.firstName) {
-        SB.from('profiles').upsert({ id: state.userId, first_name: state.firstName, updated_at: new Date().toISOString() }).then(function () {}, function () {});
-      }
-      currentStep = 2;
-      renderFavorites();
-      return;
-    }
+    // App iOS (classee 18+) : AUCUN onboarding (ni date de naissance, ni favoris,
+    // ni notifications). Le compte est cree : on ferme et on recharge l'app.
+    if (window.NS_IOS_NATIF) { finirSansOnboardingIOS(); return; }
     var wrap = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '18px' } });
     var sub = el('div', { style: { fontSize: '14px', color: 'rgba(0,0,0,0.5)', lineHeight: '1.6', textAlign: 'center' } },
       ['Ça nous permet d\'adapter ton expérience.']);
@@ -1153,7 +1154,8 @@
     if (profile && profile.id) {
       state.userId = profile.id;
       if (profile.first_name) state.firstName = profile.first_name;
-      if (profile.date_of_birth || window.NS_IOS_NATIF) { currentStep = 2; renderFavorites(); return; }
+      if (window.NS_IOS_NATIF) { finirSansOnboardingIOS(); return; }
+      if (profile.date_of_birth) { currentStep = 2; renderFavorites(); return; }
       currentStep = 1; renderDOB(); return;
     }
     currentStep = 0;

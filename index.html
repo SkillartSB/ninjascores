@@ -1015,8 +1015,8 @@ window.NS_FAV_TEAMS = (function () {
 <script src="/assets/inline/s6.js?v=23"></script>
 <script src="/assets/inline/s13.js?v=14"></script>
 <script src="/assets/inline/s14.js?v=18"></script>
-<script src="/assets/inline/s15.js?v=14"></script>
-<script src="/assets/inline/s16.js?v=1"></script>
+<script src="/assets/inline/s15.js?v=15"></script>
+<script src="/assets/inline/s16.js?v=2"></script>
 <!-- ══ AUTH (Supabase) ══ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -1037,7 +1037,7 @@ window.NS_FAV_TEAMS = (function () {
 </script>
 <script>(function(){var m={FR:'Europe/Paris',CI:'Africa/Abidjan',CM:'Africa/Douala',SN:'Africa/Dakar',CD:'Africa/Kinshasa',ML:'Africa/Bamako'};var c;try{c=localStorage.getItem('ns_geo_pays');}catch(e){}window._NS_TZ=m[c]||'Europe/Paris';})();</script>
 <script src="/assets/inline/s12.js?v=4"></script>
-<script src="/app.compiled.js?v=790"></script>
+<script src="/app.compiled.js?v=791"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -1077,7 +1077,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s10.js?v=1"></script>
 
 <!-- ══ ONBOARDING (apps natives uniquement) ══ -->
-<script src="/assets/inline/s11.js?v=106"></script>
+<script src="/assets/inline/s11.js?v=107"></script>
 <script>
   // Déclenche l'onboarding sur iOS/Android si l'utilisateur n'a pas
   // encore complété le flow (email + âge + favoris + notifs).
@@ -1100,7 +1100,7 @@ window.NS_pulse = function(x, y){
   // Le web n'est pas touche : ses pages sont servies au moteur de recherche et
   // portent deja le bandeau legal +18. Pour l'aligner un jour, il suffira de
   // retirer le test window.NS_NATIF ci-dessous.
-  window.NS_MAJEUR_OK = !window.NS_NATIF;      // web : inchange
+  window.NS_MAJEUR_OK = !window.NS_NATIF || !!window.NS_IOS_NATIF;   // web : inchange ; iOS 18+ : ouvert
   // Mode stream. Deux notions distinctes, volontairement :
   //  - NS_STREAM_OK  : le compte a le DROIT d'utiliser le mode (colonne
   //    `streamer` en base, posee manuellement pour les partenaires).
@@ -1133,7 +1133,7 @@ window.NS_pulse = function(x, y){
   window.NS_VERIFIER_AGE = function () {
     return window.NS_AUTH_READY.then(function () {
       if (!window.NS_AUTH_SESSION || !window.NS_SUPABASE) {
-        window.NS_MAJEUR_OK = !window.NS_NATIF;   // anonyme : bloque dans l'app
+        window.NS_MAJEUR_OK = !window.NS_NATIF || !!window.NS_IOS_NATIF;   // anonyme : bloque dans l'app Android, ouvert sur iOS (18+)
         window.NS_STREAM_OK = false; window.NS_STREAM = false;
         return nsDiffuserAge();
       }
@@ -1153,7 +1153,7 @@ window.NS_pulse = function(x, y){
             : !!(d && d.date_of_birth && !d.is_minor);
           nsDiffuserAge();
         })
-        .catch(function () { window.NS_MAJEUR_OK = !window.NS_NATIF; window.NS_STREAM_OK = false; window.NS_STREAM = false; nsDiffuserAge(); });
+        .catch(function () { window.NS_MAJEUR_OK = !window.NS_NATIF || !!window.NS_IOS_NATIF; window.NS_STREAM_OK = false; window.NS_STREAM = false; nsDiffuserAge(); });
     });
   };
   window.NS_VERIFIER_AGE();
