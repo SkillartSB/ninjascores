@@ -384,6 +384,18 @@
           }))
       : carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Aucun tournoi cette semaine')),
 
+      // Programme createurs (ex-icone $ du header), comme sur l'accueil foot — il avait
+      // disparu en mode tennis, l'accueil tennis remplacant tout l'accueil foot (13/09/2026).
+      h('div', { className: 'ns-pari', onClick: function () { if (typeof window.openMoney === 'function') window.openMoney(); },
+        style: { marginBottom: 18, background: t.card, border: '1px solid ' + t.border, borderRadius: 16, padding: '14px 16px', boxShadow: t.shadowCard, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14 } },
+        h('div', { style: { width: 44, height: 44, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } },
+          h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: '#fff', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' },
+            h('line', { x1: 12, y1: 1, x2: 12, y2: 23 }), h('path', { d: 'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' }))),
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontSize: 15, fontWeight: 800, color: t.text } }, 'Gagne avec NinjaScores'),
+          h('div', { style: { fontSize: 12, fontWeight: 500, color: t.textSec, marginTop: 2, lineHeight: 1.35 } }, 'Programme créateurs : tes vidéos sur les réseaux, rémunérées à la vue.')),
+        h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: t.textTer, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } }, h('polyline', { points: '9 18 15 12 9 6' }))),
+
       titre(t, accent, 'Actualités tennis', null, null),
       actus.chargement ? carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Chargement…'))
       : actus.liste.length ? carte(t, actus.liste.slice(0, 8).map(function (a, i) {
