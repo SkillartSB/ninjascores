@@ -2810,7 +2810,7 @@ return React.createElement('div',{style:{display:'flex',flexDirection:'column',g
 if(!competData)return React.createElement('div',{style:{padding:32,textAlign:'center',color:t.textSec,fontSize:13}},'Chargement…');
 const ligne=(m,i,n)=>{const sc=m.apiScore?m.apiScore.split('-'):null;
  const dom=sc&&parseInt(sc[0])>parseInt(sc[1]);const ext=sc&&parseInt(sc[1])>parseInt(sc[0]);
- return React.createElement('div',{key:m.eventId,style:{display:'flex',alignItems:'center',gap:8,padding:'9px 12px',borderBottom:i<n-1?'1px solid '+t.divider:'none'}},
+ return React.createElement('div',{key:m.eventId,style:Object.assign({display:'flex',alignItems:'center',gap:8,padding:'9px 12px',borderBottom:i<n-1?'1px solid '+t.divider:'none'},(window.NS_LIGNE_EQUIPE_MATCH&&m.eventId&&m.eventId===match.eventId)?window.NS_LIGNE_EQUIPE_MATCH(match,null,'match'):null)},
   React.createElement('span',{style:{fontSize:10,color:t.textTer,width:42,flexShrink:0}},new Date(m.startDate).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})),
   React.createElement('div',{style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:3}},
    React.createElement('div',{style:{display:'flex',alignItems:'center',gap:6}},
@@ -2834,11 +2834,11 @@ if(competData.type==='classement'){const hdr=(x,f,al)=>React.createElement('span
    competData.groupes.length>1?React.createElement('div',{style:{fontSize:11,fontWeight:800,color:t.textTer,textTransform:'uppercase',marginBottom:6}},(grp[0]&&grp[0].group)||('Groupe '+(gi+1))):null,
    React.createElement('div',{style:{display:'flex',padding:'4px 0',borderBottom:'1px solid '+t.border,marginBottom:4}},
     hdr('#',0.5),hdr('Équipe',4,'left'),hdr('J',0.8),hdr('V',0.8),hdr('N',0.8),hdr('D',0.8),hdr('Pts',0.8)),
-   grp.map(r=>React.createElement('div',{key:r.rank,style:{display:'flex',alignItems:'center',padding:'5px 0',borderBottom:'1px solid '+t.border}},
+   grp.map(r=>React.createElement('div',{key:r.rank,style:Object.assign({display:'flex',alignItems:'center',padding:'5px 0',borderBottom:'1px solid '+t.border},window.NS_LIGNE_EQUIPE_MATCH?window.NS_LIGNE_EQUIPE_MATCH(match,r.team,'ligne'):null)},
     React.createElement('span',{style:{flex:0.5,fontSize:11,color:t.textSec,textAlign:'center'}},r.rank),
     React.createElement('div',{style:{flex:4,display:'flex',alignItems:'center',gap:6,minWidth:0}},
      React.createElement(TeamLogo,{name:r.team.name,src:r.team.logo,strict:!!r.team.logo,color:'#999',size:20}),
-     React.createElement('span',{style:{fontSize:11,fontWeight:600,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},(window.displayTeamName||String)(r.team.name))),
+     React.createElement('span',{style:Object.assign({fontSize:11,fontWeight:600,color:t.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'},window.NS_LIGNE_EQUIPE_MATCH?window.NS_LIGNE_EQUIPE_MATCH(match,r.team,'nom'):null)},(window.displayTeamName||String)(r.team.name))),
     React.createElement('span',{style:{flex:0.8,fontSize:11,color:t.textSec,textAlign:'center'}},r.all.played),
     React.createElement('span',{style:{flex:0.8,fontSize:11,color:t.textSec,textAlign:'center'}},r.all.win),
     React.createElement('span',{style:{flex:0.8,fontSize:11,color:t.textSec,textAlign:'center'}},r.all.draw),

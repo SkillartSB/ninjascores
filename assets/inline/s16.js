@@ -122,3 +122,27 @@
       n > 1 ? h('span', { style: { fontSize: 10, fontWeight: 800, color: '#E11D2E', lineHeight: 1 } }, '×' + n) : null);
   };
 })();
+
+// ── Classement d'une page match : surligner en violet les deux équipes ───────
+// 13/09/2026. Appelé par l'onglet Classement de la fiche match (bundle) pour
+// chaque ligne : 'ligne' (fond + liseré), 'nom' (nom en violet gras), 'match'
+// (ligne du match dans un tableau de coupe). Rapprochement par id API-Football,
+// sinon par nom normalisé.
+(function () {
+  'use strict';
+  var VIOLET = '#6133E0';
+  function norm(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  function estDuMatch(match, team) {
+    if (!match || !team) return false;
+    var id = team.id != null ? String(team.id) : null;
+    if (id && (String(match.homeId) === id || String(match.awayId) === id)) return true;
+    var n = norm(team.name);
+    return !!n && (n === norm(match.homeTeam) || n === norm(match.awayTeam));
+  }
+  window.NS_LIGNE_EQUIPE_MATCH = function (match, team, role) {
+    if (role === 'match') return { background: 'rgba(97,51,224,0.10)', boxShadow: 'inset 3px 0 0 ' + VIOLET };
+    if (!estDuMatch(match, team)) return null;
+    if (role === 'nom') return { color: VIOLET, fontWeight: 800 };
+    return { background: 'rgba(97,51,224,0.10)', boxShadow: 'inset 3px 0 0 ' + VIOLET, borderRadius: 6 };
+  };
+})();
