@@ -1150,10 +1150,18 @@ window.NS_pulse = function(x, y){
           // affirmer la majorite, donc on ne l'accorde pas.
           // Sauf app iOS (classee 18+, date non demandee) : connecte = majeur,
           // a moins qu'une date de naissance enregistree dise le contraire.
-          window.NS_MAJEUR_OK = window.NS_IOS_NATIF
+          // Web (hors app) : un visiteur anonyme voit deja tout, donc un compte
+          // connecte sans date de naissance (cree dans l'app iOS, ou onboarding
+          // interrompu) ne doit pas voir MOINS : seul un mineur declare est filtre.
+          // App Android : la date reste obligatoire ; si elle manque, on la demande.
+          var ouvert = window.NS_IOS_NATIF || !window.NS_NATIF;
+          window.NS_MAJEUR_OK = ouvert
             ? !(d && d.is_minor)
             : !!(d && d.date_of_birth && !d.is_minor);
           nsDiffuserAge();
+          if (!ouvert && d && d.id && !d.date_of_birth && window.NS_showOnboarding) {
+            try { window.NS_showOnboarding(d); } catch (e) {}
+          }
         })
         .catch(function () { window.NS_MAJEUR_OK = !window.NS_NATIF || !!window.NS_IOS_NATIF; window.NS_STREAM_OK = false; window.NS_STREAM = false; nsDiffuserAge(); });
     });
