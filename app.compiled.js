@@ -98,7 +98,8 @@ function NS_FOOT_PRONOS(demo){
   var v=window._NS_PRONOS_JOUR;
   /* 12/09/2026 : en mode tennis, meme ecran, pronostics tennis (api/pronostics-tennis.mjs) */
   if(window.NS_SPORT&&window.NS_SPORT.get()==='tennis')return (v&&v.tennis)?v.tennis:[];
-  return (v&&v.foot&&v.foot.length)?v.foot:((demo&&demo.foot)||[]);
+  /* plus de repli sur les pronostics de demonstration (matchs et cotes inventes) */
+  return (v&&v.foot)?v.foot:[];
 }
 const _cleanSN=n=>(n||'').replace(/^(AHL|KHL|NHL|ECHL|SHL|DEL|LIIGA):\s*/i,'');// ── TOKENS ────────────────────────────────────────────────────────────────────
 const TWEAK_DEFAULTS={"darkMode":false,"accentColor":"#6133E0","showSkeleton":false};const light={bg:'#F5F5FA',card:'#FFFFFF',cardAlt:'#F0F0F8',text:'#0D0F1C',textSec:'#6B7280',textTer:'#9CA3AF',border:'rgba(0,0,0,0.07)',divider:'rgba(0,0,0,0.05)',navBg:'#FFFFFF',navBorder:'rgba(0,0,0,0.08)',statBgA:'#E8EAFF',statBgB:'#EDE8FF',shadow:'0 2px 12px rgba(59,79,216,0.08)',shadowCard:'0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)'};const dark={bg:'#0B0D1A',card:'#141726',cardAlt:'#1C1F35',text:'#F0F0FA',textSec:'#8892B0',textTer:'#555C7A',border:'rgba(255,255,255,0.07)',divider:'rgba(255,255,255,0.04)',navBg:'#141726',navBorder:'rgba(255,255,255,0.07)',statBgA:'#1C2048',statBgB:'#1E1840',shadow:'0 2px 12px rgba(0,0,0,0.4)',shadowCard:'0 1px 4px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)'};// ── DATA ─────────────────────────────────────────────────────────────────────
@@ -4057,6 +4058,7 @@ contenu.filter(Boolean).length?contenu.filter(Boolean).map(function(el,k){return
 // ── MAIN APP ──────────────────────────────────────────────────────────────────
 const PronosticsScreen=({accent,t,isDark,wide})=>{
 const _majOkP=useMajeurOk();
+/* 13/09/2026 : se rafraichir quand les vrais pronostics arrivent (sinon, a la 1re visite sans cache, l'ecran restait sur les donnees de demo) */const[,_prForce]=useState(0);useEffect(()=>{const f=()=>_prForce(n=>n+1);window.addEventListener('pronosJourReady',f);return()=>window.removeEventListener('pronosJourReady',f);},[]);
 const[pSubTab,setPSubTab]=useState('top');const[pTri,setPTri]=useState('championnat');
 const[slip,setSlip]=useState([]);const[sportFilter,setSportFilter]=useState('foot');const SPORTS=[{id:'foot',label:'Foot'}];
 const addSlip=(item)=>{setSlip(prev=>{const has=prev.some(x=>x.id===item.id);return has?prev.filter(x=>x.id!==item.id):[...prev,item];});};
