@@ -41,3 +41,6 @@ standings_api.json
 
 # sauvegardes locales, jamais versionnees
 *.bak
+
+# exports du carrousel (regénérables)
+social/carousel-foot/out/
