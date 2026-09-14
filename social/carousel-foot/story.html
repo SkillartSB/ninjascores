@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>NinjaScores — Story TikTok</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Story TikTok — un visuel unique, autonome, 1080×1920.
+   Contrairement au carrousel, tout doit tenir sur une seule image :
+   les 5 matchs portent donc leur prono et leur cote.
+   Les marges tiennent compte de l'interface TikTok : 180 px en haut,
+   250 px en bas, et une colonne de 168 px à droite pour les boutons
+   like / commentaire / partage. Bouton « Zones TikTok » pour vérifier.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{--H:1920px}
+
+.slide .inner{padding:150px 72px 200px}
+.dodge{margin-right:150px}          /* évite la colonne de boutons TikTok */
+
+/* ── Titrage ──────────────────────────────────────────────────── */
+.s-title{margin-top:52px;font-size:200px}
+.s-sub{margin-top:.12em;font-size:104px;display:flex;gap:.26em;align-items:baseline}
+
+/* ── Les 5 matchs ─────────────────────────────────────────────── */
+.cards{margin-top:60px;display:flex;flex-direction:column;gap:18px}
+.scard{position:relative;display:flex;align-items:center;gap:26px;padding:27px 26px 27px 32px;
+  border-radius:24px;overflow:hidden;
+  background:linear-gradient(102deg, rgba(255,255,255,.085), rgba(255,255,255,.028) 62%, rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:0 18px 44px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.13)}
+.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg, var(--c), color-mix(in srgb,var(--c) 35%,transparent))}
+.scard .cglow{position:absolute;left:-70px;top:50%;width:260px;height:260px;transform:translateY(-50%);
+  border-radius:50%;filter:blur(30px);opacity:.5;
+  background:radial-gradient(circle, color-mix(in srgb,var(--c) 62%,transparent), transparent 64%)}
+
+.scard .duo{position:relative;display:flex;flex:none;width:104px}
+.scard .duo img{width:64px;height:64px;object-fit:contain;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.65))}
+.scard .duo img:last-child{margin-left:-24px}
+.scard .duo img.lit{border-radius:50%;background:#F4F1FB;padding:5px}
+
+.scard .mid{position:relative;flex:1;min-width:0}
+.scard .top{display:flex;align-items:center;gap:14px;
+  font:600 17px/1 'JBMono',monospace;letter-spacing:.19em;color:rgba(255,255,255,.5);text-transform:uppercase}
+.scard .top em{font-style:normal;font-weight:700;color:var(--amber);letter-spacing:.06em;font-size:19px}
+.scard .top s{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);text-decoration:none}
+.scard .teams{margin-top:10px;font:900 33px/1 'Archivo';font-stretch:104%;letter-spacing:-.008em;
+  text-transform:uppercase;white-space:nowrap;width:max-content}
+.scard .ptip{margin-top:10px;display:flex;align-items:center;gap:10px;
+  font:700 22px/1 'Archivo';font-stretch:102%;color:rgba(255,255,255,.8)}
+.scard .ptip b{color:var(--amber-hi);font-size:14px}
+
+.scard .odd{position:relative;flex:none;text-align:center;padding:13px 20px 12px;border-radius:16px;
+  background:rgba(255,176,32,.10);border:1px solid rgba(255,176,32,.36);
+  box-shadow:0 0 30px rgba(255,176,32,.12)}
+.scard .odd b{display:block;font:900 37px/1 'Archivo';font-stretch:112%;letter-spacing:-.02em;color:var(--amber)}
+.scard .odd i{display:block;margin-top:6px;font:600 11px/1 'JBMono',monospace;
+  letter-spacing:.24em;color:rgba(255,255,255,.46);font-style:normal}
+
+.mention{display:flex;align-items:center;gap:12px;margin-top:26px;
+  font:500 17px/1 'JBMono',monospace;letter-spacing:.13em;color:rgba(255,255,255,.4);
+  text-transform:uppercase}
+.mention b{color:rgba(255,176,32,.6);font-size:11px}
+
+/* ── Appel à l'action ─────────────────────────────────────────── */
+.scta{position:relative;margin-top:34px;display:flex;align-items:center;gap:24px;
+  padding:26px 30px;border-radius:26px;overflow:hidden;
+  background:linear-gradient(104deg,#5B21B6 0%,#7C3AED 48%,#8B5CF6 100%);
+  box-shadow:0 22px 54px rgba(76,29,149,.5)}
+.scta::before{content:'';position:absolute;inset:0;opacity:.5;
+  background:repeating-linear-gradient(104deg, rgba(255,255,255,.075) 0 2px, transparent 2px 30px)}
+.scta .ico{position:relative;width:62px;height:62px;flex:none;border-radius:16px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.3), 0 8px 22px rgba(0,0,0,.35)}
+.scta .ico svg{width:100%;height:100%;display:block}
+.scta .tx{position:relative;flex:1;min-width:0}
+.scta .t1{font:900 33px/1 'Archivo';font-stretch:108%;letter-spacing:-.01em;text-transform:uppercase;
+  white-space:nowrap;width:max-content}
+.scta .t2{margin-top:9px;font:600 17px/1 'JBMono',monospace;letter-spacing:.17em;
+  color:rgba(255,255,255,.82);text-transform:uppercase}
+.scta .arw{position:relative;flex:none;width:56px;height:2px;background:#fff;margin-right:14px}
+.scta .arw::after{content:'';position:absolute;right:-1px;top:-8px;width:17px;height:17px;
+  border-top:2px solid #fff;border-right:2px solid #fff;transform:rotate(45deg)}
+
+/* ── Filet vertical dans la gouttière droite ──────────────────── */
+.rail{position:absolute;right:64px;top:50%;transform:translateY(-50%);z-index:3;
+  display:flex;align-items:center;gap:18px}
+.rail i{display:block;width:1px;height:280px;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.22),transparent)}
+.rail span{writing-mode:vertical-rl;font:600 14px/1 'JBMono',monospace;letter-spacing:.52em;
+  color:rgba(255,255,255,.17);text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="bar">
+  <button id="btn-play">▶ Rejouer l'anim</button>
+  <button id="btn-safe">Zones TikTok</button>
+  <button id="btn-zoom">Zoom 100%</button>
+</div>
+
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+FIT.push(['.s-title', 240, 60], ['.s-sub', 124, 40],
+         ['.scard .teams', 34, 20], ['.scta .t1', 34, 18]);
+
+const c = CAROUSEL.cover, a = CAROUSEL.cta;
+
+/* Une ligne par match : heure, écussons, affiche, prono, cote. */
+function card(m, i) {
+  const crest = t => `<img class="${t.plate === 'light' ? 'lit' : ''}" src="${t.crest}" alt="">`;
+  return `
+  <div class="scard a-wipe" style="--c:${m.home.color};--d:${.62 + i * .09}s">
+    <div class="cglow"></div>
+    <div class="duo">${crest(m.home)}${crest(m.away)}</div>
+    <div class="mid">
+      <div class="top"><em>${m.time}</em><s></s>${up(m.league.name)}</div>
+      <div class="teams">${up(m.home.name)} / ${up(m.away.name)}</div>
+      <div class="ptip"><b>◆</b>${m.prono.join(' ')}</div>
+    </div>
+    <div class="odd"><b>${m.cote}</b><i>cote</i></div>
+  </div>`;
+}
+
+function story() {
+  return `
+  <div class="slide">
+    ${bg('#7C3AED', '#A855F7')}
+    <div class="sweep"></div>
+    <div class="rail"><i></i><span>Ninjascores · Pronos du jour</span><i></i></div>
+    <div class="inner">
+      ${head()}
+      <div class="eyebrow a-rise" style="--d:.26s;margin-top:46px">${up(c.eyebrow)}</div>
+      <div class="title s-title a-blur" style="--d:.32s">
+        ${echo(c.l1)}
+        <span class="solid">${up(c.l1)}</span>
+      </div>
+      <div class="title s-sub">
+        <span class="solid a-rise" style="--d:.46s">${up(c.l2a)}</span>
+        <span class="hollow a-rise" style="--d:.54s">${up(c.l2b)}</span>
+      </div>
+      <div class="cards dodge">${CAROUSEL.matches.map(card).join('')}</div>
+      <div class="mention dodge a-rise" style="--d:1.12s"><b>◆</b>${a.mention}</div>
+      <div class="scta dodge a-rise" style="--d:1.2s">
+        <div class="ico">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" rx="38" fill="#7c2fbe"/>
+            <ellipse cx="68" cy="28" rx="8" ry="14" fill="#fff" transform="rotate(-40 68 28)"/>
+            <ellipse cx="56" cy="42" rx="8" ry="13" fill="#fff" transform="rotate(15 56 42)"/>
+            <circle cx="70" cy="38" r="8" fill="#fff"/>
+            <circle cx="118" cy="80" r="62" fill="#fff"/>
+            <path d="M56 82 Q118 70 180 82 Q180 100 118 98 Q56 100 56 82 Z" fill="#7c2fbe"/>
+            <path d="M72 85 Q85 76 98 83 Q85 90 72 85 Z" fill="#fff"/>
+            <path d="M110 83 Q123 75 136 82 Q123 89 110 83 Z" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="tx">
+          <div class="t1">Tous les pronos dans l'app</div>
+          <div class="t2">${up(a.claim)} · Lien en bio</div>
+        </div>
+        <div class="arw"></div>
+      </div>
+    </div>
+    ${safeZones()}
+    <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
+  </div>`;
+}
+
+mount({ slides: [story()], label: () => 'Story TikTok · 1080×1920', height: 1920 });
+</script>
+</body>
+</html>

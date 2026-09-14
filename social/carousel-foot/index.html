@@ -4,141 +4,13 @@
 <meta charset="utf-8">
 <title>NinjaScores — Carrousel Foot</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="theme.css">
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   NINJASCORES · CAROUSEL FOOT
-   1080×1350 (Instagram) / 1080×1920 (TikTok & Stories)
+   Mise en page propre au carrousel. Le socle commun (décor, marque,
+   titrage, animations) est dans theme.css ; les données du jour
+   dans data.js.
    ═══════════════════════════════════════════════════════════════ */
-
-@font-face{font-family:'Archivo';src:url('assets/fonts/Archivo.ttf') format('truetype-variations');
-  font-weight:100 900;font-stretch:62% 125%;font-display:block}
-@font-face{font-family:'JBMono';src:url('assets/fonts/JetBrainsMono.ttf') format('truetype-variations');
-  font-weight:100 800;font-display:block}
-@font-face{font-family:'Jakarta';src:url('../../assets/fonts/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_KUnNSg.ttf') format('truetype');
-  font-weight:800;font-display:swap}
-
-:root{
-  --W:1080px; --H:1350px;
-  --pad:72px;
-
-  --ink:#05040B;
-  --ink-2:#0B0818;
-  --violet:#7C3AED;
-  --violet-hi:#A855F7;
-  --violet-lo:#4C1D95;
-  --amber:#FFB020;
-  --amber-hi:#FFD166;
-  --paper:#FFFFFF;
-  --mute:rgba(255,255,255,.44);
-  --mute-2:rgba(255,255,255,.22);
-  --hair:rgba(255,255,255,.12);
-
-  --team:#7C3AED;      /* surchargé par slide */
-  --team-2:#A855F7;
-}
-
-*{margin:0;padding:0;box-sizing:border-box}
-html{background:#0d0d11}
-body{font-family:'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-
-/* ── Plan de travail (aperçu écran) ───────────────────────────── */
-.stage{display:flex;flex-direction:column;align-items:center;gap:34px;padding:40px 16px 120px}
-.board{position:relative;width:var(--W);height:var(--H);flex:none;
-  transform-origin:top center;transform:scale(var(--z,1));
-  margin-bottom:calc((var(--z,1) - 1) * var(--H))}
-.tag{position:absolute;left:0;top:-30px;font:600 14px/1 'JBMono',monospace;letter-spacing:.18em;
-  color:rgba(255,255,255,.34);text-transform:uppercase}
-
-/* ── Slide ────────────────────────────────────────────────────── */
-.slide{position:relative;width:var(--W);height:var(--H);overflow:hidden;background:var(--ink);
-  color:#fff;isolation:isolate;border-radius:0}
-
-/* ── Fonds : lumière volumétrique + décor technique ───────────── */
-.bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.bg .glow-top{position:absolute;left:50%;top:-48%;width:150%;aspect-ratio:1;transform:translateX(-50%);
-  background:radial-gradient(circle at 50% 50%,
-    rgba(124,58,237,.62) 0%, rgba(109,40,217,.30) 24%, rgba(76,29,149,.12) 42%, transparent 64%);
-  filter:blur(10px);opacity:.92}
-.bg .glow-team{position:absolute;left:-22%;bottom:-30%;width:96%;aspect-ratio:1;
-  background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--team) 55%, transparent) 0%,
-    color-mix(in srgb, var(--team) 18%, transparent) 34%, transparent 64%);
-  filter:blur(30px);opacity:.55}
-.bg .glow-team.right{left:auto;right:-24%;bottom:auto;top:14%;
-  background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--team-2) 48%, transparent) 0%,
-    color-mix(in srgb, var(--team-2) 14%, transparent) 36%, transparent 64%);opacity:.4}
-
-/* arcs façon terrain + cercles concentriques */
-.bg .arcs{position:absolute;inset:0;opacity:.5}
-.bg .arcs svg{width:100%;height:100%;display:block}
-
-/* stries diagonales (motion blur AE) */
-.bg .streaks{position:absolute;inset:-30%;
-  background:repeating-linear-gradient(114deg,
-    rgba(255,255,255,.055) 0px, rgba(255,255,255,.055) 1px,
-    transparent 1px, transparent 168px);
-  mask-image:radial-gradient(120% 80% at 20% 10%, #000 0%, transparent 72%)}
-.bg .streaks.b{background:repeating-linear-gradient(114deg,
-    rgba(168,85,247,.10) 0px, rgba(168,85,247,.10) 2px,
-    transparent 2px, transparent 96px);
-  mask-image:radial-gradient(90% 70% at 95% 90%, #000 0%, transparent 70%)}
-
-/* dégradé de sol + vignette + grain */
-.bg .floor{position:absolute;inset:0;
-  background:linear-gradient(180deg, transparent 34%, rgba(5,4,11,.62) 72%, #05040B 100%)}
-.vignette{position:absolute;inset:0;z-index:6;pointer-events:none;
-  background:radial-gradient(130% 96% at 50% 42%, transparent 44%, rgba(0,0,0,.55) 100%)}
-.grain{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
-  background-image:url('assets/noise.png');background-size:180px 180px}
-.scan{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.14;
-  background:repeating-linear-gradient(180deg, rgba(255,255,255,.06) 0px, rgba(255,255,255,.06) 1px, transparent 1px, transparent 4px)}
-
-/* balayage lumineux */
-.sweep{position:absolute;top:-20%;left:-60%;width:46%;height:150%;z-index:5;pointer-events:none;
-  transform:rotate(14deg);opacity:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent)}
-
-/* ── Contenu ──────────────────────────────────────────────────── */
-.inner{position:relative;z-index:4;height:100%;padding:var(--pad);display:flex;flex-direction:column}
-
-/* Entête */
-.head{display:flex;align-items:center;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:20px}
-.brand .mark{position:relative;width:66px;height:66px;flex:none;border-radius:17px;overflow:hidden;
-  box-shadow:0 0 0 1px rgba(255,255,255,.16), 0 10px 34px rgba(124,58,237,.62), 0 0 60px rgba(168,85,247,.32)}
-.brand .mark svg{width:100%;height:100%;display:block}
-.brand .word{font:900 27px/1 'Archivo';font-stretch:108%;letter-spacing:.30em}
-.brand .word b{font-weight:900;color:#fff}
-.brand .word span{color:rgba(255,255,255,.46)}
-.date{font:600 21px/1 'JBMono',monospace;letter-spacing:.14em;color:rgba(255,255,255,.78)}
-
-/* Pied : progression */
-.foot{margin-top:auto;display:flex;align-items:center;gap:26px;padding-top:28px}
-.bars{display:flex;gap:12px;flex:1}
-.bars i{display:block;height:4px;flex:1;border-radius:3px;background:rgba(255,255,255,.16)}
-.bars i.on{background:linear-gradient(90deg,#fff,rgba(255,255,255,.72));box-shadow:0 0 16px rgba(255,255,255,.5)}
-.pagenum{font:700 22px/1 'JBMono',monospace;letter-spacing:.20em;color:rgba(255,255,255,.82)}
-.pagenum s{text-decoration:none;color:rgba(255,255,255,.3);margin:0 6px}
-
-/* Sur-titre */
-.eyebrow{display:flex;align-items:center;gap:22px;font:700 21px/1 'JBMono',monospace;
-  letter-spacing:.42em;color:rgba(255,255,255,.9);text-transform:uppercase;white-space:nowrap}
-.eyebrow::before{content:'';width:62px;height:3px;flex:none;border-radius:2px;
-  background:linear-gradient(90deg,var(--violet-hi),rgba(168,85,247,.1))}
-
-/* ═══ Titrage ═══ */
-.title{position:relative;font-stretch:125%;font-weight:900;line-height:.84;letter-spacing:-.028em;
-  text-transform:uppercase;white-space:nowrap;width:max-content;max-width:none}
-.title .solid{display:block;
-  background:linear-gradient(178deg,#fff 42%,#E6DEFF 76%,#BFAEEE 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 14px 46px rgba(124,58,237,.55))}
-.title .hollow{display:block;color:transparent;-webkit-text-stroke:2.4px rgba(255,255,255,.58)}
-
-/* écho fantôme (motion-trail) */
-.echo{position:absolute;left:0;top:0;width:100%;pointer-events:none;z-index:-1}
-.echo b{position:absolute;left:0;top:0;display:block;font-size:1em;font-weight:900;font-stretch:125%;
-  line-height:.84;letter-spacing:-.028em;text-transform:uppercase;color:transparent;white-space:nowrap;
-  -webkit-text-stroke:1.6px rgba(168,85,247,.30);transform-origin:left center}
 
 /* ═══ SLIDE 1 — liste des matchs ═══ */
 .cover-title{margin-top:70px;font-size:200px}
@@ -308,25 +180,6 @@ body{font-family:'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialias
 .phone .glare{position:absolute;inset:0;z-index:4;pointer-events:none;
   background:linear-gradient(122deg, rgba(255,255,255,.22) 0%, transparent 30%, transparent 72%, rgba(255,255,255,.10) 100%)}
 
-/* ── Animations (aperçu) ──────────────────────────────────────── */
-@keyframes riseIn{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
-@keyframes wipeIn{from{opacity:0;clip-path:inset(0 100% 0 0);transform:translateY(18px)}
-  to{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
-@keyframes blurIn{from{opacity:0;filter:blur(22px);transform:scale(1.09)}to{opacity:1;filter:blur(0);transform:none}}
-@keyframes popIn{from{opacity:0;transform:scale(.82) translateY(24px)}
-  60%{opacity:1;transform:scale(1.035) translateY(0)} to{opacity:1;transform:none}}
-@keyframes lineIn{from{width:0}to{width:100%}}
-@keyframes sweepGo{0%{opacity:0;left:-60%}18%{opacity:1}100%{opacity:0;left:120%}}
-@keyframes echoOut{from{opacity:0;transform:scale(1)}to{opacity:1;transform:var(--tf)}}
-
-.play .a-rise{animation:riseIn .82s cubic-bezier(.16,.84,.3,1) both;animation-delay:var(--d,0s)}
-.play .a-wipe{animation:wipeIn .92s cubic-bezier(.16,.84,.3,1) both;animation-delay:var(--d,0s)}
-.play .a-blur{animation:blurIn 1.05s cubic-bezier(.16,.84,.3,1) both;animation-delay:var(--d,0s)}
-.play .a-pop{animation:popIn .86s cubic-bezier(.2,.9,.25,1.05) both;animation-delay:var(--d,0s)}
-.play .fx::after{animation:lineIn .7s cubic-bezier(.16,.84,.3,1) both;animation-delay:var(--d,0s)}
-.play .sweep{animation:sweepGo 1.9s cubic-bezier(.3,.1,.2,1) .35s both}
-.play .echo b{animation:echoOut 1s cubic-bezier(.16,.84,.3,1) both;animation-delay:var(--d,0s)}
-
 /* ── Variante 9:16 (TikTok / Stories) ─────────────────────────
    Même grille, mais on redonne de l'ampleur là où la hauteur s'ajoute. */
 :root[data-fmt="story"] .bg .glow-top{top:-34%;width:172%}
@@ -356,19 +209,6 @@ body{font-family:'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialias
 :root[data-fmt="story"] .store{padding:24px 34px}
 :root[data-fmt="story"] .search{margin-top:74px;padding:30px 30px}
 :root[data-fmt="story"] .phone{height:70%}
-
-/* ── Barre d'outils ───────────────────────────────────────────── */
-.bar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99;display:flex;gap:10px;
-  padding:10px;border-radius:18px;background:rgba(14,12,24,.92);border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 20px 50px rgba(0,0,0,.6);backdrop-filter:blur(10px)}
-.bar button{font:700 13px/1 'JBMono',monospace;letter-spacing:.1em;color:#fff;background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:11px 15px;cursor:pointer;text-transform:uppercase}
-.bar button:hover{background:rgba(124,58,237,.5)}
-.bar button.on{background:var(--violet);border-color:var(--violet-hi)}
-body.export .bar,body.export .tag{display:none}
-body.export{background:#000}
-body.export .stage{gap:0;padding:0}
-body.export .board{transform:none;margin:0}
 </style>
 </head>
 <body>
@@ -380,187 +220,14 @@ body.export .board{transform:none;margin:0}
   <button id="btn-zoom">Zoom 100%</button>
 </div>
 
+<script src="data.js"></script>
+<script src="common.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════════════════════════════
-   ①  LES DONNÉES — c'est LE SEUL bloc à modifier chaque jour.
-       Écussons  → assets/crests/*.png   (ou une URL https://…)
-       Ligues    → assets/leagues/*.png
-       color     → couleur du club, elle pilote le halo derrière l'écusson
-       plate:'light' → écusson très sombre : on le pose sur un disque blanc
-       light: true   → logo de ligue très sombre : badge sur fond blanc
-   ═══════════════════════════════════════════════════════════════════════════ */
-const CAROUSEL = {
-
-  date: 'LUN 14.09',
-
-  /* ── Slide 1 ────────────────────────────────────────────────── */
-  cover: {
-    eyebrow: 'Mes pronos du jour',
-    l1: '5 pronos',
-    l2a: 'Pour',
-    l2b: 'ce soir',
-    swipe: 'Glisse',
-  },
-
-  /* ── Slides 2 → 6 ───────────────────────────────────────────── */
-  matches: [
-    {
-      league: { name: 'Serie A', country: 'Italie', badge: 'assets/leagues/serie-a.png' },
-      time: '18:30',
-      home: { name: 'Torino',  crest: 'assets/crests/torino.png', color: '#A32020' },
-      away: { name: 'AS Roma', crest: 'assets/crests/roma.png',   color: '#C2394F' },
-      prono: ['Victoire', 'de la Roma'],
-      cote: '1.55',
-      book: 'Bet365',
-      freq: '90%',
-      note: 9,
-    },
-    {
-      league: { name: 'Serie A', country: 'Italie', badge: 'assets/leagues/serie-a.png' },
-      time: '20:45',
-      home: { name: 'Inter',   crest: 'assets/crests/inter.png',   color: '#2C46E8' },
-      away: { name: 'Udinese', crest: 'assets/crests/udinese.png', color: '#98A3B5' },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.62',
-      book: 'Bet365',
-      freq: '80%',
-      note: 8,
-    },
-    {
-      league: { name: 'Ligue 1', country: 'France', badge: 'assets/leagues/ligue-1.png' },
-      time: '20:45',
-      home: { name: 'Lens', crest: 'assets/crests/lens.png', color: '#E01A33' },
-      away: { name: 'Metz', crest: 'assets/crests/metz.png', color: '#9E1B2A', plate: 'light' },
-      prono: ['Victoire', 'de Lens'],
-      cote: '1.48',
-      book: 'Bet365',
-      freq: '90%',
-      note: 9,
-    },
-    {
-      league: { name: 'Premier League', country: 'Angleterre', badge: 'assets/leagues/premier-league.png', light: true },
-      time: '21:00',
-      home: { name: 'Leeds',     crest: 'assets/crests/leeds.png',     color: '#2C5FC8' },
-      away: { name: 'Newcastle', crest: 'assets/crests/newcastle.png', color: '#AEBACA' },
-      prono: ['Newcastle', 'ou match nul'],
-      cote: '1.57',
-      book: 'Bet365',
-      freq: '90%',
-      note: 9,
-    },
-    {
-      league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
-      time: '21:00',
-      home: { name: 'Villarreal', crest: 'assets/crests/villarreal.png', color: '#FFD64D' },
-      away: { name: 'Real Betis', crest: 'assets/crests/betis.png',      color: '#00B554' },
-      prono: ['Real Betis', 'ou match nul'],
-      cote: '1.82',
-      book: 'Bet365',
-      freq: '90%',
-      note: 9,
-    },
-  ],
-
-  /* ── Slide 7 ────────────────────────────────────────────────── */
-  cta: {
-    eyebrow: 'Tous les matchs, tous les pronos',
-    l1: 'En live',
-    l2a: 'sur',
-    l2b: "l'app",
-    search: 'NinjaScores : Scores en direct',
-    claim: 'Gratuit · sans abonnement',
-    site: 'ninjascores.com',
-    more: '+ 38 autres matchs aujourd\'hui',
-  },
-};
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ②  LE RENDU — normalement, rien à toucher en dessous.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* Les 7 slides du carrousel. */
 const TOTAL = CAROUSEL.matches.length + 2;
-const up = s => String(s).toUpperCase();
 
-/* Décor de fond : lumière volumétrique, arcs de terrain, stries, grain */
-function bg(c1, c2) {
-  return `
-  <div class="bg" style="--team:${c1};--team-2:${c2}">
-    <div class="glow-top"></div>
-    <div class="glow-team"></div>
-    <div class="glow-team right"></div>
-    <div class="arcs">
-      <svg viewBox="0 0 1080 1350" preserveAspectRatio="xMidYMid slice" fill="none">
-        <g stroke="rgba(255,255,255,.09)" stroke-width="1.4">
-          <circle cx="540" cy="600" r="300"/><circle cx="540" cy="600" r="392"/>
-          <circle cx="540" cy="600" r="486" stroke="rgba(255,255,255,.06)"/>
-          <circle cx="540" cy="600" r="592" stroke="rgba(255,255,255,.04)"/>
-        </g>
-        <g stroke="rgba(168,85,247,.22)" stroke-width="1.4">
-          <circle cx="540" cy="600" r="300" stroke-dasharray="3 22"/>
-          <path d="M96 250 h190 M96 250 v104"/>
-          <path d="M984 1100 h-190 M984 1100 v-104"/>
-        </g>
-        <g stroke="rgba(255,255,255,.07)" stroke-width="1.2">
-          <path d="M-40 1010 L1120 742"/><path d="M-40 1090 L1120 822"/>
-          <path d="M-40 214 L1120 -54"/>
-        </g>
-      </svg>
-    </div>
-    <div class="streaks"></div><div class="streaks b"></div>
-    <div class="floor"></div>
-  </div>`;
-}
-
-/* Marque + date */
-function head() {
-  return `
-  <div class="head">
-    <div class="brand">
-      <div class="mark a-pop" style="--d:.05s">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <rect width="200" height="200" rx="38" fill="#7c2fbe"/>
-          <ellipse cx="68" cy="28" rx="8" ry="14" fill="#fff" transform="rotate(-40 68 28)"/>
-          <ellipse cx="56" cy="42" rx="8" ry="13" fill="#fff" transform="rotate(15 56 42)"/>
-          <circle cx="70" cy="38" r="8" fill="#fff"/>
-          <circle cx="118" cy="80" r="62" fill="#fff"/>
-          <path d="M56 82 Q118 70 180 82 Q180 100 118 98 Q56 100 56 82 Z" fill="#7c2fbe"/>
-          <path d="M72 85 Q85 76 98 83 Q85 90 72 85 Z" fill="#fff"/>
-          <path d="M110 83 Q123 75 136 82 Q123 89 110 83 Z" fill="#fff"/>
-          <text x="10" y="168" font-family="Archivo, Arial Black, sans-serif" font-weight="900"
-                font-size="80" fill="#fff" letter-spacing="-2">N</text>
-          <text x="12" y="190" font-family="Archivo, Arial, sans-serif" font-weight="700" font-size="17" fill="#fff">LIVE</text>
-          <circle cx="68" cy="185" r="3.5" fill="#d8a0ff"/><circle cx="78" cy="185" r="3.5" fill="#d8a0ff"/>
-          <circle cx="88" cy="185" r="3.5" fill="#d8a0ff"/>
-          <text x="96" y="190" font-family="Archivo, Arial, sans-serif" font-weight="700" font-size="17" fill="#fff">SCORES</text>
-        </svg>
-      </div>
-      <div class="word a-rise" style="--d:.12s"><b>NINJA</b><span>SCORES</span></div>
-    </div>
-    <div class="date a-rise" style="--d:.18s">${up(CAROUSEL.date)}</div>
-  </div>`;
-}
-
-/* Pied de page : progression */
-function foot(i) {
-  const bars = Array.from({ length: TOTAL }, (_, k) =>
-    `<i class="${k === i ? 'on' : ''}"></i>`).join('');
-  const pad = n => String(n).padStart(2, '0');
-  return `
-  <div class="foot">
-    <div class="bars">${bars}</div>
-    <div class="pagenum">${pad(i + 1)}<s>/</s>${pad(TOTAL)}</div>
-  </div>`;
-}
-
-/* Titre avec traînée fantôme (motion-trail façon After Effects) */
-function echo(txt) {
-  const ghosts = [
-    { tf: 'translate(-.13em,-.08em) scale(1.10)', o: .42, d: '.18s' },
-    { tf: 'translate(-.29em,-.17em) scale(1.20)', o: .26, d: '.24s' },
-    { tf: 'translate(-.48em,-.28em) scale(1.32)', o: .15, d: '.30s' },
-  ].map(g => `<b style="--tf:${g.tf};--d:${g.d};opacity:${g.o};
-      -webkit-text-stroke:1.6px rgba(168,85,247,${g.o + .18})">${up(txt)}</b>`).join('');
-  return `<div class="echo">${ghosts}</div>`;
-}
+FIT.push(['.cover-title', 240, 60], ['.cover-sub', 124, 40],
+         ['.cta-title', 190, 50], ['.cta-sub', 118, 40]);
 
 /* ── Slide 1 : la sélection du jour ───────────────────────────── */
 function slideCover() {
@@ -594,7 +261,7 @@ function slideCover() {
       <div class="swipe a-rise" style="--d:1.15s">
         <span>${up(c.swipe)}</span><i></i><i></i><i></i><div class="arrow"></div>
       </div>
-      ${foot(0)}
+      ${foot(0, TOTAL)}
     </div>
     <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
   </div>`;
@@ -603,7 +270,6 @@ function slideCover() {
 /* ── Slides 2 → 6 : un match, un prono ────────────────────────── */
 function slideMatch(m, i) {
   const n = i + 1;
-  const pad = x => String(x).padStart(2, '0');
   const side = (t, d) => `
     <div class="side">
       <div class="disc${t.plate === 'light' ? ' lit' : ''} a-pop" style="--c:${t.color};--d:${d}s">
@@ -632,7 +298,7 @@ function slideMatch(m, i) {
           <div class="badge${m.league.light ? ' lit' : ''}"><img src="${m.league.badge}" alt=""></div>
           <div>
             <div class="t1">${up(m.league.name)}</div>
-            <div class="t2">${up(m.league.country)} · PRONO ${pad(n)}/${pad(CAROUSEL.matches.length)}</div>
+            <div class="t2">${up(m.league.country)} · PRONO ${pad2(n)}/${pad2(CAROUSEL.matches.length)}</div>
           </div>
         </div>
         <div class="kick a-rise" style="--d:.30s">
@@ -673,7 +339,7 @@ function slideMatch(m, i) {
           <div class="src">INDICATIVE · ${up(m.book)}</div>
         </div>
       </div>
-      ${foot(n)}
+      ${foot(n, TOTAL)}
     </div>
     <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
   </div>`;
@@ -749,84 +415,18 @@ function slideCta() {
           <div class="glare"></div>
         </div>
       </div>
-      ${foot(i)}
+      ${foot(i, TOTAL)}
     </div>
     <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
   </div>`;
 }
 
-/* ── Montage du plan de travail ───────────────────────────────── */
-const stage = document.getElementById('stage');
-const slides = [slideCover(), ...CAROUSEL.matches.map(slideMatch), slideCta()];
-stage.innerHTML = slides.map((html, i) => `
-  <div class="board"><div class="tag">Slide ${String(i + 1).padStart(2, '0')} / ${TOTAL}</div>${html}</div>
-`).join('');
-
-/* Les gros titres sont calés au pixel sur la largeur utile : quel que soit
-   le texte saisi dans CAROUSEL, la ligne remplit la colonne sans déborder. */
-function fitLine(el, max, min) {
-  const echoEl = el.querySelector('.echo');
-  if (echoEl) echoEl.style.display = 'none';
-  const cs = getComputedStyle(el.parentElement);
-  const avail = el.parentElement.clientWidth
-    - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  let lo = min, hi = max;
-  for (let i = 0; i < 22; i++) {
-    const mid = (lo + hi) / 2;
-    el.style.fontSize = mid + 'px';
-    if (el.getBoundingClientRect().width / (window.__z || 1) <= avail) lo = mid; else hi = mid;
-  }
-  el.style.fontSize = Math.floor(lo) + 'px';
-  if (echoEl) echoEl.style.display = '';
-}
-function fitAll() {
-  document.querySelectorAll('.cover-title').forEach(e => fitLine(e, 240, 60));
-  document.querySelectorAll('.cover-sub').forEach(e => fitLine(e, 124, 40));
-  document.querySelectorAll('.cta-title').forEach(e => fitLine(e, 190, 50));
-  document.querySelectorAll('.cta-sub').forEach(e => fitLine(e, 118, 40));
-}
-
-/* Zoom pour tenir dans la fenêtre */
-let zoom100 = false;
-function fit() {
-  const z = zoom100 ? 1 : Math.min(1, (window.innerWidth - 60) / 1080);
-  window.__z = z;
-  document.documentElement.style.setProperty('--z', z);
-}
-document.documentElement.dataset.fmt = 'ig';
-addEventListener('resize', fit); addEventListener('resize', fitAll); fit();
-fitAll();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
-
-/* Formats */
-function setFormat(h) {
-  document.documentElement.style.setProperty('--H', h + 'px');
-  document.documentElement.dataset.fmt = h === 1920 ? 'story' : 'ig';
-  document.getElementById('btn-ig').classList.toggle('on', h === 1350);
-  document.getElementById('btn-story').classList.toggle('on', h === 1920);
-}
-document.getElementById('btn-ig').onclick = () => { setFormat(1350); fitAll(); };
-document.getElementById('btn-story').onclick = () => { setFormat(1920); fitAll(); };
-document.getElementById('btn-zoom').onclick = e => {
-  zoom100 = !zoom100; e.target.classList.toggle('on', zoom100); fit();
-};
-
-/* Animations : jouées à l'entrée dans le viewport, rejouables */
-const all = [...document.querySelectorAll('.slide')];
-function play(el) { el.classList.remove('play'); void el.offsetWidth; el.classList.add('play'); }
-const params = new URLSearchParams(location.search);
-const STATIC = params.has('export');
-
-if (STATIC) {
-  document.body.classList.add('export');
-  if (params.get('format') === 'story') setFormat(1920);
-} else {
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting && !e.target.dataset.done) { e.target.dataset.done = 1; play(e.target); }
-  }), { threshold: .25 });
-  all.forEach(s => io.observe(s));
-  document.getElementById('btn-play').onclick = () => all.forEach(s => { delete s.dataset.done; play(s); });
-}
+mount({
+  slides: [slideCover(), ...CAROUSEL.matches.map(slideMatch), slideCta()],
+  label: (i, n) => `Slide ${String(i + 1).padStart(2, '0')} / ${n}`,
+  height: 1350,
+  formats: true,
+});
 </script>
 </body>
 </html>

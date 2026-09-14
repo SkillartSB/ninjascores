@@ -1,21 +1,28 @@
-# Carrousel Foot — NinjaScores
+# Visuels Foot — NinjaScores
 
-Générateur de carrousels pour Instagram et TikTok. 7 slides, pilotées par un seul
-bloc de données. Tout est local (polices, écussons, logos de ligue) : ça marche
-hors ligne et le rendu est identique d'une machine à l'autre.
+Générateur des visuels quotidiens pour Instagram et TikTok. Deux sorties,
+**une seule source de données** :
 
-```
-slide 1  →  la sélection du jour (5 matchs)
-slide 2  →  match 1  ─┐
-…                     ├─ 1 slide par match : écussons, coup d'envoi, prono, cote
-slide 6  →  match 5  ─┘
-slide 7  →  CTA « télécharge l'app »
-```
+- **`index.html`** — le carrousel, 7 slides
+  ```
+  slide 1  →  la sélection du jour (5 matchs)
+  slide 2  →  match 1  ─┐
+  …                     ├─ 1 slide par match : écussons, coup d'envoi, prono, cote
+  slide 6  →  match 5  ─┘
+  slide 7  →  CTA « télécharge l'app »
+  ```
+- **`story.html`** — la story TikTok, un visuel unique et autonome : les 5 matchs
+  y portent chacun leur prono et leur cote, puisqu'il n'y a rien à faire glisser.
+  Ses marges tiennent compte de l'interface TikTok (180 px en haut, 250 px en bas,
+  168 px à droite pour les boutons like / commentaire / partage). Le bouton
+  **Zones TikTok** de l'aperçu affiche ces repères.
+
+Tout est local (polices, écussons, logos de ligue) : ça marche hors ligne et le
+rendu est identique d'une machine à l'autre.
 
 ## Changer les matchs du jour
 
-Ouvre `index.html`, bloc **① LES DONNÉES** (tout en haut du `<script>`).
-C'est le seul endroit à toucher :
+Un seul fichier : **`data.js`**. Il alimente le carrousel *et* la story.
 
 ```js
 {
@@ -52,28 +59,37 @@ dépend alors d'aucun réseau.
 
 ## Voir le rendu
 
-Ouvre `social/carousel-foot/index.html` dans un navigateur. La barre du bas permet
-de rejouer l'animation d'entrée, de basculer 1080×1350 ↔ 1080×1920 et de zoomer
-à 100 %.
+Ouvre `index.html` ou `story.html` dans un navigateur. La barre du bas permet de
+rejouer l'animation d'entrée, de zoomer à 100 %, de basculer 1080×1350 ↔ 1080×1920
+(carrousel) et d'afficher les zones d'interface TikTok (story).
 
 ## Exporter les PNG
 
 ```bash
-npm install                                   # une seule fois (playwright)
-node social/carousel-foot/export.mjs          # 1080×1350 — carrousel Instagram
-node social/carousel-foot/export.mjs story    # 1080×1920 — TikTok / Stories
-node social/carousel-foot/export.mjs both
+npm install                                  # une seule fois (playwright)
+node social/carousel-foot/export.mjs         # tout
+node social/carousel-foot/export.mjs ig      # carrousel 1080×1350 — Instagram
+node social/carousel-foot/export.mjs 9x16    # carrousel 1080×1920 — TikTok
+node social/carousel-foot/export.mjs story   # la story 1080×1920
 ```
 
-Sortie : `social/carousel-foot/out/<format>/01.png … 07.png`, aux dimensions
+Sortie dans `out/` : `carrousel-4x5/`, `carrousel-9x16/`, `story/`. Dimensions
 exactes, animations figées sur leur état final. Le dossier `out/` n'est pas
 versionné.
+
+Le texte du post TikTok (légende, premier commentaire, réglages de publication)
+est dans `legende-tiktok.md`.
 
 ## Ce qu'il y a dans le dossier
 
 ```
-index.html              le générateur (design + données + rendu)
-export.mjs              capture des slides en PNG
+data.js                 LES DONNÉES DU JOUR — le seul fichier à modifier
+index.html              le carrousel, 7 slides
+story.html              la story TikTok, visuel unique
+theme.css               socle commun : décor, marque, titrage, animations
+common.js               briques communes : fond, entête, titres calés, montage
+export.mjs              capture des visuels en PNG
+legende-tiktok.md       la légende du post et les réglages de publication
 assets/fonts/           Archivo (titrage) · JetBrains Mono (libellés techniques)
 assets/crests/          écussons des clubs
 assets/leagues/         logos de championnats

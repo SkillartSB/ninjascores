@@ -4,8 +4,9 @@ Gabarit de légende. Les crochets `[ ]` sont les seules choses à remplacer chaq
 
 ## Visuels
 
-`out/story/01.png` → `07.png` (1080×1920), dans l'ordre.
-La 01 sert de couverture : c'est elle qui décide si les gens s'arrêtent.
+- **Story** : `out/story/01.png` — un seul visuel, tout y est.
+- **Carrousel** : `out/carrousel-9x16/01.png` → `07.png`, dans l'ordre.
+  La 01 sert de couverture : c'est elle qui décide si les gens s'arrêtent.
 
 ## Légende (à coller telle quelle)
 
