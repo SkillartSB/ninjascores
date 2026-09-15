@@ -57,8 +57,9 @@ const CAROUSEL = {
       prono: ['Moins de', '4.5 buts'],
       cote: '1.62',
       book: '',      // vide = « INDICATIVE » sans marque de paris
-      freq: '90%',
-      note: 9,
+      freq: '100%',
+      note: 10,
+      sample: "Sur les 10 derniers matchs de l'Ajax",
     },
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
