@@ -337,7 +337,7 @@ function slideMatch(m, i) {
         ${m.cote ? `<div class="r">
           <div class="k">COTE</div>
           <div class="odd">${m.cote}</div>
-          <div class="src">INDICATIVE · ${up(m.book || '')}</div>
+          <div class="src">INDICATIVE${m.book ? ' · ' + up(m.book) : ''}</div>
         </div>` : ''}
       </div>
       ${foot(n, TOTAL)}
