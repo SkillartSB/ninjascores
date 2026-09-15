@@ -55,7 +55,7 @@ const CAROUSEL = {
       home: { name: 'Ajax',      crest: 'assets/crests/ajax.png',   color: '#D2122E' },
       away: { name: 'Willem II', crest: 'assets/crests/willem.png', color: '#D8232A' },
       prono: ['Moins de', '4.5 buts'],
-      cote: '1.62',
+      cote: '1.67',
       book: '',      // vide = « INDICATIVE » sans marque de paris
       freq: '100%',
       note: 10,
