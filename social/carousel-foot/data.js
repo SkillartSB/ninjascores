@@ -25,38 +25,38 @@ const CAROUSEL = {
      Fréquences calculées sur les 10 derniers matchs réels de chaque
      équipe (marchés buts : les 2 équipes cumulées, soit 20 matchs ;
      double chance : uniquement l'équipe citée). À recouper dans l'app.
-     Les cotes sont laissées vides : elles viennent d'un bookmaker.   */
+     Cotes Bet365 relevées via /api/foot?path=odds.                   */
   matches: [
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '19:00',
       home: { name: 'Rayo',     crest: 'assets/crests/rayo.png',     color: '#E23A33' },
       away: { name: 'Espanyol', crest: 'assets/crests/espanyol.png', color: '#236BBE' },
-      prono: ['Plus de', '1.5 buts'],
-      cote: '',        // vide = la cote n'est pas affichée
-      book: 'Bet365',
-      freq: '95%',
-      note: 10,
+      prono: ['Rayo', 'ou match nul'],
+      cote: '1.36',
+      book: '',      // vide = « INDICATIVE » sans marque de paris
+      freq: '80%',
+      note: 8,
     },
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '20:00',
       home: { name: 'Alavés',  crest: 'assets/crests/alaves.png',  color: '#1A43A8' },
       away: { name: 'Valence', crest: 'assets/crests/valence.png', color: '#F0592B' },
-      prono: ['Alavés', 'ou match nul'],
-      cote: '',        // vide = la cote n'est pas affichée
-      book: 'Bet365',
-      freq: '80%',
-      note: 8,
+      prono: ['Plus de', '1.5 buts'],
+      cote: '1.36',
+      book: '',      // vide = « INDICATIVE » sans marque de paris
+      freq: '70%',
+      note: 7,
     },
     {
       league: { name: 'Eredivisie', country: 'Pays-Bas', badge: 'assets/leagues/eredivisie.png', light: true },
       time: '20:00',
       home: { name: 'Ajax',      crest: 'assets/crests/ajax.png',   color: '#D2122E' },
       away: { name: 'Willem II', crest: 'assets/crests/willem.png', color: '#D8232A' },
-      prono: ['Plus de', '1.5 buts'],
-      cote: '',        // vide = la cote n'est pas affichée
-      book: 'Bet365',
+      prono: ['Moins de', '4.5 buts'],
+      cote: '1.62',
+      book: '',      // vide = « INDICATIVE » sans marque de paris
       freq: '90%',
       note: 9,
     },
@@ -65,11 +65,11 @@ const CAROUSEL = {
       time: '21:30',
       home: { name: 'Elche',       crest: 'assets/crests/elche.png',       color: '#00A14B' },
       away: { name: 'Real Madrid', crest: 'assets/crests/real-madrid.png', color: '#D4B24A' },
-      prono: ['Real Madrid', 'ou match nul'],
-      cote: '',        // vide = la cote n'est pas affichée
-      book: 'Bet365',
-      freq: '80%',
-      note: 8,
+      prono: ['Elche marque', 'au moins 1 but'],
+      cote: '1.62',
+      book: '',      // vide = « INDICATIVE » sans marque de paris
+      freq: '90%',
+      note: 9,
     },
   ],
 
@@ -83,6 +83,6 @@ const CAROUSEL = {
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
     more: '+ 38 autres matchs aujourd\'hui',
-    mention: 'Fréquences observées sur les 10 derniers matchs',
+    mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
   },
 };
