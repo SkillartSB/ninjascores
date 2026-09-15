@@ -83,7 +83,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 38 autres matchs aujourd\'hui',
+    more: '+ 244 autres matchs aujourd\'hui',   // 248 matchs au total le 15/09 selon l'API
     mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
   },
 };
