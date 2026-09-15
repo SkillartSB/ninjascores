@@ -116,6 +116,7 @@
 .tip .kicker{display:flex;align-items:center;gap:14px;font:700 19px/1 'JBMono',monospace;
   letter-spacing:.36em;color:rgba(255,255,255,.9);text-transform:uppercase}
 .tip .kicker b{color:var(--amber-hi);font-size:15px}
+.tip .l:only-child .txt{font-size:76px}
 .tip .txt{margin-top:22px;font:900 66px/.96 'Archivo';font-stretch:112%;letter-spacing:-.02em;
   text-transform:uppercase;text-shadow:0 10px 34px rgba(28,8,64,.5)}
 .tip .r{position:relative;text-align:right;flex:none}
@@ -333,11 +334,11 @@ function slideMatch(m, i) {
           <div class="kicker"><b>◆</b> Le prono du ninja</div>
           <div class="txt">${up(m.prono[0])}<br>${up(m.prono[1] || '')}</div>
         </div>
-        <div class="r">
+        ${m.cote ? `<div class="r">
           <div class="k">COTE</div>
           <div class="odd">${m.cote}</div>
-          <div class="src">INDICATIVE · ${up(m.book)}</div>
-        </div>
+          <div class="src">INDICATIVE · ${up(m.book || '')}</div>
+        </div>` : ''}
       </div>
       ${foot(n, TOTAL)}
     </div>

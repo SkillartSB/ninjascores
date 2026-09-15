@@ -22,51 +22,54 @@ const CAROUSEL = {
   /* ── Slides 2 → 5 ───────────────────────────────────────────────
      Calendrier réel du mardi 15 septembre (jornada 6 de LaLiga,
      jouée en semaine, + Eredivisie). Horaires en heure française.
-     À COMPLÉTER depuis l'app : prono, cote, freq, note.          */
+     Fréquences calculées sur les 10 derniers matchs réels de chaque
+     équipe (marchés buts : les 2 équipes cumulées, soit 20 matchs ;
+     double chance : uniquement l'équipe citée). À recouper dans l'app.
+     Les cotes sont laissées vides : elles viennent d'un bookmaker.   */
   matches: [
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '19:00',
       home: { name: 'Rayo',     crest: 'assets/crests/rayo.png',     color: '#E23A33' },
       away: { name: 'Espanyol', crest: 'assets/crests/espanyol.png', color: '#236BBE' },
-      prono: ['À compléter', "depuis l'app"],
-      cote: '—',
+      prono: ['Plus de', '1.5 buts'],
+      cote: '',        // vide = la cote n'est pas affichée
       book: 'Bet365',
-      freq: '—',
-      note: 0,
+      freq: '95%',
+      note: 10,
     },
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '20:00',
       home: { name: 'Alavés',  crest: 'assets/crests/alaves.png',  color: '#1A43A8' },
       away: { name: 'Valence', crest: 'assets/crests/valence.png', color: '#F0592B' },
-      prono: ['À compléter', "depuis l'app"],
-      cote: '—',
+      prono: ['Alavés', 'ou match nul'],
+      cote: '',        // vide = la cote n'est pas affichée
       book: 'Bet365',
-      freq: '—',
-      note: 0,
+      freq: '80%',
+      note: 8,
     },
     {
       league: { name: 'Eredivisie', country: 'Pays-Bas', badge: 'assets/leagues/eredivisie.png', light: true },
       time: '20:00',
       home: { name: 'Ajax',      crest: 'assets/crests/ajax.png',   color: '#D2122E' },
       away: { name: 'Willem II', crest: 'assets/crests/willem.png', color: '#D8232A' },
-      prono: ['À compléter', "depuis l'app"],
-      cote: '—',
+      prono: ['Plus de', '1.5 buts'],
+      cote: '',        // vide = la cote n'est pas affichée
       book: 'Bet365',
-      freq: '—',
-      note: 0,
+      freq: '90%',
+      note: 9,
     },
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '21:30',
       home: { name: 'Elche',       crest: 'assets/crests/elche.png',       color: '#00A14B' },
       away: { name: 'Real Madrid', crest: 'assets/crests/real-madrid.png', color: '#D4B24A' },
-      prono: ['À compléter', "depuis l'app"],
-      cote: '—',
+      prono: ['Real Madrid', 'ou match nul'],
+      cote: '',        // vide = la cote n'est pas affichée
       book: 'Bet365',
-      freq: '—',
-      note: 0,
+      freq: '80%',
+      note: 8,
     },
   ],
 
@@ -80,6 +83,6 @@ const CAROUSEL = {
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
     more: '+ 38 autres matchs aujourd\'hui',
-    mention: 'Cotes indicatives · 18+ · Jouer comporte des risques',
+    mention: 'Fréquences observées sur les 10 derniers matchs',
   },
 };

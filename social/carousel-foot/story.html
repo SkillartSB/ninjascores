@@ -122,7 +122,9 @@ function card(m, i) {
       <div class="teams">${up(m.home.name)} / ${up(m.away.name)}</div>
       <div class="ptip"><b>◆</b>${m.prono.join(' ')}</div>
     </div>
-    <div class="odd"><b>${m.cote}</b><i>cote</i></div>
+    <div class="odd">${m.cote
+       ? `<b>${m.cote}</b><i>cote</i>`
+       : `<b>${m.freq}</b><i>fréquence</i>`}</div>
   </div>`;
 }
 
