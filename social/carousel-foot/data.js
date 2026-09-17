@@ -8,72 +8,84 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'MER 16.09',
+  date: 'JEU 17.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
-    eyebrow: 'Mes pronos du jour',
-    l1: '4 pronos',
+    eyebrow: 'Soirée Ligue Europa',
+    l1: '5 pronos',
     l2a: 'Pour',
     l2b: 'ce soir',
     swipe: 'Glisse',
   },
 
-  /* ── Slides 2 → 5 ───────────────────────────────────────────────
-     Mercredi 16 septembre, fin de la 6e journée de LaLiga.
-     Horaires et cotes (Bet365) relevés via /api/foot.
-     Fréquences calculées sur des historiques CONTINUS : Deportivo et
-     Racing sortent de deuxième division, leur historique a des trous,
-     donc chaque prono s'appuie sur l'équipe dont les dix derniers
-     matchs se suivent — le champ sample le dit sur la slide.      */
+  /* ── Slides 2 → 6 ───────────────────────────────────────────────
+     Jeudi 17 septembre : première journée de Ligue Europa, plus la fin
+     de la 6e journée de LaLiga. Horaires et cotes Bet365 via /api/foot.
+     Les fréquences ne comptent que les matchs de CHAMPIONNAT : la
+     source ne couvre ni la coupe d'Europe, ni la Turquie, ni la
+     Pologne. D'où les pronos adossés à l'équipe dont l'historique se
+     suit vraiment, et le champ sample qui le dit sur la slide.     */
   matches: [
     {
       league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
       time: '19:00',
-      home: { name: 'Atlético', crest: 'assets/crests/atletico.png', color: '#E03127' },
-      away: { name: 'Osasuna',  crest: 'assets/crests/osasuna.png',  color: '#1A3A7A' },
-      prono: ['Osasuna marque', 'au moins 1 but'],
+      home: { name: 'Real Betis', crest: 'assets/crests/betis.png',  color: '#00B554' },
+      away: { name: 'Getafe',     crest: 'assets/crests/getafe.png', color: '#1B54A8' },
+      prono: ['Victoire', 'du Real Betis'],
+      cote: '1.62',
+      book: '',
+      freq: '60%',
+      note: 6,
+      sample: 'Sur les 10 derniers matchs du Betis',
+    },
+    {
+      league: { name: 'Ligue Europa', country: 'UEFA', badge: 'assets/leagues/ligue-europa.png', light: true },
+      time: '21:00',
+      home: { name: 'Beşiktaş',  crest: 'assets/crests/besiktas.png',  color: '#9AA4B2' },
+      away: { name: 'Marseille', crest: 'assets/crests/marseille.png', color: '#2FAEE0' },
+      prono: ["L'OM marque", 'au moins 1 but'],
+      cote: '1.33',
+      book: '',
+      freq: '70%',
+      note: 7,
+      sample: "Sur les 10 derniers matchs de l'OM",
+    },
+    {
+      league: { name: 'Ligue Europa', country: 'UEFA', badge: 'assets/leagues/ligue-europa.png', light: true },
+      time: '21:00',
+      home: { name: 'Juventus', crest: 'assets/crests/juventus.png', color: '#8E99A8',
+               plate: 'light' },
+      away: { name: 'NEC',      crest: 'assets/crests/nec.png',      color: '#D5202E' },
+      prono: ['Moins de', '3.5 buts'],
       cote: '1.80',
       book: '',
       freq: '80%',
       note: 8,
-      sample: "Sur les 10 derniers matchs d'Osasuna",
     },
     {
-      league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
-      time: '19:00',
-      home: { name: 'Deportivo', crest: 'assets/crests/deportivo.png', color: '#1C77D4' },
-      away: { name: 'Séville',   crest: 'assets/crests/seville.png',   color: '#E02D1B' },
-      prono: ['Les deux équipes', 'marquent'],
-      cote: '1.91',
-      book: '',
-      freq: '70%',
-      note: 7,
-      sample: 'Sur les 10 derniers matchs de Séville',
-    },
-    {
-      league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
-      time: '21:30',
-      home: { name: 'Barcelone', crest: 'assets/crests/barcelone.png', color: '#A50044' },
-      away: { name: 'Racing',    crest: 'assets/crests/racing.png',    color: '#00A859' },
-      prono: ['Moins de', '5.5 buts'],
+      league: { name: 'Ligue Europa', country: 'UEFA', badge: 'assets/leagues/ligue-europa.png', light: true },
+      time: '21:00',
+      home: { name: 'Crystal Palace', crest: 'assets/crests/palace.png', color: '#1B458F' },
+      away: { name: 'Lech Poznań',    crest: 'assets/crests/lech.png',   color: '#0B6E4F' },
+      prono: ['Plus de', '2.5 buts'],
       cote: '1.53',
+      book: '',
+      freq: '80%',
+      note: 8,
+      sample: 'Sur les 10 derniers matchs de Palace',
+    },
+    {
+      league: { name: 'Ligue Europa', country: 'UEFA', badge: 'assets/leagues/ligue-europa.png', light: true },
+      time: '21:00',
+      home: { name: 'Real Sociedad', crest: 'assets/crests/sociedad.png',    color: '#1273C4' },
+      away: { name: 'Bournemouth',   crest: 'assets/crests/bournemouth.png', color: '#E01A33' },
+      prono: ['Bournemouth', 'ou match nul'],
+      cote: '1.40',
       book: '',
       freq: '90%',
       note: 9,
-      sample: 'Sur les 10 derniers matchs du Barça',
-    },
-    {
-      league: { name: 'LaLiga', country: 'Espagne', badge: 'assets/leagues/la-liga.png', light: true },
-      time: '21:30',
-      home: { name: 'Levante',  crest: 'assets/crests/levante.png',  color: '#1B4FA0' },
-      away: { name: 'Athletic', crest: 'assets/crests/athletic.png', color: '#E8322E' },
-      prono: ['Levante', 'ou match nul'],
-      cote: '1.70',
-      book: '',
-      freq: '70%',
-      note: 7,
-      sample: 'Sur les 10 derniers matchs de Levante',
+      sample: 'Sur les 10 derniers matchs de Bournemouth',
     },
   ],
 
@@ -86,7 +98,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 417 autres matchs aujourd\'hui',   // 421 matchs au total le 16/09 selon l'API
+    more: '+ 173 autres matchs aujourd\'hui',   // 178 matchs au total le 17/09 selon l'API
     mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
   },
 };
