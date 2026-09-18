@@ -43,7 +43,7 @@ const CAROUSEL = {
       home: { name: 'Monaco', crest: 'assets/crests/monaco.png', color: '#CE1126' },
       away: { name: 'Lens',   crest: 'assets/crests/lens.png',   color: '#F3D10E' },
       prono: ['Plus de', '2.5 buts'],
-      cote: '1.57',
+      cote: '1.58',   // cote relevée sur le book où le pari est placé
       book: '',
       freq: '65%',
       note: 7,
