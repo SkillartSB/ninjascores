@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'VEN 18.09',
+  date: 'SAM 19.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -20,71 +20,71 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Vendredi 18 septembre : les cinq championnats ouvrent leur
-     journée le même soir. Horaires et cotes Bet365 via /api/foot,
-     fréquences sur des historiques de championnat continus.      */
+     Samedi 19 septembre. Horaires et cotes Bet365 relevés via
+     /api/foot ; fréquences calculées sur les dix derniers matchs de
+     championnat, échantillons continus uniquement.               */
   matches: [
     {
-      league: { name: 'Bundesliga', country: 'Allemagne',
-                badge: 'assets/leagues/bundesliga.png', light: true },
-      time: '20:30',
-      home: { name: 'Bayern', crest: 'assets/crests/bayern.png', color: '#DC052D' },
-      away: { name: 'Union Berlin', crest: 'assets/crests/union-berlin.png', color: '#EFB000' },
-      prono: ['Union Berlin', 'marque un but'],
-      cote: '1.80',
+      league: { name: 'Premier League', country: 'Angleterre',
+                badge: 'assets/leagues/premier-league.png', light: true },
+      time: '16:00',
+      home: { name: 'Brighton', crest: 'assets/crests/brighton.png', color: '#0057B8' },
+      away: { name: 'Arsenal',  crest: 'assets/crests/arsenal.png',  color: '#EF0107' },
+      prono: ['Victoire', "d'Arsenal"],
+      cote: '1.70',
       book: '',
       freq: '80%',
       note: 8,
-      sample: "Sur les 10 derniers matchs d'Union",
-    },
-    {
-      league: { name: 'Ligue 1', country: 'France', badge: 'assets/leagues/ligue-1.png' },
-      time: '20:45',
-      home: { name: 'Monaco', crest: 'assets/crests/monaco.png', color: '#CE1126' },
-      away: { name: 'Lens',   crest: 'assets/crests/lens.png',   color: '#F3D10E' },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.58',   // cote relevée sur le book où le pari est placé
-      book: '',
-      freq: '65%',
-      note: 7,
+      sample: "Sur les 10 derniers matchs d'Arsenal",
     },
     {
       league: { name: 'Serie A', country: 'Italie', badge: 'assets/leagues/serie-a.png' },
-      time: '20:45',
-      home: { name: 'Monza',    crest: 'assets/crests/monza.png',    color: '#E2001A' },
-      away: { name: 'Sassuolo', crest: 'assets/crests/sassuolo.png', color: '#00A752' },
-      prono: ['Moins de', '3.5 buts'],
+      time: '18:00',
+      home: { name: 'AS Roma', crest: 'assets/crests/roma.png',  color: '#C2394F' },
+      away: { name: 'Inter',   crest: 'assets/crests/inter.png', color: '#2C46E8' },
+      prono: ['AS Roma', 'ou match nul'],
+      cote: '1.50',
+      book: '',
+      freq: '100%',
+      note: 10,
+      sample: 'Sur les 10 derniers matchs de la Roma',
+    },
+    {
+      league: { name: 'Bundesliga', country: 'Allemagne',
+                badge: 'assets/leagues/bundesliga.png', light: true },
+      time: '18:30',
+      home: { name: 'Stuttgart', crest: 'assets/crests/stuttgart.png', color: '#E32219' },
+      away: { name: 'Dortmund',  crest: 'assets/crests/dortmund.png',  color: '#FDE100' },
+      prono: ['Plus de', '2.5 buts'],
       cote: '1.40',
       book: '',
       freq: '80%',
       note: 8,
-      sample: 'Sur les 10 derniers matchs de Sassuolo',
+      sample: 'Sur les 10 derniers matchs de Stuttgart',
     },
     {
-      league: { name: 'Premier League', country: 'Angleterre',
-                badge: 'assets/leagues/premier-league.png', light: true },
-      time: '21:00',
-      home: { name: 'Brentford', crest: 'assets/crests/brentford.png', color: '#E30613' },
-      away: { name: 'Chelsea',   crest: 'assets/crests/chelsea.png',   color: '#1E56A8' },
-      prono: ['Brentford', 'ou match nul'],
-      cote: '1.57',
+      league: { name: 'Ligue 1', country: 'France', badge: 'assets/leagues/ligue-1.png' },
+      time: '20:45',
+      home: { name: 'Lyon',   crest: 'assets/crests/lyon.png',   color: '#1B4FA0' },
+      away: { name: 'Rennes', crest: 'assets/crests/rennes.png', color: '#D42A2E' },
+      prono: ['Plus de', '2.5 buts'],
+      cote: '1.53',
       book: '',
       freq: '80%',
       note: 8,
-      sample: 'Sur les 10 derniers matchs de Brentford',
     },
     {
       league: { name: 'LaLiga', country: 'Espagne',
                 badge: 'assets/leagues/la-liga.png', light: true },
       time: '21:00',
-      home: { name: 'Espanyol', crest: 'assets/crests/espanyol.png', color: '#236BBE' },
-      away: { name: 'Elche',    crest: 'assets/crests/elche.png',    color: '#00A14B' },
-      prono: ['Elche marque', 'au moins 1 but'],
-      cote: '1.44',
+      home: { name: 'Séville',   crest: 'assets/crests/seville.png',   color: '#E02D1B' },
+      away: { name: 'Barcelone', crest: 'assets/crests/barcelone.png', color: '#A50044' },
+      prono: ['Séville marque', 'au moins 1 but'],
+      cote: '1.50',
       book: '',
-      freq: '90%',
-      note: 9,
-      sample: "Sur les 10 derniers matchs d'Elche",
+      freq: '80%',
+      note: 8,
+      sample: 'Sur les 10 derniers matchs de Séville',
     },
   ],
 
@@ -97,7 +97,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 426 autres matchs aujourd\'hui',   // 431 matchs au total le 18/09 selon l'API
+    more: '+ 1548 autres matchs aujourd\'hui',   // 1553 matchs au total le 19/09 selon l'API
     mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
   },
 };
