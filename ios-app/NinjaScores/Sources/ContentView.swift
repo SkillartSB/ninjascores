@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import WebKit
 import AuthenticationServices
 import CryptoKit
@@ -22,6 +23,42 @@ final class NinjaBridge: NSObject, WKScriptMessageHandler {
         default:
             break
         }
+    }
+}
+
+// Pont JS -> natif pour les preferences qui doivent SURVIVRE a la webview.
+// La langue choisie (window.NS_SET_LANG, assets/inline/i18n.js) se perdait :
+// WebKit n'ecrit pas toujours localStorage sur le disque avant une fermeture
+// forcee, et l'app repassait alors a la langue du telephone — en anglais pour
+// l'utilisateur, d'ou « ca remet l'app en anglais tout seul » (16/09/2026).
+// On garde une copie dans UserDefaults, relue au lancement suivant et
+// reinjectee avant le premier script de la page (voir prefsScript()).
+final class PrefsBridge: NSObject, WKScriptMessageHandler {
+    static let cles = ["ns_lang"]
+
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any],
+              let cle = body["cle"] as? String,
+              PrefsBridge.cles.contains(cle) else { return }
+        if let valeur = body["valeur"] as? String, !valeur.isEmpty {
+            UserDefaults.standard.set(valeur, forKey: cle)
+        } else {
+            UserDefaults.standard.removeObject(forKey: cle)
+        }
+    }
+
+    // Script injecte au tout debut du document : window.NS_PREFS_NATIF existe
+    // donc avant i18n.js, qui s'en sert en dernier recours.
+    static func prefsScript() -> WKUserScript {
+        var paires: [String] = []
+        for cle in cles {
+            if let v = UserDefaults.standard.string(forKey: cle),
+               v.range(of: "^[A-Za-z0-9_-]{1,16}$", options: .regularExpression) != nil {
+                paires.append("\(cle):'\(v)'")
+            }
+        }
+        let js = "window.NS_PREFS_NATIF={\(paires.joined(separator: ","))};"
+        return WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true)
     }
 }
 
@@ -240,6 +277,8 @@ struct WebView: UIViewRepresentable {
         controller.add(apple, name: "ninjaAppleSignIn")
         let google = GoogleSignInBridge()
         controller.add(google, name: "ninjaGoogleSignIn")
+        controller.add(PrefsBridge(), name: "ninjaPrefs")
+        controller.addUserScript(PrefsBridge.prefsScript())
         config.userContentController = controller
 
         let webView = WKWebView(frame: .zero, configuration: config)
@@ -247,6 +286,7 @@ struct WebView: UIViewRepresentable {
         google.webView = webView
         webView.allowsBackForwardNavigationGestures = true
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         webView.load(request)
@@ -261,13 +301,66 @@ struct WebView: UIViewRepresentable {
     // fonctions que l'app utiliserait de toute facon en ouvrant l'ecran
     // Calendrier — NS_FIXTURES garde son propre cache, cet appel anticipe
     // juste le declenchement pendant que le splash est encore visible).
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         let onPageLoaded: () -> Void
         init(onPageLoaded: @escaping () -> Void) { self.onPageLoaded = onPageLoaded }
 
+        // Liens externes (CTA Telegram, bookmakers, stores). Sans uiDelegate,
+        // un target="_blank" ou un window.open() ne faisait RIEN : au doigt
+        // aucune reaction, et il fallait rester appuye pour obtenir le menu
+        // natif de WebKit (signale par l'utilisateur le 16/09/2026). On sort
+        // desormais dans Safari, et l'app garde sa page intacte.
+        private func externe(_ url: URL) -> Bool {
+            guard let hote = url.host?.lowercased() else {
+                // mailto:, tel:, tg:, itms-apps: — c'est au systeme de gerer.
+                return url.scheme != nil && url.scheme != "about"
+            }
+            return !(hote == "ninjascores.com" || hote.hasSuffix(".ninjascores.com"))
+        }
+
+        private func ouvrirDehors(_ url: URL) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            guard let url = navigationAction.request.url else { decisionHandler(.allow); return }
+            // Schemas non web (mailto:, tel:, tg:, itms-apps:) : la WKWebView
+            // ne sait pas les charger, le systeme si.
+            let web = url.scheme == "http" || url.scheme == "https" || url.scheme == "about"
+            // Un lien TOUCHE par l'utilisateur, ou un target="_blank" (pas de
+            // frame cible). Les redirections (.other) restent dans la vue :
+            // c'est par la que passent les retours OAuth Supabase/Apple, les
+            // envoyer dans Safari casserait la connexion.
+            let geste = navigationAction.navigationType == .linkActivated
+                || navigationAction.targetFrame == nil
+            if !web || (geste && externe(url)) {
+                ouvrirDehors(url)
+                decisionHandler(.cancel)
+                return
+            }
+            decisionHandler(.allow)
+        }
+
+        // window.open() et target="_blank" vers ninjascores.com : pas de
+        // nouvelle vue, on charge dans la vue existante.
+        func webView(_ webView: WKWebView,
+                     createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction,
+                     windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if let url = navigationAction.request.url {
+                if externe(url) { ouvrirDehors(url) } else { webView.load(URLRequest(url: url)) }
+            }
+            return nil
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             webView.evaluateJavaScript(
-                "window.NS_FIXTURES&&window.NS_FIXTURES(0);window.NS_FIXTURES&&window.NS_FIXTURES('live');",
+                // NS_IOS_LIENS_NATIFS : ce build sait ouvrir les liens
+                // externes (uiDelegate + decidePolicyFor). Le site coupe
+                // alors sa rustine `location.href` et laisse faire le natif.
+                "window.NS_IOS_LIENS_NATIFS=true;window.NS_FIXTURES&&window.NS_FIXTURES(0);window.NS_FIXTURES&&window.NS_FIXTURES('live');",
                 completionHandler: nil
             )
             // 1.2 : a CHAQUE chargement (1er lancement, rechargement apres connexion…)
