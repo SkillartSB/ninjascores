@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'SAM 19.09',
+  date: 'DIM 20.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -20,71 +20,71 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Samedi 19 septembre. Horaires et cotes Bet365 relevés via
-     /api/foot ; fréquences calculées sur les dix derniers matchs de
-     championnat, échantillons continus uniquement.               */
+     Dimanche 20 septembre : derby de Madrid, Classique OM – PSG et
+     Clássico portugais le même jour. Horaires et cotes Bet365 via
+     /api/foot ; fréquences sur des historiques de championnat
+     continus.                                                    */
   matches: [
+    {
+      league: { name: 'LaLiga', country: 'Espagne',
+                badge: 'assets/leagues/la-liga.png', light: true },
+      time: '16:15',
+      home: { name: 'Atlético',    crest: 'assets/crests/atletico.png',    color: '#E03127' },
+      away: { name: 'Real Madrid', crest: 'assets/crests/real-madrid.png', color: '#D4B24A' },
+      prono: ['Atlético', 'ou match nul'],
+      cote: '1.80',
+      book: '',
+      freq: '70%',
+      note: 7,
+      sample: "Sur les 10 derniers matchs de l'Atlético",
+    },
     {
       league: { name: 'Premier League', country: 'Angleterre',
                 badge: 'assets/leagues/premier-league.png', light: true },
-      time: '16:00',
-      home: { name: 'Brighton', crest: 'assets/crests/brighton.png', color: '#0057B8' },
-      away: { name: 'Arsenal',  crest: 'assets/crests/arsenal.png',  color: '#EF0107' },
-      prono: ['Victoire', "d'Arsenal"],
-      cote: '1.70',
+      time: '17:30',
+      home: { name: 'Fulham',     crest: 'assets/crests/fulham.png',     color: '#9FA8B8' },
+      away: { name: 'Man United', crest: 'assets/crests/man-united.png', color: '#DA291C' },
+      prono: ['Moins de', '3.5 buts'],
+      cote: '1.62',
       book: '',
-      freq: '80%',
-      note: 8,
-      sample: "Sur les 10 derniers matchs d'Arsenal",
+      freq: '70%',
+      note: 7,
     },
     {
       league: { name: 'Serie A', country: 'Italie', badge: 'assets/leagues/serie-a.png' },
       time: '18:00',
-      home: { name: 'AS Roma', crest: 'assets/crests/roma.png',  color: '#C2394F' },
-      away: { name: 'Inter',   crest: 'assets/crests/inter.png', color: '#2C46E8' },
-      prono: ['AS Roma', 'ou match nul'],
-      cote: '1.50',
+      home: { name: 'Juventus', crest: 'assets/crests/juventus.png', color: '#8E99A8',
+              plate: 'light' },
+      away: { name: 'Atalanta', crest: 'assets/crests/atalanta.png', color: '#2A7FD4' },
+      prono: ['Moins de', '2.5 buts'],
+      cote: '1.91',
       book: '',
-      freq: '100%',
-      note: 10,
-      sample: 'Sur les 10 derniers matchs de la Roma',
-    },
-    {
-      league: { name: 'Bundesliga', country: 'Allemagne',
-                badge: 'assets/leagues/bundesliga.png', light: true },
-      time: '18:30',
-      home: { name: 'Stuttgart', crest: 'assets/crests/stuttgart.png', color: '#E32219' },
-      away: { name: 'Dortmund',  crest: 'assets/crests/dortmund.png',  color: '#FDE100' },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.40',
-      book: '',
-      freq: '80%',
+      freq: '75%',
       note: 8,
-      sample: 'Sur les 10 derniers matchs de Stuttgart',
     },
     {
       league: { name: 'Ligue 1', country: 'France', badge: 'assets/leagues/ligue-1.png' },
       time: '20:45',
-      home: { name: 'Lyon',   crest: 'assets/crests/lyon.png',   color: '#1B4FA0' },
-      away: { name: 'Rennes', crest: 'assets/crests/rennes.png', color: '#D42A2E' },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.53',
+      home: { name: 'Marseille', crest: 'assets/crests/marseille.png', color: '#2FAEE0' },
+      away: { name: 'PSG',       crest: 'assets/crests/psg.png',       color: '#E31837' },
+      prono: ['Moins de', '4.5 buts'],
+      cote: '1.40',
       book: '',
-      freq: '80%',
-      note: 8,
+      freq: '95%',
+      note: 10,
     },
     {
-      league: { name: 'LaLiga', country: 'Espagne',
-                badge: 'assets/leagues/la-liga.png', light: true },
-      time: '21:00',
-      home: { name: 'Séville',   crest: 'assets/crests/seville.png',   color: '#E02D1B' },
-      away: { name: 'Barcelone', crest: 'assets/crests/barcelone.png', color: '#A50044' },
-      prono: ['Séville marque', 'au moins 1 but'],
-      cote: '1.50',
+      league: { name: 'Liga Portugal', country: 'Portugal',
+                badge: 'assets/leagues/liga-portugal.png' },
+      time: '21:30',
+      home: { name: 'Porto',   crest: 'assets/crests/porto.png',   color: '#0057B8' },
+      away: { name: 'Benfica', crest: 'assets/crests/benfica.png', color: '#E00000' },
+      prono: ['Benfica', 'ou match nul'],
+      cote: '1.44',
       book: '',
-      freq: '80%',
-      note: 8,
-      sample: 'Sur les 10 derniers matchs de Séville',
+      freq: '100%',
+      note: 10,
+      sample: 'Sur les 10 derniers matchs de Benfica',
     },
   ],
 
@@ -97,7 +97,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 1548 autres matchs aujourd\'hui',   // 1553 matchs au total le 19/09 selon l'API
+    more: '+ 1149 autres matchs aujourd\'hui',   // 1154 matchs au total le 20/09 selon l'API
     mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
   },
 };
