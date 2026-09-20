@@ -951,7 +951,13 @@ function ligneH2H(x) {
 }
 
 async function pageMatch(slugComplet, onglet) {
-  const id = (String(slugComplet).match(/-(\d+)$/) || [])[1];
+  // Le libelle est facultatif : /football/match/1552773/ doit marcher aussi.
+  // C'est la forme que construit l'app iOS quand une notification n'apporte
+  // que le fixtureId (NotificationRouter, ios-app/…/PushNotifications.swift)
+  // — sans ce cas, l'appui sur la notification tombait sur « page
+  // introuvable ». La redirection 301 vers la forme canonique plus bas
+  // remet ensuite l'URL complete dans la barre d'adresse.
+  const id = (String(slugComplet).match(/(?:^|-)(\d+)$/) || [])[1];
   if (!id) return null;
 
   // Onglet demande, resolu AVANT les appels : c'est lui qui decide des
