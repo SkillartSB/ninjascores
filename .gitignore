@@ -41,3 +41,7 @@ standings_api.json
 
 # sauvegardes locales, jamais versionnees
 *.bak
+.env*
+
+# Identifiants Meta (jeton client) — depot public
+ios-app/Config/Meta.xcconfig

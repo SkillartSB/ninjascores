@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		02BC49DE1C308A324AA02AD8 /* NinjaScoresWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB8BF109DC292241D1B3F3D /* NinjaScoresWidgetBundle.swift */; };
 		072A06E8F37E945378B2AFD5 /* NinjaScoresWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4AD7AEEA7CC8F686DDCF61E1 /* MetaSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F2142DBB59BD850CAD93E7 /* MetaSDK.swift */; };
 		6291E434A71C2025055E0E37 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74185B9693C9CD7C8D43159 /* ContentView.swift */; };
 		662A8BEF51D015DAFAB36C67 /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */; };
 		8DF40788BBF648A1B2A0F27D /* PushNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */; };
 		949BC28DDF9DBE9096A4E6AA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9A39CE57AC9BC4A7AE9D4FCB /* Assets.xcassets */; };
 		B40044B1DE7F702B0E0B558D /* MatchActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */; };
+		B805342401451A03DA6FEA43 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = D2BBDC1278AE9AD5D3BFD4E9 /* FacebookCore */; };
 		BE76521F8035DFF0D20C7328 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED21331FF4C7169331640772 /* SplashView.swift */; };
 		D1EF4E729A18D8A461544BFD /* NinjaScoresApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59633857A5D7E38D111458BC /* NinjaScoresApp.swift */; };
 		DFFD729ED3BC0949EF74877D /* MatchLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D2E2BEB8951362842B2B1 /* MatchLiveActivity.swift */; };
@@ -49,14 +51,27 @@
 		3E7D2E2BEB8951362842B2B1 /* MatchLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchLiveActivity.swift; sourceTree = "<group>"; };
 		59633857A5D7E38D111458BC /* NinjaScoresApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjaScoresApp.swift; sourceTree = "<group>"; };
 		5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotifications.swift; sourceTree = "<group>"; };
+		6A886EABE542BB7503240071 /* Meta.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Meta.xcconfig; path = Config/Meta.xcconfig; sourceTree = SOURCE_ROOT; };
 		7BB8BF109DC292241D1B3F3D /* NinjaScoresWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NinjaScoresWidgetBundle.swift; sourceTree = "<group>"; };
 		9A39CE57AC9BC4A7AE9D4FCB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A74185B9693C9CD7C8D43159 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C89BD4EC2E3A048ABD011681 /* NinjaScores.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NinjaScores.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2F2142DBB59BD850CAD93E7 /* MetaSDK.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MetaSDK.swift; path = ./MetaSDK.swift; sourceTree = "<group>"; };
 		D81B34AD838ABF2AF58F72F3 /* MatchActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchActivityAttributes.swift; sourceTree = "<group>"; };
 		DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NinjaScoresWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED21331FF4C7169331640772 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8FC79501847058E9B67ACC7D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B805342401451A03DA6FEA43 /* FacebookCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		018016EFD963CFB94AFF56A1 /* NinjaScoresWidget */ = {
@@ -93,6 +108,14 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		99F5EC42CC48945BC7ACF301 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				6A886EABE542BB7503240071 /* Meta.xcconfig */,
+			);
+			name = Config;
+			sourceTree = SOURCE_ROOT;
+		};
 		B54A1BF78A264AFF4BD5417B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -101,6 +124,7 @@
 				59633857A5D7E38D111458BC /* NinjaScoresApp.swift */,
 				5ECB01B6FC214EA747BBEFF5 /* PushNotifications.swift */,
 				ED21331FF4C7169331640772 /* SplashView.swift */,
+				D2F2142DBB59BD850CAD93E7 /* MetaSDK.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -121,6 +145,7 @@
 				018016EFD963CFB94AFF56A1 /* NinjaScoresWidget */,
 				3B59E281CB144EECAEFF5B46 /* Shared */,
 				E2AF07C6CD3C1EE437901627 /* Products */,
+				99F5EC42CC48945BC7ACF301 /* Config */,
 			);
 			sourceTree = "<group>";
 		};
@@ -138,8 +163,6 @@
 			dependencies = (
 			);
 			name = NinjaScoresWidgetExtension;
-			packageProductDependencies = (
-			);
 			productName = NinjaScoresWidgetExtension;
 			productReference = DA6B4C4034A7950B37B9C381 /* NinjaScoresWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -151,6 +174,7 @@
 				D7E77C6681943EEED1779068 /* Sources */,
 				D630E45DBBDD803D455F3FCB /* Resources */,
 				16D261D961334794BFCB8348 /* Embed Foundation Extensions */,
+				8FC79501847058E9B67ACC7D /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -159,6 +183,7 @@
 			);
 			name = NinjaScores;
 			packageProductDependencies = (
+				D2BBDC1278AE9AD5D3BFD4E9 /* FacebookCore */,
 			);
 			productName = NinjaScores;
 			productReference = C89BD4EC2E3A048ABD011681 /* NinjaScores.app */;
@@ -192,6 +217,9 @@
 			);
 			mainGroup = EF1AC7DB19780233482475D9;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DECA8C4284E5E749B4C52724 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E2AF07C6CD3C1EE437901627 /* Products */;
 			projectDirPath = "";
@@ -235,6 +263,7 @@
 				D1EF4E729A18D8A461544BFD /* NinjaScoresApp.swift in Sources */,
 				8DF40788BBF648A1B2A0F27D /* PushNotifications.swift in Sources */,
 				BE76521F8035DFF0D20C7328 /* SplashView.swift in Sources */,
+				4AD7AEEA7CC8F686DDCF61E1 /* MetaSDK.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +280,7 @@
 /* Begin XCBuildConfiguration section */
 		4BCD572589619E8914E27535 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A886EABE542BB7503240071 /* Meta.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = NinjaScores/NinjaScores.entitlements;
@@ -302,7 +332,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = TQ2VKDKTRL;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -316,7 +346,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -396,7 +426,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = TQ2VKDKTRL;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -416,7 +446,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -430,6 +460,7 @@
 		};
 		FA90DFB70853DE9BAE254FF2 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A886EABE542BB7503240071 /* Meta.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = NinjaScores/NinjaScores.entitlements;
@@ -477,6 +508,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DECA8C4284E5E749B4C52724 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 17.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D2BBDC1278AE9AD5D3BFD4E9 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DECA8C4284E5E749B4C52724 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B159D3D37413F2C9941EF311 /* Project object */;
 }

@@ -1,3 +1,4 @@
+import FacebookCore
 import UIKit
 import UserNotifications
 import WebKit
@@ -102,7 +103,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        MetaSDK.demarrer(application, options: launchOptions)
+        MetaSDK.demanderSuivi()
         return true
+    }
+
+    // Reouverture de l'app : Meta compte les sessions ici, pas au lancement.
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        MetaSDK.appActive()
+    }
+
+    // Retour depuis une page Facebook/Instagram (deferred deep link).
+    func application(_ app: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        ApplicationDelegate.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {

@@ -1,0 +1,12 @@
+// Identifiants Meta (SDK iOS) — MODELE VERSIONNE, sans valeur secrete.
+//
+// Copier ce fichier en « Meta.xcconfig » (meme dossier) et y coller le jeton
+// client. Meta.xcconfig est ignore par git : le depot est PUBLIC, le jeton
+// n'a donc rien a y faire, meme s'il finit de toute facon dans l'IPA.
+//
+// Ou trouver les valeurs : developers.facebook.com > NinjaScores >
+// Parametres de l'app > General (ID d'app, puis « Jeton client »).
+
+FACEBOOK_APP_ID = 1075881558632064
+FACEBOOK_CLIENT_TOKEN = A_REMPLACER
+FACEBOOK_DISPLAY_NAME = NinjaScores
