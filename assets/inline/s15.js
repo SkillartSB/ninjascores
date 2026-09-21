@@ -23,10 +23,18 @@
   }
   function tourFr(r) {
     r = String(r || '');
+    // « 1/8-finals » matchait la regle « final » et s'affichait « Finale » :
+    // un huitieme de finale annonce comme la finale du tournoi (21/09/2026).
+    var frac = /\b1\s*\/\s*(\d+)\s*-?\s*final/i.exec(r);
+    if (frac) return ({ '2': 'Demi-finale', '4': 'Quart de finale', '8': '8e de finale', '16': '16e de finale', '32': '32e de finale', '64': '64e de finale' })[frac[1]] || r;
     if (/final/i.test(r) && !/semi|quarter/i.test(r)) return 'Finale';
     if (/semi/i.test(r)) return 'Demi-finale';
     if (/quarter/i.test(r)) return 'Quart de finale';
-    var n = /(\d+)(?:st|nd|rd|th)?\s*round/i.exec(r); if (n) return n[1] + 'e tour';
+    // « Round of 16 » restait en anglais dans l'en-tete de la fiche, alors que
+    // l'onglet Tableau du meme match affichait « Huitiemes » (21/09/2026).
+    var ro = /round\s*of\s*(\d+)/i.exec(r);
+    if (ro) return ({ '128': '1er tour', '64': '2e tour', '32': '16es de finale', '16': '8es de finale', '8': 'Quart de finale', '4': 'Demi-finale', '2': 'Finale' })[ro[1]] || r;
+    var n = /(\d+)(?:st|nd|rd|th)?\s*round/i.exec(r); if (n) return n[1] + (n[1] === '1' ? 'er' : 'e') + ' tour';
     if (/qualif/i.test(r)) return 'Qualifications';
     return r.replace(/^(ATP|WTA)\s+[^-]+-\s*/i, '');
   }
@@ -378,7 +386,10 @@
         var servA = g.player_served === 'First Player';
         var avant = { a: jeuxA, b: jeuxB };
         var gagnant = g.serve_winner === 'First Player' ? 'a' : g.serve_winner === 'Second Player' ? 'b' : null;
-        var tb = avant.a >= 6 && avant.b >= 6;
+        // Le serveur marque le jeu decisif (`tie_break`) : sans le lire, on le
+        // devinait au score (6-6), ce qui rate les super tie-breaks joues a la
+        // place du 3e set — leurs points etaient alors tous rejetes.
+        var tb = !!g.tie_break || (avant.a >= 6 && avant.b >= 6);
         // Points repetes (21/09/2026) : le flux renvoie la sequence brute, avec
         // des retours en arriere — « 40-0, 40-15, 40-0, 40-15, 40-0, 40-15 »
         // pour un seul jeu. Un point ne peut que faire avancer le score : on
@@ -706,9 +717,14 @@
       ajouter(nomFav + ' gagne', fav.x + '/' + fav.n + ' — ' + fav.n + ' derniers matchs', favCote, fav.x, fav.n);
       // Un seul vainqueur propose (le favori de nos indicateurs) : pas de picks contradictoires.
       var f1s = favA ? freq(LA, EVENEMENTS[1]) : freq(LB, EVENEMENTS[1]); ajouter(nomFav + ' gagne le 1er set', f1s.x + '/' + f1s.n + ' — ' + f1s.n + ' derniers matchs', favA ? s1 : s2, f1s.x, f1s.n);
-      var f3 = fusion(EVENEMENTS[2]); ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — ' + echantillon + ' de chaque joueur', over25, f3.x, f3.n);
-      var f2 = fusion(EVENEMENTS[3]); ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — ' + echantillon + ' de chaque joueur', under25, f2.x, f2.n);
-      if (ligneG) {
+      // Grand Chelem masculin : le match se joue en 3 sets gagnants, donc
+      // « moins de 2,5 sets » est arithmetiquement impossible — et la forme
+      // des joueurs, elle, vient de tournois en 2 sets gagnants. On ne publie
+      // ni les sets ni les jeux sur ces matchs (21/09/2026).
+      var bo5 = (tx.cat === 'GS' && circuit === 'ATP');
+      var f3 = fusion(EVENEMENTS[2]); if (!bo5) ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — ' + echantillon + ' de chaque joueur', over25, f3.x, f3.n);
+      var f2 = fusion(EVENEMENTS[3]); if (!bo5) ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — ' + echantillon + ' de chaque joueur', under25, f2.x, f2.n);
+      if (ligneG && !bo5) {
         var evG = { f: function (m) { return m.jeux > parseFloat(ligneG); } }, evGm = { f: function (m) { return m.nbSets && m.jeux < parseFloat(ligneG); } };
         var fg = fusion(evG); ajouter('Plus de ' + ligneG.replace('.', ',') + ' jeux', fg.x + '/' + fg.n + ' — ' + echantillon + ' de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Over'), fg.x, fg.n);
         var fgm = fusion(evGm); ajouter('Moins de ' + ligneG.replace('.', ',') + ' jeux', fgm.x + '/' + fgm.n + ' — ' + echantillon + ' de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Under'), fgm.x, fgm.n);

@@ -53,6 +53,20 @@
     return sets.join(',');
   }
 
+  // Le fournisseur parle anglais (« Set 2 », « Interrupted », « Break Time ») et
+  // ce libelle se retrouve tel quel dans la ligne du calendrier, sur la carte
+  // « Le Match du Ninja » et dans le bandeau des favoris (21/09/2026).
+  function periodeFr(brut, jeu) {
+    var st = String(brut || '');
+    var libelle = /interrupt|delay|suspend/i.test(st) ? 'Interrompu'
+      : /break\s*time/i.test(st) ? 'Pause'
+      : /retired/i.test(st) ? 'Abandon'
+      : /walkover|w\.?o\.?/i.test(st) ? 'Forfait'
+      : /cancel/i.test(st) ? 'Annulé'
+      : /postpon/i.test(st) ? 'Reporté'
+      : (/^set\s*\d/i.test(st) ? st.replace(/^set/i, 'Set') : st);
+    return libelle + (jeu && jeu !== '-' ? ' · ' + jeu : '');
+  }
   function statutDe(x) {
     var st = String(x.event_status || '');
     if (!st) return 'upcoming';
@@ -79,7 +93,7 @@
       homeTeam: entete + ': ' + (x.event_first_player || '?'),
       awayTeam: x.event_second_player || '?',
       apiScore: scoreDe(x),
-      apiPeriod: statut === 'live' ? (x.event_status + (x.event_game_result && x.event_game_result !== '-' ? ' · ' + x.event_game_result : '')) : undefined,
+      apiPeriod: statut === 'live' ? periodeFr(x.event_status, x.event_game_result) : undefined,
       apiTier: TIER[cat] || 4,
       startDate: x.event_date + 'T' + heure + ':00Z',
       status: statut,
@@ -226,7 +240,7 @@
   function entreeFavori(x) {
     var st = statutDe(x), sg = setsGagnes(x);
     return { sport: 'tennis', status: st, homeScore: sg[0], awayScore: sg[1], minute: null, apiScore: scoreDe(x),
-      tennisPeriode: st === 'live' ? (x.event_status + (x.event_game_result && x.event_game_result !== '-' ? ' \u00b7 ' + x.event_game_result : '')) : null,
+      tennisPeriode: st === 'live' ? periodeFr(x.event_status, x.event_game_result) : null,
       homeTeam: x.event_first_player, awayTeam: x.event_second_player };
   }
   window.NS_FAV_LIVE_TENNIS = function (favoris) {
@@ -236,13 +250,13 @@
       (favoris || []).forEach(function (m) {
         var k = String(m.eventId || (m.tennis && m.tennis.cle) || '');
         if (!k) return;
-        if (parCle[k]) { out[m.eventId] = entreeFavori(parCle[k]); return; }
+        if (parCle[k]) { out[k] = entreeFavori(parCle[k]); return; }
         // Pas en direct : si le match a du commencer, on lit son etat (get_fixtures, cache 5 min).
         var debut = m.startDate ? new Date(m.startDate).getTime() : 0;
         if (debut && Date.now() > debut - 5 * 60000) aFaire.push([m, k]);
       });
       return Promise.all(aFaire.map(function (p) {
-        return api('method=get_fixtures&match_key=' + p[1]).then(function (r) { if (r && r[0]) out[p[0].eventId] = entreeFavori(r[0]); });
+        return api('method=get_fixtures&match_key=' + p[1]).then(function (r) { if (r && r[0]) out[p[1]] = entreeFavori(r[0]); });
       })).then(function () { return out; });
     });
   };
@@ -303,7 +317,10 @@
     // pour ouvrir une fiche depuis une URL ou une notification — le repli de
     // NS_MATCH_PAR_ID (s6.js) passe par ici quand le foot ne connait pas l'id.
     parId: function (id) {
-      return Promise.all([api('method=get_fixtures&match_key=' + id + '&detail=1'), tournois()])
+      // paysJoueurs() alimente la table des drapeaux : sans elle, un match
+      // ouvert par son lien ou par une notification n'avait aucun drapeau,
+      // alors que le meme match en avait depuis le calendrier (21/09/2026).
+      return Promise.all([api('method=get_fixtures&match_key=' + id + '&detail=1'), tournois(), paysJoueurs()])
         .then(function (r) {
           var x = (r[0] || [])[0];
           if (!x) return null;

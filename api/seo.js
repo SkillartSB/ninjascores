@@ -1683,9 +1683,18 @@ async function pageTennis() {
   // et noieraient les affiches du jour.
   const simples = matchs.filter((x) => CIRCUIT_SEO[x.event_type_type]);
   const nomTournoi = (x) => String(x.tournament_name || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim();
+  // « 7.14 » = 7 jeux et 14 points de jeu decisif : la notation du tennis
+  // l'ecrit « 7-6(12) », pas « 7.14-6.12 » — et c'est ce que Google indexe.
   const score = (x) => (x.scores || []).map((s) => {
-    const a = s.score_first, b = s.score_second;
-    return (a == null || a === '' || b == null || b === '') ? null : a + '-' + b;
+    const a = String(s.score_first == null ? '' : s.score_first), b = String(s.score_second == null ? '' : s.score_second);
+    if (!a || !b) return null;
+    const jeux = (v) => parseInt(v, 10) || 0;
+    const pts = (v) => { const m = /^\d+\.(\d+)$/.exec(v); return m ? +m[1] : null; };
+    const ja = jeux(a), jb = jeux(b), pa = pts(a), pb = pts(b);
+    // Les points s'affichent du cote du perdant du set.
+    if (ja > jb && pb != null) return ja + '-' + jb + '(' + pb + ')';
+    if (jb > ja && pa != null) return ja + '(' + pa + ')-' + jb;
+    return ja + '-' + jb;
   }).filter(Boolean).join(', ');
 
   const rang = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };

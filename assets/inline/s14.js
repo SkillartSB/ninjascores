@@ -92,10 +92,14 @@
   function sets(m) { return String(m.apiScore || '').split(',').filter(Boolean).map(function (s) { return s.split('-'); }); }
   function tourCourt(m) {
     var r = String((m.tennis && m.tennis.tour) || '');
+    // « 1/8-finals » matchait la regle « final » et s'affichait « Finale » :
+    // un huitieme de finale annonce comme la finale du tournoi (21/09/2026).
+    var frac = /\b1\s*\/\s*(\d+)\s*-?\s*final/i.exec(r);
+    if (frac) return ({ '2': 'Demi-finale', '4': 'Quart de finale', '8': '8e de finale', '16': '16e de finale', '32': '32e de finale', '64': '64e de finale' })[frac[1]] || r;
     if (/final/i.test(r) && !/semi|quarter/i.test(r)) return 'Finale';
     if (/semi/i.test(r)) return 'Demi-finale';
     if (/quarter/i.test(r)) return 'Quart de finale';
-    var n = /(\d+)(?:st|nd|rd|th)?\s*round/i.exec(r); if (n) return n[1] + 'e tour';
+    var n = /(\d+)(?:st|nd|rd|th)?\s*round/i.exec(r); if (n) return n[1] + (n[1] === '1' ? 'er' : 'e') + ' tour';
     if (/qualif/i.test(r)) return 'Qualifications';
     return '';
   }

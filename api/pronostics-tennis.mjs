@@ -170,12 +170,16 @@ export async function pronosTennis(cle, jour) {
     const s1 = meilleure(mk['Home/Away (1st Set)'] && mk['Home/Away (1st Set)'][favA ? 'Home' : 'Away']);
     ajouter(nomFav + ' gagne le 1er set', s1, freq(favA ? LA : LB, (r) => r.premierSet === true));
     const fusion = (f) => { const a = freq(LAs, f), b = freq(LBs, f); return { x: a.x + b.x, n: a.n + b.n, r: (a.n + b.n) ? (a.x + b.x) / (a.n + b.n) : 0 }; };
-    ajouter('Plus de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Over'), fusion((r) => r.nbSets >= 3));
-    ajouter('Moins de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Under'), fusion((r) => r.nbSets === 2));
+    // Grand Chelem masculin : 3 sets gagnants. « Moins de 2,5 sets » y est
+    // impossible, et la forme des joueurs vient de tournois en 2 sets gagnants
+    // — la frequence n'a aucun sens sur ces marches.
+    const bo5 = (m.t.cat === 'GS' && m.circuit === 'ATP');
+    if (!bo5) ajouter('Plus de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Over'), fusion((r) => r.nbSets >= 3));
+    if (!bo5) ajouter('Moins de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Under'), fusion((r) => r.nbSets === 2));
     const mkG = mk['Over/Under by Games in Match'];
     const lignes = Object.keys((mkG && mkG['Over/Under by Games in Match Over']) || {}).filter((l) => /\.5$/.test(l)).sort((a, b) => a - b);
     const ligne = lignes.find((l) => Math.abs(l - 21.5) < 1) || lignes[Math.floor(lignes.length / 2)];
-    if (ligne) {
+    if (ligne && !bo5) {
       ajouter('Plus de ' + ligne.replace('.', ',') + ' jeux', meilleureOU(mkG, 'Over/Under by Games in Match', ligne, 'Over'), fusion((r) => r.jeux > parseFloat(ligne)));
       ajouter('Moins de ' + ligne.replace('.', ',') + ' jeux', meilleureOU(mkG, 'Over/Under by Games in Match', ligne, 'Under'), fusion((r) => r.nbSets && r.jeux < parseFloat(ligne)));
     }
