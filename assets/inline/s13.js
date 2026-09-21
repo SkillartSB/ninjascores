@@ -134,6 +134,28 @@
     };
   })();
 
+  // Le titre de l'onglet suit le sport : le rendu serveur (api/seo.js) ne sert
+  // que les robots, un visiteur en mode tennis avait « Resultats de foot en
+  // direct » dans son onglet et dans ses favoris.
+  (function () {
+    var TENNIS = 'Tennis en direct — scores ATP et WTA, résultats et classements | NinjaScores';
+    // Le titre foot est relu depuis le francais, pas depuis document.title :
+    // i18n.js le traduit apres nous, on rendrait le titre francais a un
+    // visiteur anglophone en revenant au foot.
+    var FOOT = 'NinjaScores — Résultats de foot en direct, classements et pronostics';
+    function majTitre(sp) {
+      try {
+        // Seules l'accueil et /tennis/ portent le sport : une fiche match ou
+        // un article a son propre titre, on n'y touche pas.
+        if (!/^\/(tennis\/?)?$/.test(location.pathname)) return;
+        var fr = sp === 'tennis' ? TENNIS : FOOT;
+        document.title = window.NS_T ? window.NS_T(fr) : fr;
+      } catch (e) {}
+    }
+    majTitre(window.NS_SPORT.get());
+    window.NS_SPORT.abonner(majTitre);
+  })();
+
   // Pilule « ⚽ Foot ▾ » + liste deroulante (Foot / Tennis). Props : t, accent, compact.
   // Le choix pilote toute l'app (accueil, calendrier, pronostics, classements : voir s14.js).
   window.NS_SelecteurSport = function (props) {

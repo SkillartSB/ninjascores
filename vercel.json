@@ -457,6 +457,28 @@
     },
     {
       "source": "/tennis/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
+      "destination": "/api/seo?tennis=1"
+    },
+    {
+      "source": "/tennis",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawl|[Ss]pider|[Ss]lurp|facebookexternalhit|[Ff]etch|WhatsApp|Telegram|Discord|LinkedIn|Twitterbot|Pinterest|Google-InspectionTool|[Pp]review).*"
+        }
+      ],
+      "destination": "/api/seo?tennis=1"
+    },
+    {
+      "source": "/tennis/",
       "destination": "/index.html"
     },
     {

@@ -1533,6 +1533,7 @@ function sitemapPays(jour) {
   const urls = [{ loc: '/', lastmod: jour, freq: 'hourly', prio: '1.0' },
                 { loc: '/football/', lastmod: jour, freq: 'daily', prio: '0.9' },
                 { loc: '/transferts/', lastmod: jour, freq: 'daily', prio: '0.7' },
+                { loc: '/tennis/', lastmod: jour, freq: 'hourly', prio: '0.9' },
                 { loc: '/pronostics/', lastmod: jour, freq: 'daily', prio: '0.8' },
                 { loc: '/pronosticos/', lastmod: jour, freq: 'daily', prio: '0.7' },
                 { loc: '/voorspellingen/', lastmod: jour, freq: 'daily', prio: '0.7' },
@@ -1655,6 +1656,100 @@ async function pageTransferts() {
   });
 }
 
+
+// ── /tennis/ ───────────────────────────────────────────────────────────────
+// Le tennis a une adresse depuis le 21/09/2026, mais pour le crawler c'etait
+// la page d'accueil football : meme titre, meme contenu. On rend ici les
+// matchs du jour et les tournois en cours cote serveur, comme /transferts/.
+//
+// Donnees : /api/tennis/ (proxy + cache Redis, le quota n'est pas touche a
+// chaque passage de robot) et /data/tennis-tournois.json.
+const CIRCUIT_SEO = { 'Atp Singles': 'ATP', 'Wta Singles': 'WTA', 'Challenger Men Singles': 'ATP Challenger', 'Challenger Women Singles': 'WTA 125' };
+const SURFACE_SEO = { 'Hard': 'dur', 'Hard (Indoor)': 'dur indoor', 'Clay': 'terre battue', 'Clay (Indoor)': 'terre battue indoor', 'Grass': 'gazon', 'Carpet': 'moquette', 'Carpet (Indoor)': 'moquette' };
+
+async function pageTennis() {
+  const jour = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' });
+  let matchs = [], tournois = {};
+  try {
+    const [rm, rt] = await Promise.all([
+      fetch(SITE + '/api/tennis/?method=get_fixtures&date_start=' + jour + '&date_stop=' + jour, { signal: AbortSignal.timeout(12000) }),
+      fetch(SITE + '/data/tennis-tournois.json', { signal: AbortSignal.timeout(8000) }),
+    ]);
+    if (rm.ok) matchs = ((await rm.json()) || {}).result || [];
+    if (rt.ok) tournois = (await rt.json()) || {};
+  } catch (e) {}
+
+  // Simples uniquement : les doubles n'interessent personne en referencement
+  // et noieraient les affiches du jour.
+  const simples = matchs.filter((x) => CIRCUIT_SEO[x.event_type_type]);
+  const nomTournoi = (x) => String(x.tournament_name || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+-\s+Qualification.*$/i, '').trim();
+  const score = (x) => (x.scores || []).map((s) => {
+    const a = s.score_first, b = s.score_second;
+    return (a == null || a === '' || b == null || b === '') ? null : a + '-' + b;
+  }).filter(Boolean).join(', ');
+
+  const rang = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
+  const ordonnes = simples.slice().sort((a, b) => {
+    const ta = tournois[String(a.tournament_key)] || {}, tb = tournois[String(b.tournament_key)] || {};
+    return (rang[ta.rang] ?? 5) - (rang[tb.rang] ?? 5)
+      || String(a.event_time || '').localeCompare(String(b.event_time || ''));
+  }).slice(0, 80);
+
+  const lignes = ordonnes.map((x) => {
+    const st = String(x.event_status || '');
+    const fini = /finished|retired|walkover|w\.?o\.?/i.test(st);
+    const etat = fini ? 'Terminé' : (String(x.event_live) === '1' ? 'En direct' : (x.event_time || '—'));
+    const s = score(x);
+    return '<tr><td>' + esc(nomTournoi(x)) + '</td><td class="eq">' + esc(x.event_first_player || '?')
+      + '</td><td class="eq">' + esc(x.event_second_player || '?') + '</td><td>' + esc(s || '—')
+      + '</td><td>' + esc(etat) + '</td></tr>';
+  }).join('');
+
+  // Tournois en cours, pour le texte : le crawler doit lire « Seoul (WTA 500,
+  // dur) » et pas seulement une liste de noms de joueurs.
+  const vus = new Map();
+  simples.forEach((x) => {
+    const k = String(x.tournament_key);
+    if (vus.has(k)) return;
+    const t = tournois[k] || {};
+    vus.set(k, { nom: nomTournoi(x), circuit: CIRCUIT_SEO[x.event_type_type], surface: SURFACE_SEO[t.surface] || null, rang: t.rang || 5 });
+  });
+  const enCours = [...vus.values()].sort((a, b) => a.rang - b.rang).slice(0, 12);
+  const phraseTournois = enCours.length
+    ? 'Tournois en cours : ' + enCours.map((g) => esc(g.nom) + ' (' + esc(g.circuit) + (g.surface ? ', ' + esc(g.surface) : '') + ')').join(', ') + '.'
+    : '';
+
+  const corps = (ordonnes.length
+    ? '<table><thead><tr><th>Tournoi</th><th class="eq">Joueur</th><th class="eq">Adversaire</th>'
+      + '<th>Score</th><th>Statut</th></tr></thead><tbody>' + lignes + '</tbody></table>'
+    : '<p class="sous">Aucun match de tennis programmé aujourd’hui.</p>')
+    + (phraseTournois ? '<p class="sous">' + phraseTournois + '</p>' : '')
+    + '<p class="sous">Scores en direct point par point, calendrier ATP et WTA, classements mondiaux '
+    + 'et pronostics tennis. <a href="/">Football en direct</a> · <a href="/calendrier/">Calendrier</a> · '
+    + '<a href="/pronostics/">Pronostics du jour</a>.</p>';
+
+  const dateLisible = dateFr(jour);
+  return page({
+    cible: { type: 'tennis' },
+    url: '/tennis/',
+    titre: 'Tennis en direct — scores ATP et WTA, résultats et classements | NinjaScores',
+    desc: 'Tous les matchs de tennis du jour : ATP, WTA et Challengers. Scores en direct, '
+      + 'résultats, tournois en cours, classements mondiaux et pronostics.',
+    h1: 'Tennis en direct — ' + dateLisible,
+    fil: [{ nom: 'Accueil', url: '/' }, { nom: 'Tennis' }],
+    corps,
+    jsonld: ordonnes.length ? [{
+      '@context': 'https://schema.org', '@type': 'ItemList',
+      name: 'Matchs de tennis du ' + dateLisible,
+      numberOfItems: ordonnes.length,
+      itemListElement: ordonnes.slice(0, 20).map((x, i) => ({
+        '@type': 'ListItem', position: i + 1,
+        name: (x.event_first_player || '?') + ' - ' + (x.event_second_player || '?') + ' · ' + nomTournoi(x),
+      })),
+    }] : [],
+  });
+}
+
 // ── point d'entree ─────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   // Le module reste charge entre deux invocations « chaudes » : sans remise a
@@ -1755,6 +1850,12 @@ export default async function handler(req, res) {
                     // ou une compo probable ne bougent pas a cette cadence.
         : 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600');
       return res.status(200).send(r.html);
+    }
+    if (q.tennis) {
+      // Les scores bougent en continu, mais un robot n'a pas besoin de la
+      // seconde : meme fenetre que les autres pages du jour.
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=600, stale-while-revalidate=3600');
+      return res.status(200).send(await pageTennis());
     }
     if (q.transferts) {
       // le fil bouge par jours : cache aligne sur celui de /api/transferts
