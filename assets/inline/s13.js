@@ -91,7 +91,10 @@
         surface: t.surface || null, surfaceFr: surf, pays: t.pays || null, paysNom: paysNom || null, tour: x.tournament_round || null,
         j1: { cle: x.first_player_key, nom: x.event_first_player, photo: x.event_first_player_logo || null, pays: poserDrapeau(x.first_player_key, x.event_first_player) },
         j2: { cle: x.second_player_key, nom: x.event_second_player, photo: x.event_second_player_logo || null, pays: poserDrapeau(x.second_player_key, x.event_second_player) },
-        serveur: x.event_serve || null, jeu: x.event_game_result || null, statutBrut: x.event_status || ''
+        serveur: x.event_serve || null, jeu: x.event_game_result || null, statutBrut: x.event_status || '',
+        // Le vainqueur donne par le fournisseur : seul juge fiable sur un
+        // abandon, ou le set entame fausse le compte des sets gagnes.
+        vainqueur: x.event_winner || null, resultat: x.event_final_result || null
       }
     };
   }

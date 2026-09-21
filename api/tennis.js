@@ -148,10 +148,14 @@ function nettoyerPbp(pbp) {
       jeux = jeux.filter((g) => aDesPoints(g) || numJeu(g) <= 12);
       const dern = String(tbs[tbs.length - 1].score || '').replace(/\s/g, '').split('-');
       const a1 = parseInt(dern[0], 10) || 0, b1 = parseInt(dern[1], 10) || 0;
+      // Un jeu decisif en cours n'a pas de vainqueur : sans ce test, toute
+      // egalite (5-5) etait attribuee au joueur 2 et le set basculait a 6-7
+      // pendant que le tie-break se jouait encore.
+      const tbFini = Math.max(a1, b1) >= 7 && Math.abs(a1 - b1) >= 2;
       jeux.push({
         set_number: k, number_game: String(jeux.length + 1), tie_break: true,
         player_served: tbs[0].player_served,
-        serve_winner: a1 > b1 ? 'First Player' : 'Second Player', serve_lost: null,
+        serve_winner: !tbFini ? null : (a1 > b1 ? 'First Player' : 'Second Player'), serve_lost: null,
         score: tbs[tbs.length - 1].score,
         points: tbs.map((g) => ({ score: String(g.score || '').replace(/\s/g, '').replace('-', ' - '), break_point: null, set_point: null, match_point: null })),
       });
@@ -190,7 +194,9 @@ async function tableSurfaces(cleApi, jour) {
   const compteur = 'footcnt:' + jour + ':tennis:get_tournaments';
   const corps = JSON.stringify(out);
   const ops = [['INCR', compteur], ['EXPIRE', compteur, 604800]];
-  if (corps.length < REDIS_VAL_MAX) ops.push(['SETEX', 'tennis:surfaces', 604800, corps]);
+  // Une table VIDE ne se cache pas : un seul incident amont (quota, cle) aurait
+  // prive le site de toutes ses surfaces pendant sept jours.
+  if (Object.keys(out).length && corps.length < REDIS_VAL_MAX) ops.push(['SETEX', 'tennis:surfaces', 604800, corps]);
   await redisPipeline(ops);
   return out;
 }
@@ -374,7 +380,8 @@ export default async function handler(req, res) {
     try {
       const debut = new Date(Date.now() - 400 * 86400000).toISOString().slice(0, 10);
       const [surfaces, brut] = await Promise.all([
-        tableSurfaces(cleApi, jour),
+        // Les surfaces sont un bonus : leur panne ne doit pas emporter la forme.
+        tableSurfaces(cleApi, jour).catch(() => ({})),
         fetch(API_BASE + '?method=get_fixtures&player_key=' + pk + '&date_start=' + debut
           + '&date_stop=' + jour + '&timezone=UTC&APIkey=' + cleApi, { signal: AbortSignal.timeout(25000) })
           .then((r) => r.json()),
@@ -385,7 +392,11 @@ export default async function handler(req, res) {
       // Simples termines uniquement : les doubles et les exhibitions ne disent
       // rien de la forme en simple, et un match sans vainqueur est en cours.
       const joues = (((brut && brut.result) || []))
-        .filter((m) => /Singles/i.test(String(m.event_type_type || '')) && m.event_winner)
+        // Un abandon au premier set (« 2-0 ret. ») comptait comme un match
+        // joue : deux abandons suffisaient a faire passer un « moins de 21,5
+        // jeux » au-dessus du seuil de publication.
+        .filter((m) => /Singles/i.test(String(m.event_type_type || '')) && m.event_winner
+          && !/retired|walkover|w\.?o\.?|abandon|cancel/i.test(String(m.event_status || '')))
         .sort((a, b) => String(b.event_date + ' ' + (b.event_time || '')).localeCompare(String(a.event_date + ' ' + (a.event_time || ''))));
 
       const ligne = (m) => {

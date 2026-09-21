@@ -280,7 +280,14 @@
     var lire = function (v) { var mm = /^(\d+)\((\d+)\)$/.exec(String(v || '').trim()); return mm ? { j: +mm[1], tb: +mm[2] } : { j: parseInt(v, 10) || 0, tb: null }; };
     var sets = (live || ended) ? String(m.apiScore || '').split(',').filter(Boolean).map(function (x) { var p = x.split('-'); return { a: lire(p[0]), b: lire(p[1]) }; }) : [];
     // Un set est termine a 6 jeux avec 2 d'ecart, a 7, ou au tie-break ; sinon c'est le set en cours.
-    var complet = function (x) { var M = Math.max(x.a.j, x.b.j); return (M >= 6 && Math.abs(x.a.j - x.b.j) >= 2) || M === 7 || x.a.tb != null || x.b.tb != null; };
+    // Un jeu decisif EN COURS decimalise les deux cotes (« 6.1 » / « 6.4 ») :
+    // le set n'est pas fini pour autant. Sans cette nuance, la colonne du set
+    // disparaissait de la ligne au moment le plus tendu du match.
+    var complet = function (x) {
+      var M = Math.max(x.a.j, x.b.j), ecart = Math.abs(x.a.j - x.b.j);
+      if ((M >= 6 && ecart >= 2) || M >= 7) return true;
+      return (x.a.tb != null && x.b.tb != null) && Math.max(x.a.tb, x.b.tb) >= 7 && Math.abs(x.a.tb - x.b.tb) >= 2;
+    };
     sets.forEach(function (x) { x.fini = complet(x) || (ended && (x.a.j || x.b.j)); });
     if (live && sets.length && sets[sets.length - 1].a.j === 0 && sets[sets.length - 1].b.j === 0 && sets.length > 1 && !sets[sets.length - 2].fini) sets.pop();
     if (!live) sets = sets.filter(function (x) { return x.a.j || x.b.j; });
@@ -294,7 +301,12 @@
     var servA = live && tx.serveur === 'First Player', servB = live && tx.serveur === 'Second Player';
     var jeu = (live && tx.jeu && tx.jeu !== '-') ? String(tx.jeu).split('-').map(function (x) { return x.trim(); }) : null;
     var setNum = live ? ((/set\s*(\d)/i.exec(tx.statutBrut || '') || [])[1] || null) : null;
-    var gagneA = ended && gagnesA > gagnesB, gagneB = ended && gagnesB > gagnesA;
+    // Sur abandon, le set entame compte pour l'adversaire (6-4 puis 2-0 ret.
+    // donnait « 1 / 1 ») et personne n'etait mis en gras. Le vainqueur est
+    // pourtant donne par le fournisseur : on le croit (21/09/2026).
+    var vq = String(tx.vainqueur || '');
+    var gagneA = ended && (vq ? vq === 'First Player' : gagnesA > gagnesB);
+    var gagneB = ended && (vq ? vq === 'Second Player' : gagnesB > gagnesA);
     var H = 22;
     var col = function (haut, bas, opts) {
       opts = opts || {};
