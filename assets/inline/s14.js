@@ -272,6 +272,9 @@
   // etoile | drapeau + nom (2 lignes) | S1 / heure / Termine | balle du serveur |
   // points du jeu (live) | une colonne par set (set en cours en rouge, vainqueur en gras).
   window.NS_LIGNE_TENNIS = function (m, ctx) {
+    // Un match arrete par la pluie reste « en cours » pour le fournisseur : on
+    // le distingue du direct, sinon la ligne clignote en rouge sans rien dire.
+    var interrompu = /interrupt|delay|suspend/i.test(String((m.tennis && m.tennis.statutBrut) || ''));
     var t = ctx.t, accent = ctx.accent, tx = m.tennis || {};
     var live = m.status === 'live', ended = m.status === 'ended';
     var lire = function (v) { var mm = /^(\d+)\((\d+)\)$/.exec(String(v || '').trim()); return mm ? { j: +mm[1], tb: +mm[2] } : { j: parseInt(v, 10) || 0, tb: null }; };
@@ -307,11 +310,12 @@
     var heure = (function () { try { return new Date(m.startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: window._NS_TZ || 'Europe/Paris' }); } catch (e) { return '--:--'; } })();
     var estFav = !!(window.FavMatchesStore && window.FavMatchesStore.has && window.FavMatchesStore.has(m));
     return h('div', { key: m.eventId || m.id, onClick: function () { ctx.onMatchClick && ctx.onMatchClick(Object.assign({}, m, { sport: 'tennis' })); },
-      style: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px 7px 6px', borderTop: ctx.premier ? 'none' : '1px solid ' + t.divider, cursor: 'pointer', background: live ? 'rgba(239,68,68,0.05)' : 'transparent' } },
+      style: { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px 7px 6px', borderTop: ctx.premier ? 'none' : '1px solid ' + t.divider, cursor: 'pointer', background: (live && !interrompu) ? 'rgba(239,68,68,0.05)' : 'transparent' } },
       h('button', { onClick: function (e) { e.stopPropagation(); if (window.FavMatchesStore) window.FavMatchesStore.toggle(m); }, 'aria-label': estFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
         style: { width: 28, height: 28, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 17, color: estFav ? '#F59E0B' : t.textTer, flexShrink: 0, padding: 0, fontFamily: 'inherit' } }, estFav ? '★' : '☆'),
       h('div', { style: { flex: 1, minWidth: 0 } }, ligneNom(nomA, flagA, gagneA || (live && servA), servA), ligneNom(nomB, flagB, gagneB || (live && servB), servB)),
-      live ? h('div', { style: { width: 34, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: '#EF4444' } }, (setNum ? 'S' + setNum : 'LIVE') + ((sets.length && !sets[sets.length - 1].fini && sets[sets.length - 1].a.j >= 6 && sets[sets.length - 1].b.j >= 6) ? '/TB' : ''))
+      live ? h('div', { style: { width: 34, flexShrink: 0, textAlign: 'center', fontSize: 10.5, fontWeight: 900, color: interrompu ? '#F59E0B' : '#EF4444' } },
+            interrompu ? 'Interr.' : ((setNum ? 'S' + setNum : 'LIVE') + ((sets.length && !sets[sets.length - 1].fini && sets[sets.length - 1].a.j >= 6 && sets[sets.length - 1].b.j >= 6) ? '/TB' : '')))
         : ended ? h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 10, fontWeight: 700, color: /retired|walkover|w\.?o\.?|cancel|abandon|postpon/i.test(tx.statutBrut || '') ? '#EF4444' : t.textTer, lineHeight: 1.2 } },
             /retired/i.test(tx.statutBrut || '') ? 'Abandon' : /walkover|w\.?o\.?/i.test(tx.statutBrut || '') ? 'Forfait' : /cancel/i.test(tx.statutBrut || '') ? 'Annulé' : /postpon/i.test(tx.statutBrut || '') ? 'Reporté' : 'Terminé')
         : h('div', { style: { width: 48, flexShrink: 0, textAlign: 'center', fontSize: 12.5, fontWeight: 800, color: t.text } }, heure),

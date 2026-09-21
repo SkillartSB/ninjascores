@@ -47,6 +47,20 @@
       return { a: p(a), b: p(b) };
     }).filter(Boolean);
   }
+  // Le fournisseur donne le statut en anglais (« Set 2 », « Interrupted »,
+  // « Retired »…). Un match arrete par la pluie s'affichait « Interrupted » en
+  // rouge, comme s'il se jouait toujours (21/09/2026).
+  function libelleStatut(x, statut, jeu) {
+    var brut = String((x && x.event_status) || '');
+    if (/interrupt|delay|suspend/i.test(brut)) return 'Interrompu';
+    if (/retired/i.test(brut)) return 'Abandon';
+    if (/walkover|w\.?o\.?/i.test(brut)) return 'Forfait';
+    if (/cancel/i.test(brut)) return 'Annulé';
+    if (/postpon/i.test(brut)) return 'Reporté';
+    if (statut !== 'live') return 'Terminé';
+    var m = /set\s*(\d)/i.exec(brut);
+    return (m ? 'Set ' + m[1] : (brut || 'En cours')) + (jeu ? ' · ' + jeu : '');
+  }
   function statutDe(x) {
     var st = String(x.event_status || '');
     if (!st) return 'upcoming';
@@ -212,7 +226,7 @@
       var couleur = statut === 'live' ? '#EF4444' : t.text;
       return h('div', { style: { textAlign: 'center', flexShrink: 0, minWidth: 84 } },
         h('div', { style: { fontSize: 30, fontWeight: 900, color: couleur, letterSpacing: 2 } }, setsGagnes('a') + ' - ' + setsGagnes('b')),
-        h('div', { style: { fontSize: 11, fontWeight: 800, color: couleur } }, statut === 'live' ? ((x && x.event_status) || 'En cours') + (jeu ? ' · ' + jeu : '') : 'Terminé'));
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: couleur } }, libelleStatut(x, statut, jeu)));
     })();
 
     var sousTitre = [pays ? U.drapeau(pays) : null, tournoi + (tour ? ' · ' + tour : ''), surface ? SURF_FR[surface] || surface : null].filter(Boolean);
