@@ -107,6 +107,24 @@ function pointsCoherents(points, tb) {
   return meilleure.map((x) => x.p);
 }
 
+/**
+ * Journal NinjaScores (services/tennis-live) : meme exigence, autre forme —
+ * { sets:[{ n, jeux:[{ pts:['15:0','30:0'…] }] }] }. On le repasse au meme
+ * filtre, parce qu'un match EN DIRECT est precisement celui qu'on regarde.
+ */
+function nettoyerJournal(j) {
+  if (!j || !Array.isArray(j.sets)) return j;
+  j.sets.forEach((st) => {
+    st.jeux = (st.jeux || []).map((jeu) => {
+      const tb = !!jeu.tieBreak;
+      const faux = { points: (jeu.pts || []).map((x) => ({ score: String(x).replace(':', ' - ') })) };
+      jeu.pts = pointsCoherents(faux.points, tb).map((p) => String(p.score).replace(/\s/g, '').replace('-', ':'));
+      return jeu;
+    }).filter((jeu) => (jeu.pts || []).length || jeu.gagnant);
+  });
+  return j;
+}
+
 function nettoyerPbp(pbp) {
   if (!Array.isArray(pbp) || !pbp.length) return pbp;
   const numJeu = (g) => parseInt(g.number_game, 10) || 0;
@@ -256,7 +274,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, s-maxage=3, stale-while-revalidate=5');
     if (!mk) { res.status(200).json({ success: 1, result: null }); return; }
     const luJ = await redisPipeline([['GET', 'tennis:pbp:' + mk]]);
-    const corpsJ = luJ && luJ[0] && luJ[0].result;
+    let corpsJ = luJ && luJ[0] && luJ[0].result;
+    if (corpsJ) { try { corpsJ = JSON.stringify(nettoyerJournal(JSON.parse(corpsJ))); } catch (e) {} }
     res.status(200).send('{"success":1,"result":' + (corpsJ || 'null') + '}');
     return;
   }
@@ -271,6 +290,19 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     if (frais && corps) {
+      // Le detail d'un match en direct porte le point par point : il vient du
+      // WebSocket, pas de notre chemin amont, donc il n'a PAS ete nettoye.
+      // C'est pourtant la qu'un point en double se voit le plus (l'ecran se
+      // rafraichit toutes les 4 secondes).
+      if (mk) {
+        try {
+          const m = JSON.parse(corps);
+          if (m && Array.isArray(m.pointbypoint) && m.pointbypoint.length) {
+            m.pointbypoint = nettoyerPbp(m.pointbypoint);
+            corps = JSON.stringify(m);
+          }
+        } catch (e) {}
+      }
       res.setHeader('Cache-Control', 'public, s-maxage=3, stale-while-revalidate=5');
       res.setHeader('X-Tennis-Live', 'ws');
       res.status(200).send(mk ? '{"success":1,"source":"ws","result":[' + corps + ']}' : '{"success":1,"source":"ws","result":' + corps + '}');

@@ -44,13 +44,27 @@ function successeurValide(avant, apres, tieBreak) {
   if (a[1] === 'A' && b[1] === '40' && b[0] === '40') return true;
   return (ib[0] === ia[0] + 1 && ib[1] === ia[1]) || (ib[1] === ia[1] + 1 && ib[0] === ia[0]);
 }
+/** Le score avance-t-il ? (tolere les sauts, refuse les reculs) */
+function avance(avant, apres, tieBreak) {
+  const val = (v) => (v === 'A' ? 4 : (tieBreak ? parseInt(v, 10) : ORDRE.indexOf(v)));
+  const a = avant.split(':').map(val), b = apres.split(':').map(val);
+  if (a.concat(b).some((v) => v == null || isNaN(v) || v < 0)) return false;
+  return b[0] >= a[0] && b[1] >= a[1] && (b[0] + b[1]) > (a[0] + a[1]);
+}
 function ajouterPoint(jeu, score, tieBreak) {
   const pts = jeu.pts;
   if (pts.length && pts[pts.length - 1] === score) return false;      // doublon
-  const deja = pts.lastIndexOf(score);
-  if (deja >= 0) { pts.length = deja + 1; return true; }               // correction : retour en arriere
   if (score === '0:0' && !pts.length) return false;                    // debut de jeu, rien a noter
-  pts.push(score); return true;                                         // successeur valide ou saut : on garde
+  if (!pts.length) { pts.push(score); return true; }
+  const dernier = pts[pts.length - 1];
+  // 21/09/2026 : successeurValide existait mais n'etait jamais appelee — tout
+  // score inedit entrait dans le journal, y compris « 15:15 » apres « 0:40 »
+  // quand le fournisseur rejoue un jeu depuis le debut.
+  if (successeurValide(dernier, score, tieBreak) || avance(dernier, score, tieBreak)) { pts.push(score); return true; }
+  // Recul : le fournisseur rejoue le jeu ou se corrige. On ignore le point
+  // plutot que de tronquer la liste — tronquer faisait perdre les points deja
+  // notes, et la suite du flux se recale d'elle-meme au point suivant.
+  return false;
 }
 function etatDe(m) {
   const set = parseInt((/set\s*(\d)/i.exec(m.event_status || '') || [])[1], 10) || null;
@@ -65,11 +79,39 @@ function etatDe(m) {
 function amorcerJournal(k, m) {
   // Premiere vue d'un match : on part du point par point de l'API, nettoye avec les memes regles.
   const j = { sets: [], maj: Date.now(), ecrit: false };
-  (m.pointbypoint || []).forEach((g) => {
+  // Le jeu decisif arrive sous « Set 2 TieBreak », decoupe en un pseudo-jeu PAR
+  // POINT (points vide, `score` = le score du tie-break) : sans ce regroupement
+  // le journal demarrait avec douze jeux vides dans le set (21/09/2026).
+  const brut = (m.pointbypoint || []);
+  const entrees = [];
+  const tbParSet = new Map();
+  brut.forEach((g) => {
     const n = parseInt((/(\d+)/.exec(g.set_number || '') || [])[1], 10) || 1;
+    if (/tiebreak/i.test(String(g.set_number || ''))) {
+      if (!tbParSet.has(n)) tbParSet.set(n, []);
+      tbParSet.get(n).push(g);
+      return;
+    }
+    entrees.push({ n, g, tb: false });
+  });
+  tbParSet.forEach((liste, n) => {
+    const aDesPoints = (g) => (g.points || []).some((p) => /\d/.test(String(p.score || '')));
+    // le jeu-enveloppe vide du decisif s'en va avec les autres jeux sans point
+    for (let i = entrees.length - 1; i >= 0; i--) {
+      if (entrees[i].n === n && !aDesPoints(entrees[i].g) && (parseInt(entrees[i].g.number_game, 10) || 0) > 12) entrees.splice(i, 1);
+    }
+    const dernier = liste[liste.length - 1];
+    const sc = String(dernier.score || '').replace(/\s/g, '').split('-');
+    entrees.push({ n, tb: true, g: {
+      player_served: liste[0].player_served,
+      serve_winner: (parseInt(sc[0], 10) || 0) > (parseInt(sc[1], 10) || 0) ? 'First Player' : 'Second Player',
+      points: liste.map((x) => ({ score: x.score })),
+    } });
+  });
+  entrees.forEach(({ n, g, tb }) => {
     let st = j.sets.find((x) => x.n === n); if (!st) { st = { n, jeux: [] }; j.sets.push(st); }
-    const jeu = { serveur: g.player_served === 'First Player' ? 'a' : 'b', pts: [], gagnant: g.serve_winner === 'First Player' ? 'a' : g.serve_winner === 'Second Player' ? 'b' : null, apres: null };
-    (g.points || []).forEach((p) => ajouterPoint(jeu, String(p.score || '').replace(/\s/g, '').replace('-', ':'), false));
+    const jeu = { serveur: g.player_served === 'First Player' ? 'a' : 'b', pts: [], gagnant: g.serve_winner === 'First Player' ? 'a' : g.serve_winner === 'Second Player' ? 'b' : null, apres: null, tieBreak: tb || undefined };
+    (g.points || []).forEach((p) => ajouterPoint(jeu, String(p.score || '').replace(/\s/g, '').replace('-', ':'), tb));
     st.jeux.push(jeu);
   });
   // score apres chaque jeu recalcule depuis les vainqueurs
