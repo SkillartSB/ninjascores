@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<script src="/assets/inline/i18n.js?v=13"></script>
+<script src="/assets/inline/liens-externes.js?v=1"></script>
+<script src="/assets/inline/pays.js?v=1"></script>
+<script src="/assets/inline/clics.js?v=2"></script>
 <script>
 // Détection TWA au tout premier instant (avant le 1er paint) : ajoute une
 // classe sur <html> uniquement quand l'app est ouverte depuis le Play Store,
@@ -126,6 +130,8 @@ html.ns-twa-boot #ns-native-splash.ns-splash-hide{opacity:0;pointer-events:none}
   html.ns-minor .prono-sheet-overlay,
   html.ns-minor .prono-panel,
   html.ns-minor .ns-prono { display: none !important; }
+  /* Mode stream (live TikTok) : cotes et promotion des paris masquees, pronos gardes. */
+  html.ns-stream [data-odds], html.ns-stream .ns-odds, html.ns-stream .ns-pari { display: none !important; }
 
   /* ══ NAV BAR ══ */
   #ninja-nav {
@@ -887,7 +893,7 @@ html.ns-twa-boot #ns-native-splash.ns-splash-hide{opacity:0;pointer-events:none}
 <script src="/tweaks.compiled.js?v=2"></script>
 
 <!-- ── TeamLogo : logos TheSportsDB + fallback initiales ───────────────────── -->
-<script src="/assets/inline/s2.js?v=4"></script>
+<script src="/assets/inline/s2.js?v=7"></script>
 
 <!-- ── Polymarket Service ──────────────────────────────────────────────── -->
 <script src="/polymarket.service.js?v=14"></script>
@@ -1007,16 +1013,16 @@ window.NS_FAV_TEAMS = (function () {
 <script src="/assets/inline/s3.js?v=1"></script>
 <script src="/basketball_data.js?v=2"></script>
 <!-- ── Match du Ninja dynamique (plus gros match du jour via API-Football) ── -->
-<script src="/assets/inline/s4.js?v=8"></script>
+<script src="/assets/inline/s4.js?v=10"></script>
 <!-- ── Classements API-Football : chargement a la demande ──────────────────── -->
 <script src="/assets/inline/s5.js?v=2"></script>
 
 <!-- ── Matchs du calendrier : API-Football, un appel par journee ───────────── -->
-<script src="/assets/inline/s6.js?v=24"></script>
+<script src="/assets/inline/s6.js?v=39"></script>
 <script src="/assets/inline/s13.js?v=14"></script>
 <script src="/assets/inline/s14.js?v=19"></script>
-<script src="/assets/inline/s15.js?v=15"></script>
-<script src="/assets/inline/s16.js?v=4"></script>
+<script src="/assets/inline/s15.js?v=16"></script>
+<script src="/assets/inline/s16.js?v=12"></script>
 <!-- ══ AUTH (Supabase) ══ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -1039,7 +1045,7 @@ window.NS_FAV_TEAMS = (function () {
 </script>
 <script>(function(){var m={FR:'Europe/Paris',CI:'Africa/Abidjan',CM:'Africa/Douala',SN:'Africa/Dakar',CD:'Africa/Kinshasa',ML:'Africa/Bamako'};var c;try{c=localStorage.getItem('ns_geo_pays');}catch(e){}window._NS_TZ=m[c]||'Europe/Paris';})();</script>
 <script src="/assets/inline/s12.js?v=4"></script>
-<script src="/app.compiled.js?v=795"></script>
+<script src="/app.compiled.js?v=815"></script>
 <script>
 /* Onde violette declenchee au clic sur une entree du menu principal.
    Rien ne suit la souris : l'effet est ponctuel et se nettoie tout seul. */
@@ -1067,7 +1073,7 @@ window.NS_pulse = function(x, y){
 <script src="/assets/inline/s8.js?v=2"></script>
 
 <!-- ══ NAV INTERACTIONS ══ -->
-<script src="/assets/inline/s9.js?v=6"></script>
+<script src="/assets/inline/s9.js?v=7"></script>
 <script>
   // Enregistrement du service worker (PWA / TWA). Silencieux en cas d'échec.
   if ('serviceWorker' in navigator) {
@@ -1076,10 +1082,10 @@ window.NS_pulse = function(x, y){
     });
   }
 </script>
-<script src="/assets/inline/s10.js?v=2"></script>
+<script src="/assets/inline/s10.js?v=5"></script>
 
 <!-- ══ ONBOARDING (apps natives uniquement) ══ -->
-<script src="/assets/inline/s11.js?v=108"></script>
+<script src="/assets/inline/s11.js?v=110"></script>
 <script>
   // Déclenche l'onboarding sur iOS/Android si l'utilisateur n'a pas
   // encore complété le flow (email + âge + favoris + notifs).
@@ -1123,7 +1129,7 @@ window.NS_pulse = function(x, y){
     return window.NS_STREAM;
   };
   function nsDiffuserAge() {
-    window.NS_HIDE_ODDS = !window.NS_MAJEUR_OK;
+    window.NS_HIDE_ODDS = !window.NS_MAJEUR_OK || !!window.NS_STREAM;
     document.documentElement.classList.toggle('ns-minor', !window.NS_MAJEUR_OK);
     document.documentElement.classList.toggle('ns-stream', !!window.NS_STREAM);
     // L'etat arrive apres le 1er rendu React (lecture asynchrone du profil) :
@@ -1190,12 +1196,71 @@ window.NS_pulse = function(x, y){
   });
 </script>
 <script>
+// Mode stream (live TikTok) : rien qui ressemble a un pari a l'ecran.
+// Les grands blocs sont coupes a la source (bundle, NS_HIDE_ODDS) ; ce
+// balayage attrape le reste, disperse dans des composants sans classe :
+// boutons « Je parie », pastilles de cote, bandeau jeux d'argent.
+(function () {
+  var COTE = /^\d{1,2}[.,]\d{2}$/;
+  var CTA = /^(Je parie|Parie |Découvrir |Obtenir le bonus|Je m.inscris|Voir l.offre)/;
+  var AVERT = /JEUX D.ARGENT|jeu excessif|Jouer comporte des risques|Cotes indicatives/i;
+  function cacher(el) {
+    if (el && !el.hasAttribute('data-ns-stream-cache')) {
+      el.setAttribute('data-ns-stream-cache', el.style.display || '');
+      el.style.display = 'none';
+    }
+  }
+  function balayer() {
+    if (!document.documentElement.classList.contains('ns-stream')) {
+      document.querySelectorAll('[data-ns-stream-cache]').forEach(function (el) {
+        el.style.display = el.getAttribute('data-ns-stream-cache');
+        el.removeAttribute('data-ns-stream-cache');
+      });
+      return;
+    }
+    var racine = document.getElementById('root') || document.body;
+    racine.querySelectorAll('span, div, a, button').forEach(function (el) {
+      if (el.children.length > 2) return;
+      var brut = (el.textContent || '').trim();
+      if (!brut || brut.length > 60) return;
+      var txt = window.NS_FR ? window.NS_FR(brut) : brut;
+      if (CTA.test(txt)) { cacher(el.closest('a, button') || el); return; }
+      if (el.children.length === 0 && COTE.test(txt)) {
+        // La pastille colorée est parfois portée par le parent (carte « Nos pronostics »).
+        var cible = (el.parentElement && (el.parentElement.textContent || '').trim() === brut) ? el.parentElement : el;
+        [el, cible].some(function (x) {
+          var fond = getComputedStyle(x).backgroundColor;
+          if (fond !== 'rgba(0, 0, 0, 0)' && fond !== 'transparent') { cacher(cible); return true; }
+          return false;
+        });
+      }
+    });
+    racine.querySelectorAll('div, section, aside').forEach(function (el) {
+      var t = el.textContent || '';
+      if (t.length < 400 && el.children.length < 8 && AVERT.test(t)) cacher(el);
+    });
+  }
+  var minuteur = null;
+  function differe() { if (minuteur) clearTimeout(minuteur); minuteur = setTimeout(balayer, 150); }
+  if (typeof MutationObserver !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', function () {
+      new MutationObserver(differe).observe(document.getElementById('root') || document.body, { childList: true, subtree: true });
+    });
+    new MutationObserver(balayer).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+})();
+</script>
+<script>
 (function () {
   function tag() {
-    if (!document.documentElement.classList.contains('ns-minor')) return;
+    var cl = document.documentElement.classList;
+    if (!cl.contains('ns-minor') && !cl.contains('ns-stream')) return;
     document.querySelectorAll('button, a, [role="tab"], div').forEach(function (el) {
       if (el.classList.contains('ns-prono')) return;
-      var txt = (el.textContent || '').trim();
+      // Hors français, le texte affiché est traduit (assets/inline/i18n.js) :
+      // NS_FR le ramène au libellé d'origine pour que ces repères tiennent.
+      var brut = (el.textContent || '').trim();
+      var txt = window.NS_FR ? window.NS_FR(brut) : brut;
       if (txt === 'Pronostics' || txt === 'Pronostics du jour') {
         el.classList.add('ns-prono');
       }
@@ -1210,9 +1275,9 @@ window.NS_pulse = function(x, y){
       // Comparaison NORMALISEE : les libelles reels sont prefixes d'un emoji
       // (« 💰 Gagne avec NinjaScores », « 🎁 Bonus & Bookmakers ») et parfois
       // mis en majuscules par CSS. Une egalite stricte les ratait tous.
-      var norm = txt.toLowerCase()
-        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F]/gu, '')
+      var sansEmoji = brut.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F]/gu, '')
         .replace(/\s+/g, ' ').trim();
+      var norm = (window.NS_FR ? window.NS_FR(sansEmoji) : sansEmoji).toLowerCase();
       if (norm === 'bonus du moment' || norm === 'bonus de paris sportifs'
           || norm === 'gagne avec ninjascores' || norm === 'bonus du jour'
           || norm === 'bonus & bookmakers') {
