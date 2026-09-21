@@ -832,26 +832,26 @@
     }
     return { actif: actif, set: set, liste: window.NS_PAYS_GEO };
   })();
-  // Livescore (18/09/2026) : rafraîchissement du direct toutes les 15 s aux
-  // heures de grande affluence (soir en semaine 17h-1h, week-end 11h-1h, heure
-  // de Paris), 30 s le reste du temps, et rien quand l'onglet est en
-  // arrière-plan. NS_LIVE_TICK(fn) remplace setInterval(fn, 30000).
-  window.NS_LIVE_RAPIDE = function () {
-    try {
-      var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', weekday: 'short', hour: '2-digit', hour12: false }).formatToParts(new Date());
-      var j = '', h = 0;
-      p.forEach(function (x) { if (x.type === 'weekday') j = x.value; if (x.type === 'hour') h = Number(x.value) % 24; });
-      var weekend = j === 'Sat' || j === 'Sun' || (j === 'Mon' && h < 1);
-      return h < 1 || (weekend ? h >= 11 : h >= 17);
-    } catch (e) { return false; }
-  };
+  // Livescore : rythme du direct, 15 s, tout le temps (21/09/2026).
+  //
+  // Avant, on ne rafraichissait toutes les 15 s qu'en « heures de pointe »
+  // europeennes (a partir de 17 h en semaine, 11 h le week-end) et toutes les
+  // 29 s le reste du temps. Les matchs d'apres-midi — Afrique, Asie, c'est-a-
+  // dire une bonne part de notre public — tournaient donc au rythme lent : le
+  // but arrivait jusqu'a une demi-minute plus tard que necessaire, en plus des
+  // 12 s de cache et de la latence du fournisseur. Un avis Play Store l'a dit
+  // sans detour : « application vraiment en retard au niveau des matchs en
+  // direct ». Il avait raison.
+  //
+  // Cout : la reponse est cachee 12 a 15 s (Redis puis CDN), donc plusieurs
+  // visiteurs simultanes se partagent le meme appel. Avec notre trafic actuel
+  // ils sont rarement simultanes : on mesure 758 appels amont pour 935
+  // requetes live, et ce poste va donc a peu pres doubler (+700/jour environ,
+  // sur 17 900 consommes pour un quota de 150 000). A surveiller via
+  // /api/foot/?path=compteurs si le trafic monte.
   window.NS_LIVE_TICK = function (fn) {
-    var dernier = Date.now();
     return setInterval(function () {
-      if (document.hidden) return;
-      var maintenant = Date.now();
-      if (!window.NS_LIVE_RAPIDE() && maintenant - dernier < 29000) return;
-      dernier = maintenant;
+      if (document.hidden) return;   // onglet en arriere-plan : on ne demande rien
       fn();
     }, 15000);
   };
