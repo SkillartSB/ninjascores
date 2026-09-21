@@ -152,6 +152,11 @@
         sous ? h('div', { style: { fontSize: 11, fontWeight: 600, color: t.textSec } }, sous) : null));
   }
 
+  // Surface du tournoi. Le dataset a deja contenu des valeurs parasites
+  // (« - Play Offs » pour la Coupe Davis) : on n'affiche que ce qu'on reconnait.
+  var SURFACES = { 'Hard': 'Dur', 'Hard (Indoor)': 'Dur indoor', 'Clay': 'Terre battue', 'Clay (Indoor)': 'Terre battue indoor', 'Grass': 'Gazon', 'Carpet': 'Moquette', 'Carpet (Indoor)': 'Moquette' };
+  function surfaceFr(s) { return (s && SURFACES[s]) || ''; }
+
   function titre(t, accent, texte, action, lien) {
     return h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
       h('span', { style: { fontSize: 15, fontWeight: 800, color: t.text } }, texte),
@@ -371,7 +376,7 @@
       semaine.chargement ? carte(t, h('div', { style: { padding: 24, textAlign: 'center', color: t.textSec, fontSize: 13 } }, 'Chargement…'))
       : semaine.liste.length ? h('div', { style: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 12, scrollbarWidth: 'none' } },
           semaine.liste.map(function (g) {
-            var surf = g.surface ? ({ 'Hard': 'Dur', 'Hard (Indoor)': 'Dur indoor', 'Clay': 'Terre battue', 'Grass': 'Gazon', 'Carpet': 'Moquette', 'Carpet (Indoor)': 'Moquette' })[g.surface] || g.surface : '';
+            var surf = surfaceFr(g.surface);
             var cat = g.circuit === 'ATP · WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'ATP · WTA 1000', '500': 'ATP · WTA 500', '250': 'ATP · WTA 250', CH: 'Challenger' })[g.cat] || 'ATP · WTA' : g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || 'ATP');
             var quand = g.live ? g.live + ' en direct' : g.enCours ? (g.fin === semaine.auj ? 'Dernier jour' : 'Jusqu’au ' + dateCourte(g.fin)) : 'Dès ' + dateCourte(g.debut);
             return h('div', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
@@ -427,6 +432,19 @@
 
   // ── Classements ATP / WTA ─────────────────────────────────────────────────
   var cacheClassement = {};
+  // API-Tennis renvoie le classement dans le desordre (Djokovic 12e apparaissait
+  // entre le 5e et le 7e) : on trie par rang une fois, ici, pour l'ecran comme
+  // pour la colonne de gauche.
+  function chargerClassement(circuit) {
+    if (cacheClassement[circuit]) return Promise.resolve(cacheClassement[circuit]);
+    return fetch('/api/tennis/?method=get_standings&event_type=' + circuit)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var l = ((j && j.result) || []).slice().sort(function (a, b) { return (parseInt(a.place, 10) || 9999) - (parseInt(b.place, 10) || 9999); });
+        if (l.length) cacheClassement[circuit] = l;
+        return l;
+      });
+  }
   window.NS_ClassementTennis = function (props) {
     var t = props.t, accent = props.accent;
     var ct = R.useState('ATP'), circuit = ct[0], setCircuit = ct[1];
@@ -437,11 +455,9 @@
       var vif = true; setLimite(100);
       if (cacheClassement[circuit]) { setEtat({ liste: cacheClassement[circuit], chargement: false, erreur: null }); return; }
       setEtat({ liste: null, chargement: true, erreur: null });
-      fetch('/api/tennis/?method=get_standings&event_type=' + circuit).then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) {
+      chargerClassement(circuit)
+        .then(function (l) {
           if (!vif) return;
-          var l = (j && j.result) || [];
-          cacheClassement[circuit] = l;
           setEtat({ liste: l, chargement: false, erreur: l.length ? null : 'Classement indisponible' });
         }).catch(function (e) { if (vif) setEtat({ liste: [], chargement: false, erreur: e.message }); });
       return function () { vif = false; };
@@ -486,5 +502,115 @@
               h('div', { style: { width: 14, textAlign: 'center', fontSize: 11, flexShrink: 0 } }, fleche(j.movement)));
           })),
           (etat.liste && etat.liste.length > limite) ? h('div', { onClick: function () { setLimite(limite + 100); }, style: { textAlign: 'center', padding: '12px', borderRadius: 12, border: '1px solid ' + t.border, background: t.card, color: accent, fontSize: 13, fontWeight: 800, cursor: 'pointer' } }, 'Afficher 100 joueurs de plus') : null));
+  };
+
+  // ── Colonne de gauche, mode tennis (21/09/2026) ───────────────────────────
+  // En foot elle liste les championnats ; en tennis ils n'ont aucun sens. Elle
+  // devient : les tournois en cours (ce que le visiteur cherche d'abord) puis
+  // le top 10 ATP/WTA. Le bundle la substitue a NSTopLeagues quand NS_SPORT
+  // vaut 'tennis'.
+  window.NS_ColonneTennis = function (props) {
+    var t = props.t, accent = props.accent, isDark = props.isDark;
+    var semaine = useSemaine();
+    var ct = R.useState('ATP'), circuit = ct[0], setCircuit = ct[1];
+    var st = R.useState(cacheClassement.ATP || null), top = st[0], setTop = st[1];
+    R.useEffect(function () {
+      var vif = true;
+      if (cacheClassement[circuit]) { setTop(cacheClassement[circuit]); return; }
+      setTop(null);
+      chargerClassement(circuit).then(function (l) { if (vif) setTop(l); }).catch(function () { if (vif) setTop([]); });
+      return function () { vif = false; };
+    }, [circuit]);
+
+    var survol = function (e, on) { e.currentTarget.style.background = on ? (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.035)') : 'none'; };
+    var encadre = function (texte, contenu, droite) {
+      return h('div', { style: { background: t.card, borderRadius: 14, border: '1px solid ' + t.border, overflow: 'hidden', marginBottom: 14 } },
+        h('div', { style: { padding: '13px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+          h('span', { style: { fontSize: 14, fontWeight: 800, color: t.text } }, texte), droite || null),
+        contenu);
+    };
+
+    // Les tournois qui se jouent en ce moment : le direct d'abord, puis le
+    // niveau (un Grand Chelem avant un Challenger).
+    var enCours = semaine.liste.filter(function (g) { return g.enCours; })
+      .sort(function (a, b) { return ((b.live ? 1 : 0) - (a.live ? 1 : 0)) || (a.tier - b.tier); }).slice(0, 8);
+
+    var ligneTournoi = function (g, i) {
+      var surf = surfaceFr(g.surface);
+      var cat = g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || g.circuit);
+      return h('button', { key: g.cle + g.circuit, onClick: function () { versCalendrier(!!g.live); },
+        style: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 14px', border: 'none', borderTop: i ? '1px solid ' + t.divider : 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' },
+        onMouseEnter: function (e) { survol(e, true); }, onMouseLeave: function (e) { survol(e, false); } },
+        h(window.NS_BadgeTournoi, { tennis: g, t: t, taille: 22 }),
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontSize: 13, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, g.nom),
+          h('div', { style: { fontSize: 10.5, fontWeight: 600, color: t.textTer, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [cat, surf].filter(Boolean).join(' · '))),
+        g.pays ? h('span', { style: { fontSize: 14, lineHeight: 1, flexShrink: 0, fontFamily: EMOJI } }, drapeau(g.pays)) : null,
+        g.live ? h('span', { style: { flexShrink: 0, width: 7, height: 7, borderRadius: '50%', background: '#EF4444' } }) : null);
+    };
+
+    var ligneJoueur = function (j, i) {
+      return h('div', { key: j.player_key || i, style: { display: 'flex', alignItems: 'center', gap: 9, padding: '8px 14px', borderTop: i ? '1px solid ' + t.divider : 'none' } },
+        h('div', { style: { width: 18, fontSize: 12, fontWeight: 800, color: i < 3 ? accent : t.textSec, textAlign: 'right', flexShrink: 0 } }, j.place),
+        h('span', { style: { fontSize: 14, lineHeight: 1, width: 18, textAlign: 'center', flexShrink: 0, fontFamily: EMOJI } }, drapeauPays(j.country)),
+        h('div', { style: { flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, j.player),
+        h('div', { style: { fontSize: 11, fontWeight: 700, color: t.textTer, flexShrink: 0 } }, String(j.points || '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')));
+    };
+
+    var bascule = h('div', { style: { display: 'flex', gap: 3, background: t.cardAlt, borderRadius: 10, padding: 2 } },
+      ['ATP', 'WTA'].map(function (c) {
+        var on = c === circuit;
+        return h('button', { key: c, onClick: function () { setCircuit(c); },
+          style: { border: 'none', borderRadius: 8, padding: '3px 9px', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+            background: on ? (c === 'WTA' ? '#EC4899' : accent) : 'transparent', color: on ? '#fff' : t.textSec } }, c);
+      }));
+
+    var attente = function (texte) { return h('div', { style: { padding: '16px 14px', fontSize: 12.5, color: t.textSec } }, texte); };
+
+    return h('aside', { className: 'ns-side', style: { width: 250, flexShrink: 0, height: '100%', overflowY: 'auto', padding: '16px 12px', borderRight: '1px solid ' + t.border, background: t.bg } },
+      encadre('Tournois en cours',
+        semaine.chargement ? attente('Chargement…')
+          : enCours.length ? enCours.map(ligneTournoi)
+          : attente('Aucun tournoi en cours'),
+        h('span', { onClick: function () { versCalendrier(false); }, style: { fontSize: 11, fontWeight: 700, color: accent, cursor: 'pointer' } }, 'Calendrier')),
+      encadre('Classement',
+        top === null ? attente('Chargement…')
+          : top.length ? top.slice(0, 10).map(ligneJoueur)
+          : attente('Classement indisponible'),
+        bascule),
+      (top && top.length) ? h('button', { onClick: function () { props.onNav && props.onNav('standings'); },
+        style: { width: '100%', padding: '10px', borderRadius: 12, border: '1px solid ' + t.border, background: t.card, color: accent, fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } },
+        'Voir tout le classement') : null);
+  };
+
+  // Colonne de droite, mode tennis (21/09/2026) : « Derniers transferts » n'a
+  // aucun sens ici, la carte est remplacee par les tournois qui commencent.
+  // Meme habillage que les cartes du bundle (entete en capitales, accent).
+  window.NS_ProchainsTournois = function (props) {
+    var t = props.t, accent = props.accent;
+    var semaine = useSemaine();
+    var liste = semaine.liste.filter(function (g) { return !g.enCours; })
+      .sort(function (a, b) { return String(a.debut).localeCompare(String(b.debut)) || (a.tier - b.tier); }).slice(0, 5);
+    if (!semaine.chargement && !liste.length) return null;
+
+    var corps = semaine.chargement
+      ? h('div', { style: { padding: '16px 13px', fontSize: 12, color: t.textSec } }, 'Chargement…')
+      : liste.map(function (g, i) {
+        var cat = g.circuit === 'WTA' ? ({ GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'WTA 1000', '500': 'WTA 500', '250': 'WTA 250', CH: 'WTA 125' })[g.cat] || 'WTA' : (CAT[g.cat] || g.circuit);
+        var surf = surfaceFr(g.surface);
+        return h('button', { key: g.cle + g.circuit, onClick: function () { versCalendrier(false); },
+          style: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 13px', border: 'none', borderTop: i ? '1px solid ' + t.divider : 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' } },
+          h(window.NS_BadgeTournoi, { tennis: g, t: t, taille: 22 }),
+          h('div', { style: { flex: 1, minWidth: 0 } },
+            h('div', { style: { fontSize: 12.5, fontWeight: 700, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, g.nom),
+            h('div', { style: { fontSize: 10.5, fontWeight: 600, color: t.textTer, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, [cat, surf].filter(Boolean).join(' · '))),
+          h('span', { style: { fontSize: 11, fontWeight: 700, color: t.textSec, flexShrink: 0 } }, dateCourte(g.debut)));
+      });
+
+    return h('section', { style: { background: t.card, borderRadius: 14, border: '1px solid ' + t.border, overflow: 'hidden', marginBottom: 14 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', padding: '11px 13px 9px', borderBottom: '1px solid ' + t.divider } },
+        h('span', { style: { flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: accent } }, 'Prochains tournois'),
+        h('button', { onClick: function () { versCalendrier(false); }, style: { border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, color: t.textSec } }, 'Voir tout')),
+      h('div', null, corps));
   };
 })();

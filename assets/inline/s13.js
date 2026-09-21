@@ -113,7 +113,10 @@
     var courant = 'football';
     try {
       var m = /[?&]sport=(football|tennis)\b/.exec(location.search);
+      // Depuis le 21/09 le tennis a son adresse : /tennis/ ouvre le site en
+      // mode tennis (partageable, indexable), et prime sur le dernier choix.
       if (m) courant = m[1];
+      else if (/^\/tennis(\/|$)/.test(location.pathname)) courant = 'tennis';
       else { var mem = localStorage.getItem('ns_sport'); if (mem === 'tennis' || mem === 'football') courant = mem; }
     } catch (e) {}
     window._ninjaScheduleSport = courant;

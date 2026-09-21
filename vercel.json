@@ -11,6 +11,9 @@
     "api/archive-matches.js": {
       "maxDuration": 60
     },
+    "api/push-pronos-jour.js": {
+      "maxDuration": 180
+    },
     "api/push-goals.js": {
       "maxDuration": 60
     },
@@ -39,6 +42,10 @@
     {
       "path": "/api/prechauffe/",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/push-pronos-jour/",
+      "schedule": "10 * * * *"
     }
   ],
   "redirects": [
@@ -98,6 +105,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
+      "source": "/data/standings/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
     },
@@ -437,6 +453,14 @@
     },
     {
       "source": "/transferts/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tennis/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tennis",
       "destination": "/index.html"
     },
     {
