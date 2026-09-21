@@ -63,6 +63,12 @@
       // arbitre : deja dans la reponse fixtures, souvent vide avant-match
       referee: f.fixture.referee || null,
       round: f.league.round || null,
+      // Competition et saison : l'onglet Classement de la fiche match en a
+      // besoin pour demander le classement. Seule NS_MATCH_PAR_ID les posait,
+      // si bien qu'un match ouvert depuis le calendrier restait bloque sur
+      // « Chargement… » (constat 18/09/2026).
+      ligueId: f.league.id,
+      saison: f.league.season,
       homeId: f.teams.home.id, awayId: f.teams.away.id,
       // Cartons rouges (rouge direct ou 2e jaune, un par joueur) : seul le flux
       // direct porte les evenements ; pour un match termine, voir fusionRouges.
@@ -361,7 +367,16 @@
     // les cinq grands championnats
     39: 10, 140: 11, 135: 12, 78: 13, 61: 14,   // Premier League, Liga, Serie A, Bundesliga, Ligue 1
     // autres grandes ligues européennes
-    94: 15, 88: 16, 203: 17, 144: 18, 179: 19,  // Portugal, Pays-Bas, Turquie, Belgique, Écosse
+    94: 15,                                     // Portugal
+    // coupes et supercoupes des cinq grands pays, juste avant l'Eredivisie
+    // (demande utilisateur du 16/09) : sans stats ni classement, elles se
+    // perdaient au rang 90 parmi les coupes mineures.
+    48: 15.1, 45: 15.2, 528: 15.3,              // EFL Cup, FA Cup, Community Shield
+    143: 15.4, 556: 15.45,                      // Copa del Rey, Supercopa
+    137: 15.5, 547: 15.55,                      // Coppa Italia, Supercoppa
+    81: 15.6, 529: 15.65,                       // DFB-Pokal, Supercup
+    66: 15.7, 526: 15.75,                       // Coupe de France, Trophée des Champions
+    88: 16, 203: 17, 144: 18, 179: 19,          // Pays-Bas, Turquie, Belgique, Écosse
     // grandes ligues hors Europe
     71: 23, 128: 24, 253: 25, 262: 26,          // Brésil, Argentine, MLS, Mexique
     307: 27, 98: 28, 292: 29,                   // Arabie saoudite, Japon, Corée
@@ -452,8 +467,44 @@
     lollybet: { nom: 'Lollybet', couleur: '#E8112D', url: 'https://www.lolly-bet888.com/?faff=423',
                 logo: '/assets/logos/bookmakers/lollybet.png?v=1', logoBleed: true },
     melbet:  { nom: 'Melbet',  couleur: '#F2A900', url: 'https://refpa3665.com/L?tag=d_5755095m_66335c_&site=5755095&ad=66335', promo: 'NINJASCORES', bonus: '200% jusqu’à 130 000 FCFA', logo: '/assets/logos/bookmakers/melbet.png?v=1', logoBleed: true },
-    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv2541.com/?open=register&p=qmd0', logo: '/assets/logos/bookmakers/win1.png?v=5', logoWhite: '/assets/logos/bookmakers/win1-white.png?v=3', promo: 'NINJASCORES', bonus: '500% jusqu’à 620 000 FCFA' },
+    win1:    { nom: '1WIN',    couleur: '#1E5EFF', url: 'https://one-vv0248.com/?open=register&p=9u61', /* 3861354 « NS App - Autres » */ logo: '/assets/logos/bookmakers/win1.png?v=5', logoWhite: '/assets/logos/bookmakers/win1-white.png?v=3', promo: 'NINJASCORES', bonus: '500% jusqu’à 620 000 FCFA' },
+    // Win Win Bet (16/09/2026 : lien ; 20/09/2026 : logo + offre). Wordmark
+    // bicolore détouré (vert #97DB00 + blanc), même traitement que 1WIN :
+    // version sombre sur fond clair, version blanche en thème sombre.
+    // L'offre affichée est celle du site (100 % sur le 1er dépôt, plafond
+    // 100 € annoncé en euros) : aucun montant FCFA n'est inventé ici.
+    winwinbet:{ nom: 'Win Win Bet', couleur: '#97DB00', url: 'https://refpa712080.pro/L?tag=d_5348130m_68383c_&site=5348130&ad=68383', bonus: '100% sur ton 1er dépôt', logo: '/assets/logos/bookmakers/winwinbet.png?v=1', logoWhite: '/assets/logos/bookmakers/winwinbet-white.png?v=1', logoMono: '/assets/logos/bookmakers/winwinbet-mono-sombre.png?v=1' },
     starz888:{ nom: '888Starz',couleur: '#E1222B', url: 'https://top100bonus.com/L?tag=d_5345199m_64133c_&site=5345199&ad=64133', promo: 'NINJASCORES', bonus: 'Jusqu’à 260 000 FCFA', logo: '/assets/logos/bookmakers/starz888.png?v=1', logoBleed: true }
+  };
+  // Liens par zone de l'app (19/09/2026) : un lien 1WIN Partners par zone,
+  // tous dans la source « NinjaScores », pour savoir d'où viennent les
+  // inscriptions (Statistics > By links). Zone absente -> lien principal `url`.
+  // L'ancien lien p=qmd0 (« SKILLART 2026 AFR ») n'est plus utilisé par l'app.
+  window.NS_PARTENAIRES.win1.liens = {
+    pronostics: 'https://one-vv5371.com/?open=register&p=ncoy', // 3861336 « NS App - Pronostics »
+    cotes:      'https://one-vv0248.com/?open=register&p=dwiw', // 3861340 « NS App - Cotes »
+    resume:     'https://one-vv0248.com/?open=register&p=w1ig', // 3861342 « NS App - Resume Qui va gagner »
+    combine:    'https://one-vv0248.com/?open=register&p=4dpc', // 3861344 « NS App - Combine »
+    bonus:      'https://one-vv0248.com/?open=register&p=rec2'  // 3861348 « NS App - Bonus »
+  };
+  // Support du clic, transmis à 1WIN en sub1 (Statistics > Sub (Id)) :
+  // ios, android ou web. Même détection que assets/inline/clics.js.
+  function supportClic() {
+    try {
+      var mh = window.webkit && window.webkit.messageHandlers;
+      if (mh && (mh.ninjaLiveActivity || mh.ninjaAppleSignIn)) return 'ios';
+      if (window.NS_isTWA && window.NS_isTWA()) return 'android';
+    } catch (e) {}
+    return 'web';
+  }
+  window.NS_LIEN = function (slug, zone) {
+    var bk = window.NS_PARTENAIRES && window.NS_PARTENAIRES[slug];
+    if (!bk) return null;
+    var u = (zone && bk.liens && bk.liens[zone]) || bk.url;
+    if (slug === 'win1' && u && u.indexOf('sub1=') < 0) {
+      u += (u.indexOf('?') < 0 ? '?' : '&') + 'sub1=' + supportClic();
+    }
+    return u;
   };
   // cotes = ordre de preference des bookmakers du flux (8=Bet365, 11=1xBet).
   // affil = partenaires par support ; mobile privilégie ceux presents sur
@@ -468,8 +519,17 @@
       CI: ['#F77F00', '#ffffff', '#009E60'],
       CM: ['#007A5E', '#CE1126', '#FCD116'],
       SN: ['#00853F', '#FDEF42', '#E31B23'],
-      ML: ['#14B53A', '#FCD116', '#CE1126']
+      ML: ['#14B53A', '#FCD116', '#CE1126'],
+      GN: ['#CE1126', '#FCD116', '#009460']
     };
+    // Bandes horizontales (de haut en bas).
+    var HBANDES = {
+      GH: ['#CE1126', '#FCD116', '#006B3F'],
+      GA: ['#009E60', '#FCD116', '#3A75C4'],
+      MU: ['#EA2839', '#1A206D', '#FFD500', '#00A551'],
+      BF: ['#EF2B2D', '#009E49']
+    };
+    var ETOILE_H = { GH: '#000000', BF: '#FCD116' };
     var ETOILE = { CM: '#FCD116', SN: '#00853F' };
     var PATH_ETOILE = 'M12 8.4l0.88 2.39 2.54 0.1-1.99 1.57 0.69 2.45L12 13.5l-2.12 1.41 0.69-2.45-1.99-1.57 2.54-0.1z';
     return function (code, taille) {
@@ -485,6 +545,38 @@
           R('path', { key: 'star', fill: '#F7D618',
             d: 'M6 3.2l0.68 1.87 1.98 0.06-1.57 1.22 0.56 1.92L6 9.15l-1.65 1.12 0.56-1.92-1.57-1.22 1.98-0.06z' })
         ];
+      } else if (code === 'BJ') {
+        // Bénin : bande verte à gauche, jaune en haut, rouge en bas.
+        kids = [
+          R('rect', { key: 'j', width: 24, height: 12, fill: '#FCD116' }),
+          R('rect', { key: 'r', y: 12, width: 24, height: 12, fill: '#E8112D' }),
+          R('rect', { key: 'v', width: 9.6, height: 24, fill: '#008751' })
+        ];
+      } else if (code === 'MG') {
+        // Madagascar : bande blanche à gauche, rouge en haut, vert en bas.
+        kids = [
+          R('rect', { key: 'r', width: 24, height: 12, fill: '#FC3D32' }),
+          R('rect', { key: 'v', y: 12, width: 24, height: 12, fill: '#007E3A' }),
+          R('rect', { key: 'b', width: 8, height: 24, fill: '#ffffff' })
+        ];
+      } else if (code === 'CG') {
+        // Congo : triangle vert, diagonale jaune, triangle rouge.
+        kids = [
+          R('rect', { key: 'r', width: 24, height: 24, fill: '#DC241F' }),
+          R('path', { key: 'v', d: 'M0 0H24L0 24Z', fill: '#009543' }),
+          R('line', { key: 'j', x1: -2, y1: 26, x2: 26, y2: -2, stroke: '#FBDE4A', strokeWidth: 6 })
+        ];
+      } else if (code === 'TG') {
+        // Togo : 5 bandes vert/jaune, canton rouge avec étoile blanche.
+        kids = [0, 1, 2, 3, 4].map(function (i) {
+          return R('rect', { key: 'b' + i, y: i * 4.8, width: 24, height: 4.8, fill: i % 2 ? '#FFE000' : '#006A4E' });
+        });
+        kids.push(R('rect', { key: 'c', width: 12, height: 14.4, fill: '#D21034' }));
+        kids.push(R('path', { key: 's', d: 'M6 3.8l0.8 2.2 2.3 0.08-1.8 1.43 0.63 2.23L6 8.46l-1.93 1.28 0.63-2.23-1.8-1.43 2.3-0.08z', fill: '#ffffff' }));
+      } else if (HBANDES[code]) {
+        var hb = HBANDES[code], hh = 24 / hb.length;
+        kids = hb.map(function (c, i) { return R('rect', { key: 'h' + i, y: i * hh, width: 24, height: hh + 0.01, fill: c }); });
+        if (ETOILE_H[code]) kids.push(R('path', { key: 's', d: PATH_ETOILE, fill: ETOILE_H[code] }));
       } else {
         var b = BANDES[code] || ['#c9c6d4', '#ded9e8', '#c9c6d4'];
         kids = [
@@ -537,7 +629,7 @@
   // si aucun partenaire n'a de lien -> rien ne s'affiche.
   window.NS_AFRICABK = function (t, accent) {
     var R = React.createElement, p = window.NS_GEO.actif();
-    var order = (p.affil && p.affil.desktop) || [], seen = {}, out = [];
+    var order = window.NS_ORDRE_AFFIL(p), seen = {}, out = [];
     order.forEach(function (slug) {
       if (seen[slug]) return; seen[slug] = 1;
       var bk = window.NS_PARTENAIRES[slug];
@@ -549,21 +641,50 @@
         R('div', { style: { padding: '12px 14px' } },
           R('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: t.textTer, marginBottom: 4 } }, 'Offre de bienvenue'),
           R('div', { style: { fontSize: 19, fontWeight: 900, color: accent, lineHeight: 1.05, marginBottom: 12 } }, bk.bonus || 'Bonus de bienvenue'),
-          R('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'D\u00e9couvrir l\u2019offre \u2192'))));
+          R('a', { href: window.NS_LIEN(slug, 'bonus'), target: '_blank', rel: 'noopener sponsored', style: { display: 'block', boxSizing: 'border-box', textAlign: 'center', width: '100%', background: bk.couleur, color: window.NS_TXTON(bk.couleur), fontWeight: 800, fontSize: 13, borderRadius: 10, padding: '11px', textDecoration: 'none' } }, 'D\u00e9couvrir l\u2019offre \u2192'))));
     });
     return out;
+  };
+
+  // ── Partage 50/50 des emplacements entre partenaires (20/09/2026) ────────
+  // Un pays africain a maintenant deux partenaires (1WIN et Win Win Bet). Le
+  // tirage est fait UNE fois par appareil et gardé : l'utilisateur voit
+  // toujours le même en tête, sinon l'ordre changerait d'un écran à l'autre
+  // et les chiffres de clics_sortants seraient illisibles. Repli sur le jour
+  // du mois quand localStorage est indisponible (Safari privé, WebView).
+  window.NS_AB = function () {
+    try {
+      var v = localStorage.getItem('ns_ab_bk');
+      if (v !== '0' && v !== '1') {
+        v = Math.random() < 0.5 ? '0' : '1';
+        localStorage.setItem('ns_ab_bk', v);
+      }
+      return +v;
+    } catch (e) { return new Date().getDate() % 2; }
+  };
+  // Liste des partenaires d'un pays, tournée du tirage : avec deux
+  // partenaires, chacun est en première position pour la moitié des
+  // appareils. Sert à tous les emplacements qui listent les partenaires.
+  window.NS_ORDRE_AFFIL = function (p, support) {
+    var a = (p && p.affil) || {};
+    var l = (support === 'mobile' ? a.mobile : a.desktop) || [];
+    if (l.length < 2) return l.slice();
+    var k = window.NS_AB() % l.length;
+    return l.slice(k).concat(l.slice(0, k));
   };
 
   // Opérateurs pour la section Pronostics (bannières) selon le pays actif :
   // nom + couleur + lien (rendu texte, pas d'image, car les bannières sont
   // sur fond de couleur de marque). Utilisé hors France.
-  window.NS_BKMS_GEO = function () {
+  // zone (19/09/2026) : lien 1WIN de la zone (défaut 'pronostics') ; slug et
+  // logoFonce servent aux bandeaux sur fond clair (fiche tennis).
+  window.NS_BKMS_GEO = function (zone) {
     var pp = window.NS_GEO.actif();
-    var order = (pp.affil && pp.affil.desktop) || [], seen = {}, out = [];
+    var order = window.NS_ORDRE_AFFIL(pp), seen = {}, out = [];
     order.forEach(function (s) {
       if (seen[s]) return; seen[s] = 1;
       var bk = window.NS_PARTENAIRES[s];
-      if (bk && bk.url) out.push({ nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logoWhite || bk.logo || null, w: 'auto', size: 22 });
+      if (bk && bk.url) out.push({ slug: s, nom: bk.nom, url: window.NS_LIEN(s, zone || 'pronostics'), color: bk.couleur, logo: bk.logoWhite || bk.logo || null, logoFonce: bk.logo || null, w: 'auto', size: 22 });
     });
     return out.length ? out : [{ nom: '', url: '#', color: '#666' }];
   };
@@ -572,15 +693,15 @@
   // disponible (sinon nom), offre = code promo, lien affilié.
   window.NS_OPI = function (k) {
     var pp = window.NS_GEO.actif();
-    var order = (pp.affil && pp.affil.desktop) || [], seen = {}, list = [];
+    var order = window.NS_ORDRE_AFFIL(pp), seen = {}, list = [];
     order.forEach(function (s) {
       if (seen[s]) return; seen[s] = 1;
       var bk = window.NS_PARTENAIRES[s];
-      if (bk && bk.url) list.push(bk);
+      if (bk && bk.url) list.push([s, bk]);
     });
     if (!list.length) return { nom: '', url: '#', color: '#666', logo: null, offre: '' };
-    var bk = list[k % list.length];
-    return { nom: bk.nom, url: bk.url, color: bk.couleur, logo: bk.logo || null,
+    var slug = list[k % list.length][0], bk = list[k % list.length][1];
+    return { nom: bk.nom, url: window.NS_LIEN(slug, 'cotes'), color: bk.couleur, logo: bk.logo || null,
       offre: bk.bonus || 'Bonus de bienvenue' };
   };
 
@@ -593,12 +714,12 @@
   window.NS_BONUS_LIST = function () {
     var p = window.NS_GEO && window.NS_GEO.actif();
     if (!p || p.code === 'FR') return window.NS_BOOKMAKERS || [];
-    var order = (p.affil && p.affil.desktop) || [], seen = {}, out = [];
+    var order = window.NS_ORDRE_AFFIL(p), seen = {}, out = [];
     order.forEach(function (s) {
       if (seen[s]) return; seen[s] = 1;
       var bk = window.NS_PARTENAIRES[s];
       if (bk && bk.url) out.push({ slug: s, nom: bk.nom, couleur: bk.couleur,
-        note: '', offre: bk.bonus || 'Bonus de bienvenue', url: bk.url, branded: true });
+        note: '', offre: bk.bonus || 'Bonus de bienvenue', url: window.NS_LIEN(s, 'bonus'), branded: true });
     });
     return out.length ? out : (window.NS_BOOKMAKERS || []);
   };
@@ -607,7 +728,7 @@
     if (!window.NS_GEO) return null;
     var R = React.createElement, p = window.NS_GEO.actif();
     if (!p || p.code === 'FR') return null;
-    var order = (p.affil && p.affil.desktop) || [], seen = {}, list = [];
+    var order = window.NS_ORDRE_AFFIL(p), seen = {}, list = [];
     order.forEach(function (s) {
       if (seen[s]) return; seen[s] = 1;
       var bk = window.NS_PARTENAIRES[s];
@@ -618,7 +739,7 @@
       marginBottom:6, WebkitOverflowScrolling:'touch' } },
       list.map(function (pair) {
         var slug = pair[0], bk = pair[1];
-        return R('a', { key:slug, href:bk.url, target:'_blank', rel:'noopener sponsored',
+        return R('a', { key:slug, href:window.NS_LIEN(slug, 'bonus'), target:'_blank', rel:'noopener sponsored',
           style:{ flex:'0 0 auto', width:172, textDecoration:'none', background:t.card,
             border:'1px solid '+t.border, borderRadius:14, overflow:'hidden', display:'flex', flexDirection:'column' } },
           R('div', { style:{ display:'flex', alignItems:'center', justifyContent:'space-between',
@@ -634,19 +755,47 @@
       }));
   };
 
+  // 18/09/2026 : Melbet retiré pour le moment et Win Win Bet masqué (logo pas
+  // propre). 19/09/2026 : 888Starz retiré à son tour, 1WIN a 100 % des
+  // emplacements dans tous les pays africains (demande de l'utilisateur).
+  // 20/09/2026 : Win Win Bet revient avec son logo, à parts égales avec 1WIN
+  // (Afrique uniquement). Le partage 50/50 se joue dans NS_AB() : la moitié
+  // des appareils voit Win Win Bet en premier partout (bonus, cotes,
+  // pronostics) et l'a comme partenaire des boutons « Parier ».
   window.NS_PAYS_GEO = [
-    { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', tz:'Europe/Paris', cotes:[8,11,7,2,32,1],
+    { code:'FR', nom:'France',         drapeau:'\uD83C\uDDEB\uD83C\uDDF7', tz:'Europe/Paris', devise:'EUR', cotes:[8,11,7,2,32,1],
       affil:{ mobile:['winamax'], desktop:['winamax'] } },
-    { code:'CI', nom:"C\u00f4te d'Ivoire", drapeau:'\uD83C\uDDE8\uD83C\uDDEE', tz:'Africa/Abidjan', cotes:[11,8,7,2,32,1],
-      affil:{ mobile:['win1','melbet','starz888'], desktop:['win1','melbet','starz888'] } },
-    { code:'CM', nom:'Cameroun',       drapeau:'\uD83C\uDDE8\uD83C\uDDF2', tz:'Africa/Douala', cotes:[11,8,7,2,32,1],
-      affil:{ mobile:['win1','melbet','starz888'], desktop:['win1','melbet','starz888'] } },
-    { code:'SN', nom:'S\u00e9n\u00e9gal', drapeau:'\uD83C\uDDF8\uD83C\uDDF3', tz:'Africa/Dakar', cotes:[11,8,7,2,32,1],
-      affil:{ mobile:['win1','melbet','starz888'], desktop:['win1','melbet','starz888'] } },
-    { code:'CD', nom:'RD Congo', drapeau:'\uD83C\uDDE8\uD83C\uDDE9', tz:'Africa/Kinshasa', cotes:[11,8,7,2,32,1],
-      affil:{ mobile:['win1','melbet','starz888'], desktop:['win1','melbet','starz888'] } },
-    { code:'ML', nom:'Mali', drapeau:'\uD83C\uDDF2\uD83C\uDDF1', tz:'Africa/Bamako', cotes:[11,8,7,2,32,1],
-      affil:{ mobile:['win1','melbet','starz888'], desktop:['win1','melbet','starz888'] } }
+    { code:'CI', nom:"C\u00f4te d'Ivoire", drapeau:'\uD83C\uDDE8\uD83C\uDDEE', tz:'Africa/Abidjan', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'CM', nom:'Cameroun',       drapeau:'\uD83C\uDDE8\uD83C\uDDF2', tz:'Africa/Douala', devise:'XAF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'SN', nom:'S\u00e9n\u00e9gal', drapeau:'\uD83C\uDDF8\uD83C\uDDF3', tz:'Africa/Dakar', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'CD', nom:'RD Congo', drapeau:'\uD83C\uDDE8\uD83C\uDDE9', tz:'Africa/Kinshasa', devise:'CDF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'ML', nom:'Mali', drapeau:'\uD83C\uDDF2\uD83C\uDDF1', tz:'Africa/Bamako', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    // 16/09/2026 : pays d'où venaient déjà des téléchargements (App Store) ou
+    // francophones proches, qui retombaient sur la France (offres Winamax
+    // inutilisables). 1WIN uniquement, choix de l'utilisateur.
+    { code:'BJ', nom:'B\u00e9nin', drapeau:'\uD83C\uDDE7\uD83C\uDDEF', tz:'Africa/Porto-Novo', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'BF', nom:'Burkina Faso', drapeau:'\uD83C\uDDE7\uD83C\uDDEB', tz:'Africa/Ouagadougou', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'CG', nom:'Congo', drapeau:'\uD83C\uDDE8\uD83C\uDDEC', tz:'Africa/Brazzaville', devise:'XAF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'GA', nom:'Gabon', drapeau:'\uD83C\uDDEC\uD83C\uDDE6', tz:'Africa/Libreville', devise:'XAF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'GH', nom:'Ghana', drapeau:'\uD83C\uDDEC\uD83C\uDDED', tz:'Africa/Accra', devise:'GHS', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'GN', nom:'Guin\u00e9e', drapeau:'\uD83C\uDDEC\uD83C\uDDF3', tz:'Africa/Conakry', devise:'GNF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'MG', nom:'Madagascar', drapeau:'\uD83C\uDDF2\uD83C\uDDEC', tz:'Indian/Antananarivo', devise:'MGA', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'MU', nom:'Maurice', drapeau:'\uD83C\uDDF2\uD83C\uDDFA', tz:'Indian/Mauritius', devise:'MUR', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } },
+    { code:'TG', nom:'Togo', drapeau:'\uD83C\uDDF9\uD83C\uDDEC', tz:'Africa/Lome', devise:'XOF', cotes:[11,8,7,2,32,1],
+      affil:{ mobile:['win1','winwinbet'], desktop:['win1','winwinbet'] } }
   ];
   window.NS_GEO = (function () {
     var CLE = 'ns_geo_pays', SRC = 'ns_geo_src';
@@ -670,6 +819,7 @@
     try { src = localStorage.getItem(SRC); cur = localStorage.getItem(CLE); } catch (e) {}
     if (src !== 'manual') {
       fetch('/api/geo/').then(function (r) { return r.json(); }).then(function (j) {
+        try { if (j && j.pays) localStorage.setItem('ns_geo_ip', j.pays); } catch (e) {}
         var c = j && j.pays && trouver(j.pays) ? j.pays : 'FR';
         var actuel = trouver(cur) ? cur : 'FR';
         if (c !== actuel) {
@@ -682,17 +832,212 @@
     }
     return { actif: actif, set: set, liste: window.NS_PAYS_GEO };
   })();
+  // Livescore (18/09/2026) : rafraîchissement du direct toutes les 15 s aux
+  // heures de grande affluence (soir en semaine 17h-1h, week-end 11h-1h, heure
+  // de Paris), 30 s le reste du temps, et rien quand l'onglet est en
+  // arrière-plan. NS_LIVE_TICK(fn) remplace setInterval(fn, 30000).
+  window.NS_LIVE_RAPIDE = function () {
+    try {
+      var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', weekday: 'short', hour: '2-digit', hour12: false }).formatToParts(new Date());
+      var j = '', h = 0;
+      p.forEach(function (x) { if (x.type === 'weekday') j = x.value; if (x.type === 'hour') h = Number(x.value) % 24; });
+      var weekend = j === 'Sat' || j === 'Sun' || (j === 'Mon' && h < 1);
+      return h < 1 || (weekend ? h >= 11 : h >= 17);
+    } catch (e) { return false; }
+  };
+  window.NS_LIVE_TICK = function (fn) {
+    var dernier = Date.now();
+    return setInterval(function () {
+      if (document.hidden) return;
+      var maintenant = Date.now();
+      if (!window.NS_LIVE_RAPIDE() && maintenant - dernier < 29000) return;
+      dernier = maintenant;
+      fn();
+    }, 15000);
+  };
+  // Votes « Qui va gagner ? » (18/09/2026) : les vrais votes des utilisateurs
+  // (api/vote.js) s'ajoutent à la base fixe affichée par la fiche match.
+  window.NS_VOTES = (function () {
+    var cache = {};
+    function appareil() {
+      try {
+        var d = localStorage.getItem('ns_device_vote');
+        if (!d) {
+          d = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+          localStorage.setItem('ns_device_vote', d);
+        }
+        return d;
+      } catch (e) { return null; }
+    }
+    function lire(m) {
+      if (!m) return Promise.resolve(null);
+      if (cache[m]) return cache[m];
+      cache[m] = fetch('/api/vote/?m=' + encodeURIComponent(m))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+      return cache[m];
+    }
+    function voter(m, choix) {
+      var d = appareil();
+      if (!m || !d) return Promise.resolve(null);
+      var p = fetch('/api/vote/', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ m: String(m), choix: choix, device: d })
+      }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+      cache[m] = p;
+      try { localStorage.setItem('ns_vote_envoye_' + m, choix); } catch (e) {}
+      return p;
+    }
+    // Vote déjà fait sur cet appareil (avant la mise en place) mais jamais
+    // envoyé : on le transmet une fois.
+    function rattraper(m, choix) {
+      try {
+        if (!m || !choix || localStorage.getItem('ns_vote_envoye_' + m)) return null;
+      } catch (e) { return null; }
+      return voter(m, choix);
+    }
+    return { lire: lire, voter: voter, rattraper: rattraper };
+  })();
+
+  // Canal Telegram selon le pays (17/09/2026) : pays africains -> canal
+  // Afrique ; France, Belgique, Suisse et tout le reste -> canal France.
+  // Pays africain = pays choisi/détecté hors FR (NS_PAYS_GEO), ou IP africaine
+  // même si le pays n'est pas dans la liste (Maroc, Niger, Tchad...).
+  window.NS_TELEGRAM = {
+    fr: 'https://t.me/+F_uE4sZicJZhNmY0',
+    af: 'https://t.me/+BdchHfTE2bc4ZGNk'
+  };
+  window.NS_TELEGRAM_URL = function () {
+    var AFRIQUE = ['DZ','AO','BJ','BW','BF','BI','CV','CM','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','SZ','ET',
+      'GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','MA','MZ','NA','NE','NG','RW','ST','SN',
+      'SC','SL','SO','ZA','SS','SD','TZ','TG','TN','UG','ZM','ZW','RE','YT'];
+    var code = 'FR', ip = null;
+    try { code = window.NS_GEO.actif().code; } catch (e) {}
+    try { ip = localStorage.getItem('ns_geo_ip'); } catch (e) {}
+    var afrique = AFRIQUE.indexOf(code) >= 0 || (code === 'FR' && ip && AFRIQUE.indexOf(ip) >= 0);
+    return afrique ? window.NS_TELEGRAM.af : window.NS_TELEGRAM.fr;
+  };
   // Partenaire d'affiliation actif : premier partenaire du pays (selon le
   // support) qui a une URL configurée ; alternance quotidienne s'il y en a
   // plusieurs. Renvoie null si aucun lien n'est encore fourni.
-  window.NS_AFFIL = function () {
+  window.NS_AFFIL = function (zone) {
     var p = window.NS_GEO.actif();
     var mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
     var noms = (p.affil && (mobile ? p.affil.mobile : p.affil.desktop)) || [];
     var dispo = noms.map(function (n) { return window.NS_PARTENAIRES[n]; })
       .filter(function (x) { return x && x.url; });
     if (!dispo.length) return null;
-    return dispo[new Date().getDate() % dispo.length];
+    // 20/09/2026 : tirage stable par appareil (NS_AB) au lieu de l'alternance
+    // quotidienne — le partenaire ne change plus en cours de journée.
+    var choisi = dispo[window.NS_AB() % dispo.length];
+    if (!zone) return choisi;
+    var slug = Object.keys(window.NS_PARTENAIRES).filter(function (k) { return window.NS_PARTENAIRES[k] === choisi; })[0];
+    return Object.assign({}, choisi, { url: window.NS_LIEN(slug, zone) });
+  };
+
+  // ── Monnaie locale et partenaire des boutons « Parier » (18/09/2026) ──────
+  // `mise` : mise d'exemple ronde, adaptée aux habitudes du pays (les 100 €
+  // historiques n'avaient pas de sens en Afrique). Ce n'est PAS une conversion
+  // de change : aucun taux n'est tenu à jour ici.
+  window.NS_DEVISES = {
+    EUR: { symbole: '€', mise: 100, colle: true },   // « 100€ », format historique
+    XOF: { symbole: 'FCFA', mise: 5000 },   // UEMOA : CI, SN, ML, BJ, BF, TG
+    XAF: { symbole: 'FCFA', mise: 5000 },   // CEMAC : CM, CG, GA
+    CDF: { symbole: 'FC', mise: 20000 },
+    GHS: { symbole: 'GH₵', mise: 100 },
+    GNF: { symbole: 'GNF', mise: 50000 },
+    MGA: { symbole: 'Ar', mise: 20000 },
+    MUR: { symbole: 'Rs', mise: 500 }
+  };
+  window.NS_DEVISE = function () {
+    var p = null;
+    try { p = window.NS_GEO.actif(); } catch (e) {}
+    var code = (p && p.devise) || 'EUR';
+    var d = window.NS_DEVISES[code] || window.NS_DEVISES.EUR;
+    return { code: code, symbole: d.symbole, mise: d.mise, colle: !!d.colle };
+  };
+  // 12500 -> « 12 500 FCFA » ; en euros, « 250€ » comme avant.
+  window.NS_MONTANT = function (n, dev) {
+    dev = dev || window.NS_DEVISE();
+    var v = Math.round(Number(n) || 0);
+    return dev.colle ? v + dev.symbole : v.toLocaleString('fr-FR') + ' ' + dev.symbole;
+  };
+  // Texte du bonus d'un partenaire. Les montants des offres (« jusqu'à
+  // 620 000 FCFA ») ne valent que dans la zone franc CFA : ailleurs on garde
+  // le seul pourcentage fourni par le partenaire, sans montant inventé.
+  window.NS_BONUS_LOCAL = function (slug) {
+    var bk = window.NS_PARTENAIRES && window.NS_PARTENAIRES[slug];
+    if (!bk || !bk.bonus) return '';
+    var code = window.NS_DEVISE().code;
+    if (code === 'XOF' || code === 'XAF' || !/FCFA/.test(bk.bonus)) return bk.bonus;
+    var pct = /^(\d+)\s*%/.exec(bk.bonus);
+    return pct ? 'Bonus de bienvenue de ' + pct[1] + ' %' : 'Bonus de bienvenue';
+  };
+  // Partenaire des boutons « Parier » (vote « Qui va gagner ? » du Résumé,
+  // combiné de Mes pronostics) : le partenaire du pays tiré par NS_AB
+  // (20/09/2026 : 1WIN et Win Win Bet à parts égales en Afrique ; avant,
+  // 1WIN en dur). Aucun en France (pas de partenaire affilié), ni en mode
+  // stream, ni dans l'app Play Store : en TWA la promotion des paris sort
+  // vers le site (cf. openBookmakers), jamais vers un bookmaker.
+  window.NS_PARTENAIRE_PARI = function (zone) {
+    try {
+      if (window.NS_HIDE_ODDS) return null;
+      if (window.NS_isTWA && window.NS_isTWA()) return null;
+      var p = window.NS_GEO.actif();
+      if (!p || p.code === 'FR') return null;
+      var dispo = window.NS_ORDRE_AFFIL(p).filter(function (s) {
+        var b = window.NS_PARTENAIRES && window.NS_PARTENAIRES[s];
+        return b && b.url && (b.logoWhite || b.logo);
+      });
+      if (!dispo.length) return null;
+      var slug = dispo[0], bk = window.NS_PARTENAIRES[slug];
+      // Le logo est posé SUR la couleur du partenaire : il lui faut la
+      // version monochrome qui contraste avec ce fond (wordmark blanc sur le
+      // bleu 1WIN, wordmark sombre sur le vert clair Win Win Bet) — le
+      // bicolore s'effacerait dans le fond.
+      var sombre = window.NS_TXTON(bk.couleur) === '#14121c';
+      return { slug: slug, nom: bk.nom, url: window.NS_LIEN(slug, zone), couleur: bk.couleur,
+        logoWhite: (sombre ? (bk.logoMono || bk.logo) : (bk.logoWhite || bk.logo)) || null };
+    } catch (e) { return null; }
+  };
+  function mineur() {
+    return typeof window.NS_MAJEUR_OK !== 'undefined' && !window.NS_MAJEUR_OK;
+  }
+  // Bouton rouge sous le vote « Qui va gagner ? » (fiche match, Résumé).
+  window.NS_CTA_VOTE = {
+    titre: function (cote) {
+      var dev = window.NS_DEVISE();
+      return 'Parie ' + window.NS_MONTANT(dev.mise, dev) + ' pour tenter de gagner '
+        + window.NS_MONTANT(dev.mise * (parseFloat(cote) || 0), dev);
+    },
+    sous: function (equipe) {
+      var bk = window.NS_PARTENAIRE_PARI();
+      return 'en jouant sur ' + equipe + (bk ? ' chez ' + bk.nom : '');
+    },
+    ouvrir: function () {
+      if (mineur()) return;
+      var bk = window.NS_PARTENAIRE_PARI('resume');
+      if (bk) { window.open(bk.url, '_blank', 'noopener'); return; }
+      if (typeof window.openBookmakers === 'function') window.openBookmakers();
+    }
+  };
+  // Bouton « Parier sur ce combiné » de Mes pronostics, version partenaire.
+  // Renvoie null quand il n'y a pas de partenaire (France, app Play Store) :
+  // l'appli garde alors son bouton d'origine.
+  window.NS_BOUTON_COMBINE = function (nbPronos) {
+    var R = window.React, bk = window.NS_PARTENAIRE_PARI('combine');
+    if (!R || !bk || mineur()) return null;
+    var h = R.createElement;
+    var txt = window.NS_TXTON ? window.NS_TXTON(bk.couleur) : '#fff';
+    return h('a', { id: 'ns-cta-combine', className: 'ns-pari', href: bk.url, target: '_blank', rel: 'noopener sponsored',
+      title: 'Ouvre ' + bk.nom + ' dans un nouvel onglet',
+      style: { textDecoration: 'none', width: '100%', background: bk.couleur, border: 'none', borderRadius: 12, padding: '13px',
+        color: txt, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit',
+        boxShadow: '0 4px 16px ' + bk.couleur + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
+      h('span', null, nbPronos > 1 ? '⚡ Parier sur ce combiné' : '⚡ Parier sur ce pari'),
+      bk.logoWhite
+        ? h('img', { src: bk.logoWhite, alt: bk.nom, style: { height: 16, width: 'auto', display: 'block' } })
+        : h('span', { style: { fontWeight: 900 } }, bk.nom));
   };
 
   var PREFERES = [8, 11, 7, 2, 32, 1];   // Bet365, 1xBet, William Hill, Marathon, Betano, 10Bet
@@ -1048,6 +1393,26 @@
     // Echec ou vide : on ne memorise pas, la prochaine visite retentera.
     p.then(function (r) { if (!r) delete cacheCompet[k]; }, function () { delete cacheCompet[k]; });
     return p;
+  };
+
+  // Classement d'une fiche match, meme ouverte depuis une carte qui ne connait
+  // pas la competition (Match du Ninja d'hier en cache, favoris enregistres…) :
+  // on la retrouve alors par l'identifiant du match (18/09/2026).
+  window.NS_COMPET_MATCH = function (m) {
+    if (!m) return Promise.resolve(null);
+    var avec = function (lid, s) {
+      return window.NS_COMPET(lid, s).then(function (c) {
+        if (c) { c.ligueId = lid; c.saison = s; }
+        return c;
+      });
+    };
+    if (m.ligueId && m.saison) return avec(m.ligueId, m.saison);
+    // Seuls les matchs API-Football (slug « af… ») ont un identifiant exploitable.
+    var af = String(m.slug || m.id || '').indexOf('af') === 0;
+    if (!af || !m.eventId || !window.NS_MATCH_PAR_ID) return Promise.resolve(null);
+    return window.NS_MATCH_PAR_ID(m.eventId).then(function (x) {
+      return x && x.ligueId && x.saison ? avec(x.ligueId, x.saison) : null;
+    }).catch(function () { return null; });
   };
 
   // ── Top buteurs / passeurs d'une competition ──────────────────────────────
@@ -1666,7 +2031,7 @@
         for (var id in ECRANS) if (ECRANS[id][0] === p) return { ecran: id };
         if (p === '/direct/') return { ecran: 'schedule', live: true };
         // /football/match/{slug}-{id}/{onglet}/
-        var mm = p.match(/^\/football\/match\/.*?-(\d+)\/(?:([a-z-]+)\/)?$/);
+        var mm = p.match(/^\/(?:football|tennis)\/match\/.*?-(\d+)\/(?:([a-z-]+)\/)?$/);
         if (mm) return { match: +mm[1], onglet: mm[2] ? (window.NS_ONGLETS.id[mm[2]] || 'resume') : 'resume' };
         // /football/equipe/{slug}-{id}/
         var em = p.match(/^\/football\/equipe\/.*?-(\d+)\/$/);
@@ -1701,6 +2066,18 @@
       },
     };
   })();
+
+  // Ouvrir une fiche match quand l'URL en designe une et qu'aucun rendu serveur
+  // n'est passe avant (cas de /tennis/match/, servi tel quel par le CDN) :
+  // l'application ne lit que NS_SEO_CIBLE pour ca, on la pose donc ici. Le
+  // bundle charge ensuite le match par son identifiant — foot, puis tennis.
+  try {
+    if (!window.NS_SEO_CIBLE) {
+      var _r0 = window.NS_ROUTE.initial();
+      if (_r0 && _r0.match) window.NS_SEO_CIBLE = { type: 'match', id: _r0.match, onglet: _r0.onglet || 'resume' };
+    }
+  } catch (e) {}
+
   window.addEventListener('popstate', function (e) { window.NS_ROUTE._pop(e); });
 
   // ── URLs canoniques, pour un maillage interne en vrais <a href> ─────────
@@ -1713,8 +2090,10 @@
   }
   window.NS_URL_MATCH = function (m) {
     if (!m || !m.eventId) return null;
-    return '/football/match/' + slugUrl(m.homeTeam) + '-' + slugUrl(m.awayTeam)
-         + '-' + m.eventId + '/';
+    // Un match de tennis sous /football/ : l'adresse etait fausse et le rendu
+    // serveur repondait « page introuvable » a tout lien partage (21/09/2026).
+    var base = (m.sport === 'tennis') ? '/tennis/match/' : '/football/match/';
+    return base + slugUrl(m.homeTeam) + '-' + slugUrl(m.awayTeam) + '-' + m.eventId + '/';
   };
   window.NS_URL_EQUIPE = function (eq) {
     if (!eq || !eq.id || !eq.name) return null;
@@ -1880,6 +2259,10 @@
     return window.NS_manifestPret
       .then(function () { return reponse('path=fixtures&id=' + id); })
       .then(function (brut) {
+        // Identifiant inconnu du foot : c'est peut-etre un match de tennis.
+        // Repli indispensable pour les liens deja partages, qui pointent tous
+        // vers /football/match/ (s13.js pose les bons prefixes depuis le 21/09).
+        if (!brut.length && window.NS_MATCH_TENNIS_PAR_ID) return window.NS_MATCH_TENNIS_PAR_ID(id);
         if (!brut.length) return null;
         var f = brut[0];
         var m = convertir(f);
@@ -2012,6 +2395,12 @@
     return window.NS_manifestPret
       .then(function () { return reponse('path=fixtures/statistics&fixture=' + id); })
       .then(function (rep) {
+        // Réponse vide (début de match, copie CDN encore périmée) : 2e essai
+        // qui contourne le cache CDN (le proxy ignore les paramètres « _ »).
+        if (rep && rep.length >= 2) return rep;
+        return reponse('path=fixtures/statistics&fixture=' + id + '&_r=' + Math.floor(Date.now() / 30000));
+      })
+      .then(function (rep) {
         if (!rep || rep.length < 2) return null;
         var A = rep[0].statistics || [], B = rep[1].statistics || [];
         var get = function (arr, type) {
@@ -2060,19 +2449,32 @@
   // Etat live de plusieurs matchs favoris en UN appel (ids joints par '-').
   // Les favoris stockent une copie figee du match (0-0 au moment de l'ajout) ;
   // c'est ce helper qui ramene le vrai score, comme le calendrier.
+  // API-Football refuse plus de 20 ids par appel : au-dela, la requete
+  // echouait, le catch rendait {} et TOUS les favoris restaient figes sur leur
+  // copie d'origine (« A VENIR », sans score, meme le lendemain) — constate le
+  // 16/09/2026 avec plus de 20 matchs suivis. On decoupe en paquets de 20, et
+  // un paquet en echec n'efface plus les autres.
   window.NS_FAV_LIVE = function (ids) {
-    ids = (ids || []).filter(Boolean);
+    ids = (ids || []).filter(Boolean).filter(function (x, i, t) { return t.indexOf(x) === i; });
     if (!ids.length) return Promise.resolve({});
+    var paquets = [];
+    for (var i = 0; i < ids.length; i += 20) paquets.push(ids.slice(i, i + 20));
     return window.NS_manifestPret
-      .then(function () { return reponse('path=fixtures&ids=' + ids.join('-')); })
-      .then(function (brut) {
+      .then(function () {
+        return Promise.all(paquets.map(function (lot) {
+          return reponse('path=fixtures&ids=' + lot.join('-')).catch(function () { return []; });
+        }));
+      })
+      .then(function (lots) {
         var map = {};
-        brut.forEach(function (f) {
-          var m = convertir(f);
-          var p = m.apiScore ? m.apiScore.split('-') : null;
-          m.homeScore = p ? p[0] : null;
-          m.awayScore = p ? p[1] : null;
-          map[f.fixture.id] = m;
+        lots.forEach(function (brut) {
+          (brut || []).forEach(function (f) {
+            var m = convertir(f);
+            var p = m.apiScore ? m.apiScore.split('-') : null;
+            m.homeScore = p ? p[0] : null;
+            m.awayScore = p ? p[1] : null;
+            map[f.fixture.id] = m;
+          });
         });
         return map;
       })
@@ -2113,7 +2515,17 @@
           });
           return { id: c.seriesId, season: s, fixtures: c.matches.map(function (m) { return m.eventId; }) };
         });
-        return Promise.all([cotesJour(cle, ligues), fusionRouges(cle, comps)]).then(function (tout) {
+        // Les cotes ne retiennent jamais les matchs plus de 3,5 s : sur un jour
+        // pas encore prechauffe, l'agregat serveur prenait 13 s (dimanche 20,
+        // constat du 18/09) et le calendrier restait vide tout ce temps.
+        // Passe ce delai on affiche sans cotes ; l'agregat continue cote
+        // serveur, et comme un jour a venir sans cote n'est pas mis en cache
+        // (regle plus bas), la visite suivante les recupere depuis Redis.
+        var cotesOuRien = Promise.race([
+          cotesJour(cle, ligues),
+          new Promise(function (r) { setTimeout(function () { r({}); }, 3500); }),
+        ]);
+        return Promise.all([cotesOuRien, fusionRouges(cle, comps)]).then(function (tout) {
           var cotes = tout[0];
           comps.forEach(function (c) {
             c.matches.forEach(function (m) {

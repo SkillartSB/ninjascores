@@ -1826,7 +1826,23 @@ export default async function handler(req, res) {
       }
       if (seg && !PAR_SEG[seg]) return introuvable(res);
       const r = await pageMatch(String(q.match), seg);
-      if (!r) return introuvable(res);
+      // Un identifiant que le football ne connait pas est peut-etre un match de
+      // TENNIS : tous les liens partages avant le 21/09/2026 pointent vers
+      // /football/match/, et ils repondaient « page introuvable ». On redirige
+      // vers l'adresse tennis, ou l'application ouvre la fiche.
+      if (!r) {
+        // Les identifiants ne se confondent pas : API-Football en est a 1,5
+        // million, API-Tennis depasse 12 millions. Sans ce garde-fou, un match
+        // de foot retire du fournisseur partirait vers le tennis au lieu de
+        // rendre un 404 honnete.
+        const id = (String(q.match).match(/(?:^|-)(\d+)\/?$/) || [])[1];
+        if (id && Number(id) > 5000000) {
+          res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600');
+          res.setHeader('Location', SITE + '/tennis/match/' + String(q.match).replace(/\/+$/, '') + '/');
+          return res.status(302).end();
+        }
+        return introuvable(res);
+      }
       // L'identifiant final fait foi. Un libelle different (ancien nom de
       // club, faute de frappe, lien recopie) ne doit pas creer une seconde
       // page au meme contenu : on redirige en 301 vers la forme canonique,

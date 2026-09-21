@@ -295,6 +295,20 @@
       });
     },
     dateDe: dateDe,
-    tournois: tournois
+    tournois: tournois,
+    // Un match tennis par son identifiant (21/09/2026) : c'est ce qui manquait
+    // pour ouvrir une fiche depuis une URL ou une notification — le repli de
+    // NS_MATCH_PAR_ID (s6.js) passe par ici quand le foot ne connait pas l'id.
+    parId: function (id) {
+      return Promise.all([api('method=get_fixtures&match_key=' + id + '&detail=1'), tournois()])
+        .then(function (r) {
+          var x = (r[0] || [])[0];
+          if (!x) return null;
+          var m = convertir(x, r[1] || {});
+          if (m) m.brut = x;
+          return m;
+        }).catch(function () { return null; });
+    }
   };
+  window.NS_MATCH_TENNIS_PAR_ID = function (id) { return window.NinjaTennisAPI.parId(id); };
 })();

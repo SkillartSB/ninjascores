@@ -478,6 +478,22 @@
       "destination": "/api/seo?tennis=1"
     },
     {
+      "source": "/tennis/match/:slug/:onglet/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tennis/match/:slug/:onglet",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tennis/match/:slug/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tennis/match/:slug",
+      "destination": "/index.html"
+    },
+    {
       "source": "/tennis/",
       "destination": "/index.html"
     },
