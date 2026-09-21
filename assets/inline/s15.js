@@ -186,6 +186,15 @@
     };
     var r1 = rangDe(k1), r2 = rangDe(k2);
 
+    // Titre de l'onglet : sans rendu serveur sur /tennis/match/, une fiche
+    // ouverte par son lien gardait « Résultats de foot en direct » (21/09/2026).
+    R.useEffect(function () {
+      if (!n1 || !n2) return;
+      var avant = document.title;
+      document.title = n1 + ' - ' + n2 + (tournoi ? ' · ' + tournoi : '') + ' — NinjaScores';
+      return function () { document.title = avant; };
+    }, [n1, n2, tournoi]);
+
     var tabs = [['resume', 'Résumé'], ['pbp', 'Point par point'], ['cotes', 'Cotes'], ['pronostics', 'Pronostics'], ['tat', 'TàT'], ['tableau', 'Tableau']].filter(function (o) { return !(mineur && (o[0] === 'cotes' || o[0] === 'pronostics')); });
     var tb = R.useState('resume'), tab = tb[0], setTab = tb[1];
 
