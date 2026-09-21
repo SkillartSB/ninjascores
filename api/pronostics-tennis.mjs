@@ -12,6 +12,10 @@
 // chargement (incident seo.js/moteur.mjs, août 2026).
 const API = 'https://api.api-tennis.com/tennis/';
 const COTE_MIN = 1.3, FREQ_MIN = 0.7, MAX_MATCHS = 16, TTL = 1800;
+// Plancher d'echantillon, repris du foot (NS_FORME) : sous 5 matchs joues on
+// ne publie rien. Sans lui, un joueur revenu de blessure sortait « 3/3 = 100 % ».
+const MIN_MATCHS = 5;
+const SITE = 'https://ninjascores.com';
 const TIER = { GS: 1, FINALS: 1, OLY: 1, M1000: 2, '500': 3, TEAM: 3, '250': 4, CH: 5 };
 const CAT = { GS: 'Grand Chelem', FINALS: 'Finals', OLY: 'JO', M1000: 'Masters 1000', '500': '500', '250': '250', TEAM: 'Par équipes', CH: 'Challenger' };
 
@@ -65,6 +69,39 @@ function analyser(liste, k) {
 }
 const freq = (L, f) => { const n = L.length; if (!n) return { x: 0, n: 0, r: 0 }; const x = L.filter(f).length; return { x, n, r: x / n }; };
 
+// Forme d'un joueur (21/09/2026) : on passe par notre propre proxy plutot que
+// par l'API — la reponse y est deja calculee et cachee 3 h (api/tennis.js,
+// method=forme), donc un joueur aligne dans deux matchs ne coute qu'un appel.
+async function formeDe(k) {
+  try {
+    const r = await fetch(SITE + '/api/tennis/?method=forme&player=' + k + '&n=10', { signal: AbortSignal.timeout(20000) });
+    const j = await r.json();
+    return (j && j.result) || null;
+  } catch { return null; }
+}
+
+/**
+ * Les matchs a retenir pour juger la forme. `surface` non nulle = on prend les
+ * matchs joues sur cette surface quand le joueur en a assez.
+ *
+ * Backtest du 21/09/2026 (578 matchs ATP/WTA joues sur 45 jours, calcul limite
+ * aux matchs anterieurs a chacun) : le filtre par surface aide sur le PROFIL du
+ * match (plus de 21,5 jeux : 65,6 % -> 70,3 % de reussite ; match en 2 sets :
+ * 58,6 % -> 59,7 %) mais dessert le VAINQUEUR (53,9 % -> 51,5 %). D'ou deux
+ * listes : brute pour « qui gagne », par surface pour « comment ca se joue ».
+ * Le meme test a ecarte 5 matchs au lieu de 10 (vainqueur : 48,9 %, sous le
+ * hasard) et la ponderation des matchs recents (49,2 %).
+ */
+function listeForme(f, surface) {
+  if (!f) return [];
+  const parSurf = surface && f.surfaces && f.surfaces[surface];
+  const src = (parSurf && parSurf.matchs && parSurf.matchs.length >= MIN_MATCHS) ? parSurf.matchs : f.matchs;
+  return (src || []).map((m) => ({
+    gagne: !!m.g, nbSets: (m.sets || []).length, jeux: m.jeux || 0,
+    premierSet: m.set1, surface: m.surf || null,
+  }));
+}
+
 export async function pronosTennis(cle, jour) {
   const [fix, tournois] = await Promise.all([
     api(cle, 'method=get_fixtures&date_start=' + jour + '&date_stop=' + jour),
@@ -79,12 +116,22 @@ export async function pronosTennis(cle, jour) {
     .sort((a, b) => (a.tier - b.tier) || String(a.x.event_time).localeCompare(String(b.x.event_time)));
   matchs = matchs.filter((m) => m.tier <= 3).concat(matchs.filter((m) => m.tier === 4)).slice(0, MAX_MATCHS);
 
+  // Surface de chaque tournoi du jour : la table locale ne connait que le
+  // circuit principal, method=surfaces couvre tout le fournisseur.
+  const tks = [...new Set(matchs.map((m) => String(m.x.tournament_key)))];
+  const surfaces = tks.length
+    ? await fetch(SITE + '/api/tennis/?method=surfaces&tk=' + tks.join(','), { signal: AbortSignal.timeout(20000) })
+        .then((r) => r.json()).then((j) => (j && j.result) || {}).catch(() => ({}))
+    : {};
+
   const donnees = await enFile(matchs.map((m) => async () => {
-    const [odds, h2h] = await Promise.all([
+    const [odds, h2h, f1, f2] = await Promise.all([
       api(cle, 'method=get_odds&match_key=' + m.x.event_key),
       api(cle, 'method=get_H2H&first_player_key=' + m.x.first_player_key + '&second_player_key=' + m.x.second_player_key),
+      formeDe(m.x.first_player_key),
+      formeDe(m.x.second_player_key),
     ]);
-    return { odds: odds && odds[String(m.x.event_key)], h2h };
+    return { odds: odds && odds[String(m.x.event_key)], h2h, f1, f2 };
   }), 4);
 
   const par = new Map();
@@ -92,7 +139,20 @@ export async function pronosTennis(cle, jour) {
     const d = donnees[i]; if (!d || !d.odds) return;
     const x = m.x, mk = d.odds;
     const n1 = x.event_first_player, n2 = x.event_second_player;
-    const LA = analyser(d.h2h && d.h2h.firstPlayerResults, x.first_player_key), LB = analyser(d.h2h && d.h2h.secondPlayerResults, x.second_player_key);
+    const surf = (surfaces[String(x.tournament_key)] || {}).surf || null;
+    // Forme dediee (10 derniers matchs) ; repli sur les dix lignes de get_H2H
+    // si l'appel n'a rien rendu.
+    const brut1 = listeForme(d.f1, null), brut2 = listeForme(d.f2, null);
+    const LA0 = brut1.length ? brut1 : analyser(d.h2h && d.h2h.firstPlayerResults, x.first_player_key);
+    const LB0 = brut2.length ? brut2 : analyser(d.h2h && d.h2h.secondPlayerResults, x.second_player_key);
+    // Symetrie, comme au foot : comparer 10 matchs a 4 fausse tout le tableau.
+    const nf = Math.min(LA0.length, LB0.length, 10);
+    if (nf < MIN_MATCHS) return;
+    const LA = LA0.slice(0, nf), LB = LB0.slice(0, nf);
+    // Sets et jeux : les memes joueurs, mais vus sur la surface du jour.
+    const surfA0 = listeForme(d.f1, surf), surfB0 = listeForme(d.f2, surf);
+    const ns = Math.min(surfA0.length || nf, surfB0.length || nf, 10);
+    const LAs = (surfA0.length ? surfA0 : LA0).slice(0, ns), LBs = (surfB0.length ? surfB0 : LB0).slice(0, ns);
     const w1 = meilleure(mk['Home/Away'] && mk['Home/Away'].Home), w2 = meilleure(mk['Home/Away'] && mk['Home/Away'].Away);
     if (!w1 || !w2) return;
     const pCotes = (1 / w1.o) / (1 / w1.o + 1 / w2.o);
@@ -109,7 +169,7 @@ export async function pronosTennis(cle, jour) {
     ajouter(nomFav + ' gagne', coteFav, fav);
     const s1 = meilleure(mk['Home/Away (1st Set)'] && mk['Home/Away (1st Set)'][favA ? 'Home' : 'Away']);
     ajouter(nomFav + ' gagne le 1er set', s1, freq(favA ? LA : LB, (r) => r.premierSet === true));
-    const fusion = (f) => { const a = freq(LA, f), b = freq(LB, f); return { x: a.x + b.x, n: a.n + b.n, r: (a.n + b.n) ? (a.x + b.x) / (a.n + b.n) : 0 }; };
+    const fusion = (f) => { const a = freq(LAs, f), b = freq(LBs, f); return { x: a.x + b.x, n: a.n + b.n, r: (a.n + b.n) ? (a.x + b.x) / (a.n + b.n) : 0 }; };
     ajouter('Plus de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Over'), fusion((r) => r.nbSets >= 3));
     ajouter('Moins de 2,5 sets', meilleureOU(mk['Over/Under'], 'Over/Under', '2.5', 'Under'), fusion((r) => r.nbSets === 2));
     const mkG = mk['Over/Under by Games in Match'];
@@ -131,6 +191,7 @@ export async function pronosTennis(cle, jour) {
         match: n1 + ' - ' + n2, pick: c.pick, odds: c.odds, prob, score: Math.max(0.5, Math.min(5, Math.round(prob / 10) / 2)),
         slug: null, heure: x.event_date + 'T' + (x.event_time || '00:00') + ':00Z', langue: 'fr',
         source: c.book === 'Pncl' ? 'Pinnacle' : c.book,
+        echantillon: c.x + '/' + c.n, surface: surf,
         equipes: [{ id: x.first_player_key, nom: n1, logo: x.event_first_player_logo || null }, { id: x.second_player_key, nom: n2, logo: x.event_second_player_logo || null }],
       });
     });

@@ -176,6 +176,13 @@
     var tb = R.useState('resume'), tab = tb[0], setTab = tb[1];
 
     var h2h = useApi(k1 && k2 ? 'method=get_H2H&first_player_key=' + k1 + '&second_player_key=' + k2 : null, true);
+    // Forme des deux joueurs (21/09/2026) : 10 derniers matchs et bilan par
+    // surface sur 13 mois (api/tennis.js, method=forme). Avant, les tendances
+    // se contentaient des dix lignes de get_H2H, dont la surface n'etait
+    // connue que pour les 48 tournois de data/tennis-tournois.json.
+    var utileForme = tab === 'pronostics' || tab === 'tat' || tab === 'resume';
+    var forme1 = useApi(k1 ? 'method=forme&player=' + k1 : null, utileForme);
+    var forme2 = useApi(k2 ? 'method=forme&player=' + k2 : null, utileForme);
     var cotes = useApi(!mineur && cle ? 'method=get_odds&match_key=' + cle : null, tab === 'cotes' || tab === 'pronostics' || tab === 'resume');
     var tableau = useApi(tx.tournoiCle ? 'method=get_draw&tournament_key=' + tx.tournoiCle : null, tab === 'tableau');
 
@@ -280,8 +287,43 @@
         }); });
       }
       if (!pbp.length) return h(Vide, { t: t }, statut === 'upcoming' ? 'Le point par point apparaîtra au coup d’envoi.' : (x ? 'Point par point indisponible pour ce match.' : 'Chargement…'));
+      // Le jeu decisif arrive sous « Set 2 TieBreak » : c'est le DERNIER JEU du
+      // set 2, pas un set de plus. Sans ce rattachement, l'onglet « 2. SET »
+      // apparaissait deux fois (constate le 21/09/2026).
+      var setDe = function (g) {
+        var k = String(g.set_number || 'Set 1');
+        var n = (/(\d+)/.exec(k) || [])[1];
+        return n ? 'Set ' + n : k;
+      };
       var parSet = {}, ordre = [];
-      pbp.forEach(function (g) { var k = String(g.set_number || 'Set 1'); if (!parSet[k]) { parSet[k] = []; ordre.push(k); } parSet[k].push(g); });
+      pbp.forEach(function (g) { var k = setDe(g); if (!parSet[k]) { parSet[k] = []; ordre.push(k); } parSet[k].push(g); });
+      // … et il doit rester en fin de set, quel que soit l'ordre du flux.
+      var estTb = function (g) { return /tiebreak/i.test(String(g.set_number || '')); };
+      var numJeu = function (g) { return parseInt(g.number_game, 10) || 0; };
+      ordre.forEach(function (k) {
+        var jeuxNormaux = parSet[k].filter(function (g) { return !estTb(g); }).sort(function (a, b) { return numJeu(a) - numJeu(b); });
+        var tbs = parSet[k].filter(estTb).sort(function (a, b) { return numJeu(a) - numJeu(b); });
+        if (tbs.length) {
+          // Le flux porte AUSSI le jeu decisif comme un 13e jeu vide (aucun
+          // point) : sans ce filtre, le set affichait deux jeux pour un seul
+          // decisif, et le score du set partait a 6-8.
+          var aDesPoints = function (g) { return (g.points || []).some(function (p) { return /\d/.test(String(p.score || '')); }); };
+          jeuxNormaux = jeuxNormaux.filter(function (g) { return aDesPoints(g) || numJeu(g) <= 12; });
+          // Le flux decoupe le jeu decisif en un pseudo-jeu PAR POINT : points
+          // vide, et `score` qui porte le score du tie-break (« 3 - 2 »). On le
+          // recompose en un seul jeu dont les points sont ces scores.
+          var dernier = String(tbs[tbs.length - 1].score || '').replace(/\s/g, '').split('-');
+          var a1 = parseInt(dernier[0], 10) || 0, b1 = parseInt(dernier[1], 10) || 0;
+          jeuxNormaux.push({
+            set_number: k, number_game: String(jeuxNormaux.length + 1),
+            player_served: tbs[0].player_served,
+            serve_winner: a1 > b1 ? 'First Player' : 'Second Player',
+            serve_lost: null, score: tbs[tbs.length - 1].score,
+            points: tbs.map(function (g) { return { score: String(g.score || '').replace(/\s/g, '').replace('-', ' - '), break_point: null, set_point: null, match_point: null }; }),
+          });
+        }
+        parSet[k] = jeuxNormaux;
+      });
       var courant = (setChoisi != null && parSet[setChoisi]) ? setChoisi : ordre[ordre.length - 1];
       var numSet = (/(\d+)/.exec(courant) || [])[1] || (ordre.indexOf(courant) + 1);
       var idxSet = ordre.indexOf(courant);
@@ -296,7 +338,27 @@
         var avant = { a: jeuxA, b: jeuxB };
         var gagnant = g.serve_winner === 'First Player' ? 'a' : g.serve_winner === 'Second Player' ? 'b' : null;
         var tb = avant.a >= 6 && avant.b >= 6;
-        var pts = (g.points || []).map(function (p) {
+        // Points repetes (21/09/2026) : le flux renvoie la sequence brute, avec
+        // des retours en arriere — « 40-0, 40-15, 40-0, 40-15, 40-0, 40-15 »
+        // pour un seul jeu. Un point ne peut que faire avancer le score : on
+        // ne garde que les etats jamais vus.
+        // Un jeu normal ne connait que 0/15/30/40/A ; un jeu decisif, des
+        // entiers. Le flux melange les deux (« 3 - 3 », un point du tie-break,
+        // apparaissait au milieu du 12e jeu) : on ecarte ce qui n'a pas de sens
+        // ici, puis les etats deja vus — un point ne revient jamais en arriere.
+        var VALIDES = { '0': 1, '15': 1, '30': 1, '40': 1, 'A': 1 };
+        var pointOk = function (k) {
+          var c = k.split('-');
+          if (c.length !== 2) return false;
+          return tb ? (/^\d+$/.test(c[0]) && /^\d+$/.test(c[1])) : (!!VALIDES[c[0]] && !!VALIDES[c[1]]);
+        };
+        var vus = {};
+        var pointsPropres = (g.points || []).filter(function (p) {
+          var k = String(p.score || '').replace(/\s/g, '');
+          if (!k || !pointOk(k) || vus[k]) return false;
+          vus[k] = 1; return true;
+        });
+        var pts = pointsPropres.map(function (p) {
           var sc = String(p.score || '').replace(/\s/g, '').split('-');
           var pa = sc[0] || '', pb = sc[1] || '';
           var val = function (v) { return v === 'A' ? 50 : (parseInt(v, 10) || 0); };
@@ -310,8 +372,10 @@
           return { score: pa + ':' + pb, bp: bp || !!p.break_point, sp: sp || !!p.set_point, mp: mp || !!p.match_point };
         });
         if (gagnant === 'a') jeuxA++; else if (gagnant === 'b') jeuxB++;
-        var brk = gagnant ? ((servA && gagnant === 'b') || (!servA && gagnant === 'a')) : false;
-        return { servA: servA, brk: brk, enCours: !gagnant, apres: jeuxA + '-' + jeuxB, pts: pts };
+        // « Service perdu » n'a pas de sens sur un jeu decisif : le service y
+        // change toutes les deux frappes de balle.
+        var brk = (!tb && gagnant) ? ((servA && gagnant === 'b') || (!servA && gagnant === 'a')) : false;
+        return { servA: servA, brk: brk, tb: tb, enCours: !gagnant, apres: jeuxA + '-' + jeuxB, pts: pts };
       });
       var badge = function (txt, fond, couleur) { return h('span', { style: { fontSize: 9, fontWeight: 900, letterSpacing: .6, textTransform: 'uppercase', color: couleur || '#fff', background: fond, borderRadius: 6, padding: '3px 7px', flexShrink: 0 } }, txt); };
       var balle = h('span', { style: { fontSize: 14, lineHeight: 1, fontFamily: EMOJI } }, '🎾');
@@ -323,7 +387,7 @@
             var sc = g.apres.split('-');
             return h('div', { key: i, style: { padding: '10px 12px', borderTop: i ? '1px solid ' + t.divider : 'none', background: g.brk ? (accent + '12') : 'transparent', borderLeft: g.brk ? '3px solid ' + accent : '3px solid transparent' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 } },
-                g.servA ? (g.brk ? badge('Service perdu', accent) : null) : null,
+                g.tb ? badge('Jeu décisif', t.cardAlt, t.textSec) : (g.servA ? (g.brk ? badge('Service perdu', accent) : null) : null),
                 g.servA ? balle : h('span', { style: { width: 14 } }),
                 g.enCours ? badge('En cours', t.cardAlt, t.textSec) : h('span', { style: { fontSize: 20, fontWeight: 900, letterSpacing: 1, fontVariantNumeric: 'tabular-nums' } },
                   h('span', { style: { color: g.servA ? '#EF4444' : t.text } }, sc[0]), h('span', { style: { color: t.textTer } }, '-'), h('span', { style: { color: !g.servA ? '#EF4444' : t.text } }, sc[1])),
@@ -368,7 +432,9 @@
     var partenaires = (function () {
       var geo = window.NS_GEO && window.NS_GEO.actif ? window.NS_GEO.actif() : null;
       if (geo && geo.code !== 'FR' && window.NS_BKMS_GEO) {
-        try { var l = window.NS_BKMS_GEO() || []; if (l.length) return l.map(function (b) { return { logo: b.logo, url: b.url, color: b.color, nom: b.nom, offre: b.offre || 'Bonus de bienvenue', w: b.w, size: b.size }; }); } catch (e) {}
+        // 19/09/2026 : lien 1WIN de la zone (onglet Cotes -> 'cotes', sinon
+        // 'pronostics'), bonus en monnaie locale, logo foncé pour le fond clair.
+        try { var l = window.NS_BKMS_GEO(tab === 'cotes' ? 'cotes' : 'pronostics') || []; if (l.length) return l.map(function (b) { return { logo: b.logo, logoFonce: b.logoFonce, url: b.url, color: b.color, nom: b.nom, offre: (b.slug && window.NS_BONUS_LOCAL && window.NS_BONUS_LOCAL(b.slug)) || b.offre || 'Bonus de bienvenue', w: b.w, size: b.size }; }); } catch (e) {}
       }
       var liste = (window.NS_BONUS_LIST ? window.NS_BONUS_LIST() : (window.NS_BOOKMAKERS || []));
       var COURT = { winamax: '100€ EN CASH', unibet: '100€ OFFERTS', betclic: '100€ OFFERTS', pmu: '100€ REMBOURSÉS' };
@@ -384,10 +450,11 @@
       var bk = partenaires[i % partenaires.length];
       return h('a', { href: bk.url, target: '_blank', rel: 'noopener sponsored', style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: t.bg, borderRadius: 12, border: '1px solid ' + t.border, textDecoration: 'none', marginBottom: 16 } },
         h('span', { style: { fontSize: 18, fontFamily: EMOJI } }, '🎁'),
-        bk.logo ? h('img', { src: bk.logo, alt: bk.nom, style: { height: 26, width: 'auto', maxWidth: 74, borderRadius: 6, flexShrink: 0, display: 'block' } }) : h('span', { style: { fontSize: 15, fontWeight: 900, color: bk.color, whiteSpace: 'nowrap' } }, bk.nom),
+        ((!props.isDark && bk.logoFonce) || bk.logo) ? h('img', { src: (!props.isDark && bk.logoFonce) || bk.logo, alt: bk.nom, style: { height: 26, width: 'auto', maxWidth: 74, borderRadius: 6, flexShrink: 0, display: 'block' } }) : h('span', { style: { fontSize: 15, fontWeight: 900, color: bk.color, whiteSpace: 'nowrap' } }, bk.nom),
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontSize: 9, fontWeight: 700, color: t.textSec, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 } }, 'Offre de bienvenue'),
-          h('div', { style: { fontSize: 15, fontWeight: 900, color: accent, lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, bk.offre)),
+          // Montant sur deux lignes au besoin, sans couper « 620 000 FCFA ».
+          h('div', { style: { fontSize: 14, fontWeight: 900, color: accent, lineHeight: 1.15 } }, String(bk.offre || '').replace(/(\d) (\d)/g, '$1 $2').replace(/ (FCFA|FC|GNF|Ar|Rs)\b/g, ' $1'))),
         h('div', { style: { background: bk.color, borderRadius: 8, padding: '7px 10px', color: window.NS_TXTON ? window.NS_TXTON(bk.color) : '#fff', fontSize: 9, fontWeight: 800, letterSpacing: 0.5, flexShrink: 0, whiteSpace: 'nowrap' } }, "S'INSCRIRE"));
     };
     var bandeParier = function (i) {
@@ -460,6 +527,20 @@
     };
 
     // ── tendances des 2 joueurs (10 derniers matchs) ──
+    // La surface arrive en clair de method=forme ('hard'), les tables locales
+    // parlent le libelle du fournisseur ('Hard') : on reste sur ce dernier.
+    var SURF_CODE = { hard: 'Hard', clay: 'Clay', grass: 'Grass', carpet: 'Carpet' };
+    var depuisForme = function (etat) {
+      // api() rend deja j.result : l'etat porte directement { matchs, surfaces… }.
+      var r = etat && etat.d;
+      if (!r || !r.matchs) return null;
+      return r.matchs.map(function (m) {
+        return { gagne: !!m.g, nbSets: (m.sets || []).length, jeux: m.jeux || 0, tb: !!m.tb,
+          premierSet: m.set1, concede: (m.setsP || 0) > 0,
+          surface: m.surf ? (m.indoor && m.surf === 'hard' ? 'Hard (Indoor)' : SURF_CODE[m.surf]) : null,
+          adv: m.adv, tournoi: m.t, date: m.d };
+      });
+    };
     var analyser = function (liste, k) {
       return (liste || []).slice(0, 10).map(function (e) {
         var aEstK = String(e.first_player_key) === String(k);
@@ -519,7 +600,7 @@
     // ── onglet Pronostics ──
     var rendrePronos = function () {
       if (!cotes.ok || !h2h.ok) return h(R.Fragment, null, bandeauANJ(), h(Vide, { t: t }, 'Calcul des pronostics…'));
-      var LA = analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = analyser(h2h.d && h2h.d.secondPlayerResults, k2);
+      var LA = depuisForme(forme1) || analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = depuisForme(forme2) || analyser(h2h.d && h2h.d.secondPlayerResults, k2);
       var w1 = meilleures('Home/Away', 'Home'), w2 = meilleures('Home/Away', 'Away');
       var pCotes = w1 && w2 ? (1 / w1.o) / (1 / w1.o + 1 / w2.o) : null;
       var bh = bilanH2H();
@@ -530,27 +611,55 @@
       var p = pCotes != null ? 0.55 * pCotes + 0.2 * pH2H + 0.15 * pForme + 0.10 * pRang : 0.4 * pH2H + 0.35 * pForme + 0.25 * pRang;
       var favA = p >= 0.5, nomFav = favA ? n1 : n2, nomOut = favA ? n2 : n1;
       var surfaceFr = surface ? (SURF_FR[surface] || surface) : null;
+      // Bilan sur la surface du jour : celui du serveur porte sur 13 mois
+      // (method=forme), bien plus parlant que « 2 des 10 derniers matchs ».
+      // Repli sur les dix derniers quand la forme n'a pas repondu.
       var surSurface = function (L) { if (!surface) return null; var g = SURF_GROUPE[surface]; var s = L.filter(function (m) { return m.surface && SURF_GROUPE[m.surface] === g; }); return s.length ? s.filter(function (m) { return m.gagne; }).length + '/' + s.length : null; };
-      var sa = surSurface(LA), sb = surSurface(LB);
+      var bilanSurf = function (etat, L) {
+        var r = etat && etat.d;
+        var groupe = surface ? SURF_GROUPE[surface] : null;
+        var code = groupe === 'terre' ? 'clay' : groupe === 'gazon' ? 'grass' : groupe === 'dur' ? 'hard' : null;
+        var b = r && r.surfaces && code && r.surfaces[code] && r.surfaces[code].bilan;
+        return b && b.j ? b.g + '/' + b.j : surSurface(L);
+      };
+      var sa = bilanSurf(forme1, LA), sb = bilanSurf(forme2, LB);
 
       // Candidats : cote >= 1,30 et frequence >= 7/10 (regle NinjaScores), tries par frequence.
       var s1 = meilleures('Home/Away (1st Set)', 'Home'), s2 = meilleures('Home/Away (1st Set)', 'Away');
       var over25 = meilleuresOU('Over/Under', '2.5', 'Over'), under25 = meilleuresOU('Over/Under', '2.5', 'Under');
       var mkG = marche('Over/Under by Games in Match') || {}; var lignesG = Object.keys(mkG['Over/Under by Games in Match Over'] || {}).filter(function (l) { return /\.5$/.test(l); }).sort(function (a, b) { return a - b; });
       var ligneG = lignesG.filter(function (l) { return Math.abs(l - 21.5) < 1; })[0] || lignesG[Math.floor(lignesG.length / 2)];
-      var fusion = function (ev) { var a = freq(LA, ev), b = freq(LB, ev); return { x: a.x + b.x, n: a.n + b.n }; };
+      // Sets et jeux : les memes joueurs, mais sur la surface du jour. Backtest
+      // du 21/09 (578 matchs) : « plus de 21,5 jeux » passe de 65,6 % a 70,3 %
+      // de reussite avec ce filtre, alors que « qui gagne » y perd (53,9 % ->
+      // 51,5 %) — le vainqueur reste donc juge sur la forme toutes surfaces.
+      var surSurfaceL = function (etat, repli) {
+        var r = etat && etat.d;
+        var groupe = surface ? SURF_GROUPE[surface] : null;
+        var code = groupe === 'terre' ? 'clay' : groupe === 'gazon' ? 'grass' : groupe === 'dur' ? 'hard' : null;
+        var l = r && r.surfaces && code && r.surfaces[code] && r.surfaces[code].matchs;
+        if (!l || l.length < 5) return repli;
+        return l.map(function (m) {
+          return { gagne: !!m.g, nbSets: (m.sets || []).length, jeux: m.jeux || 0, tb: !!m.tb,
+            premierSet: m.set1, concede: (m.setsP || 0) > 0, surface: surface, adv: m.adv, tournoi: m.t, date: m.d };
+        });
+      };
+      var LAs = surSurfaceL(forme1, LA), LBs = surSurfaceL(forme2, LB);
+      var nS = Math.min(LAs.length, LBs.length, 10);
+      LAs = LAs.slice(0, nS); LBs = LBs.slice(0, nS);
+      var fusion = function (ev) { var a = freq(LAs, ev), b = freq(LBs, ev); return { x: a.x + b.x, n: a.n + b.n }; };
       var cand = [];
       var ajouter = function (label, sousLabel, cote, x, n) { if (!cote || !n) return; cand.push({ label: label, sous: sousLabel, cote: cote, x: x, n: n, r: x / n }); };
       var fav = favA ? fa : fb, favCote = favA ? w1 : w2;
       ajouter(nomFav + ' gagne', fav.x + '/' + fav.n + ' — 10 derniers matchs', favCote, fav.x, fav.n);
       // Un seul vainqueur propose (le favori de nos indicateurs) : pas de picks contradictoires.
       var f1s = favA ? freq(LA, EVENEMENTS[1]) : freq(LB, EVENEMENTS[1]); ajouter(nomFav + ' gagne le 1er set', f1s.x + '/' + f1s.n + ' — 10 derniers matchs', favA ? s1 : s2, f1s.x, f1s.n);
-      var f3 = fusion(EVENEMENTS[2]); ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — 10 derniers matchs de chaque joueur', over25, f3.x, f3.n);
-      var f2 = fusion(EVENEMENTS[3]); ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — 10 derniers matchs de chaque joueur', under25, f2.x, f2.n);
+      var f3 = fusion(EVENEMENTS[2]); ajouter('Plus de 2,5 sets', f3.x + '/' + f3.n + ' — ' + (LAs !== LA ? 'derniers matchs sur ' + (surfaceFr || '').toLowerCase() : '10 derniers matchs') + ' de chaque joueur', over25, f3.x, f3.n);
+      var f2 = fusion(EVENEMENTS[3]); ajouter('Moins de 2,5 sets', f2.x + '/' + f2.n + ' — ' + (LAs !== LA ? 'derniers matchs sur ' + (surfaceFr || '').toLowerCase() : '10 derniers matchs') + ' de chaque joueur', under25, f2.x, f2.n);
       if (ligneG) {
         var evG = { f: function (m) { return m.jeux > parseFloat(ligneG); } }, evGm = { f: function (m) { return m.nbSets && m.jeux < parseFloat(ligneG); } };
-        var fg = fusion(evG); ajouter('Plus de ' + ligneG.replace('.', ',') + ' jeux', fg.x + '/' + fg.n + ' — 10 derniers matchs de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Over'), fg.x, fg.n);
-        var fgm = fusion(evGm); ajouter('Moins de ' + ligneG.replace('.', ',') + ' jeux', fgm.x + '/' + fgm.n + ' — 10 derniers matchs de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Under'), fgm.x, fgm.n);
+        var fg = fusion(evG); ajouter('Plus de ' + ligneG.replace('.', ',') + ' jeux', fg.x + '/' + fg.n + ' — ' + (LAs !== LA ? 'derniers matchs sur ' + (surfaceFr || '').toLowerCase() : '10 derniers matchs') + ' de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Over'), fg.x, fg.n);
+        var fgm = fusion(evGm); ajouter('Moins de ' + ligneG.replace('.', ',') + ' jeux', fgm.x + '/' + fgm.n + ' — ' + (LAs !== LA ? 'derniers matchs sur ' + (surfaceFr || '').toLowerCase() : '10 derniers matchs') + ' de chaque joueur', meilleuresOU('Over/Under by Games in Match', ligneG, 'Under'), fgm.x, fgm.n);
       }
       var retenus = cand.filter(function (c) { return c.cote.o >= 1.3 && c.r >= 0.7; }).sort(function (a, b) { return (b.r - a.r) || (b.cote.o - a.cote.o); }).slice(0, 4);
       var note = function (r) { return Math.round(r * 20) / 2; };
@@ -566,7 +675,7 @@
             h('div', { style: { fontSize: 12.5, color: t.text, lineHeight: 1.5, marginBottom: 10 } },
               pCotes != null ? nomFav + ' part favori avec ' + Math.round((favA ? pCotes : 1 - pCotes) * 100) + ' % de probabilité implicite. ' : nomFav + ' part favori selon nos indicateurs. ',
               bh.n ? 'Le tête-à-tête est ' + (bh.wa === bh.wb ? 'équilibré (' + bh.wa + ' - ' + bh.wb + ')' : 'en faveur de ' + (bh.wa > bh.wb ? n1 : n2) + ' (' + Math.max(bh.wa, bh.wb) + ' - ' + Math.min(bh.wa, bh.wb) + ')') + '. ' : 'Première confrontation entre les deux joueurs. ',
-              (surfaceFr && (sa || sb)) ? 'Sur ' + surfaceFr.toLowerCase() + ', ' + n1 + ' est à ' + (sa || '–') + ' et ' + n2 + ' à ' + (sb || '–') + ' sur les 10 derniers matchs.' : ''),
+              (surfaceFr && (sa || sb)) ? 'Sur ' + surfaceFr.toLowerCase() + ', ' + n1 + ' est à ' + (sa || '–') + ' et ' + n2 + ' à ' + (sb || '–') + ((forme1.d && forme1.d.surfaces) ? ' sur les douze derniers mois.' : ' sur les 10 derniers matchs.') : ''),
             [['🎾', 'Surface', surfaceFr ? surfaceFr + (tour ? ' · ' + tour : '') : (tour || 'Tournoi ' + tournoi)],
              ['📊', 'Probabilités', pCotes != null ? n1 + ' ' + Math.round(pCotes * 100) + ' % · ' + n2 + ' ' + Math.round((1 - pCotes) * 100) + ' %' : 'Cotes indisponibles'],
              ['🏆', 'Classement', (r1 ? 'n°' + r1.place : '–') + ' contre ' + (r2 ? 'n°' + r2.place : '–') + ' ' + circuit]].map(function (b, i) {
@@ -593,7 +702,7 @@
     var sj = R.useState('a'), joueurTend = sj[0], setJoueurTend = sj[1];
     var rendreTaT = function () {
       if (!h2h.ok) return h(Vide, { t: t }, 'Chargement…');
-      var LA = analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = analyser(h2h.d && h2h.d.secondPlayerResults, k2);
+      var LA = depuisForme(forme1) || analyser(h2h.d && h2h.d.firstPlayerResults, k1), LB = depuisForme(forme2) || analyser(h2h.d && h2h.d.secondPlayerResults, k2);
       var liste = ((h2h.d && h2h.d.H2H) || []).slice().sort(function (a, b) { return String(b.event_date).localeCompare(String(a.event_date)); });
       var surfDe = function (e) { var tt = T[String(e.tournament_key)]; return tt && tt.surface ? tt.surface : null; };
       var filtree = liste.filter(function (e) { if (filtre === 'tous') return true; var s = surfDe(e); return s && SURF_GROUPE[s] === filtre; });
