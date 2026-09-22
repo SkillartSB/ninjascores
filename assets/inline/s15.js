@@ -211,6 +211,9 @@
     // surface sur 13 mois (api/tennis.js, method=forme). Avant, les tendances
     // se contentaient des dix lignes de get_H2H, dont la surface n'etait
     // connue que pour les 48 tournois de data/tennis-tournois.json.
+    // 22/09/2026 : 5 ou 10 derniers matchs, au choix (window.NS_ECHANTILLON, s6.js).
+    var eh = R.useState(window.NS_ECHANTILLON ? window.NS_ECHANTILLON.get() : 10), ech = eh[0], setEch = eh[1];
+    R.useEffect(function () { return window.NS_ECHANTILLON && window.NS_ECHANTILLON.abonner(setEch); }, []);
     var utileForme = tab === 'pronostics' || tab === 'tat' || tab === 'resume';
     var forme1 = useApi(k1 ? 'method=forme&player=' + k1 : null, utileForme);
     var forme2 = useApi(k2 ? 'method=forme&player=' + k2 : null, utileForme);
@@ -586,7 +589,7 @@
       // api() rend deja j.result : l'etat porte directement { matchs, surfaces… }.
       var r = etat && etat.d;
       if (!r || !r.matchs) return null;
-      return r.matchs.map(function (m) {
+      return r.matchs.slice(0, ech).map(function (m) {
         return { gagne: !!m.g, nbSets: (m.sets || []).length, jeux: m.jeux || 0, tb: !!m.tb,
           premierSet: m.set1, concede: (m.setsP || 0) > 0,
           surface: m.surf ? (m.indoor && m.surf === 'hard' ? 'Hard (Indoor)' : SURF_CODE[m.surf]) : null,
@@ -594,7 +597,7 @@
       });
     };
     var analyser = function (liste, k) {
-      return (liste || []).slice(0, 10).map(function (e) {
+      return (liste || []).slice(0, ech).map(function (e) {
         var aEstK = String(e.first_player_key) === String(k);
         var gagne = (aEstK && e.event_winner === 'First Player') || (!aEstK && e.event_winner === 'Second Player');
         var sets = (e.scores || []).map(function (q) { var a = String(q.score_first || ''), b = String(q.score_second || ''); if (!a || !b || (a === '0' && b === '0')) return null; return { a: parseInt(a, 10) || 0, b: parseInt(b, 10) || 0, tb: /\./.test(a) || /\./.test(b) || (parseInt(a, 10) >= 6 && parseInt(b, 10) >= 6) }; }).filter(Boolean);
@@ -642,8 +645,10 @@
       };
       return h(Carte, { t: t },
         h('div', { style: { padding: '12px 14px 4px' } },
-          h('div', { style: { fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase' } }, 'Tendances des 2 joueurs'),
-          h('div', { style: { fontSize: 11, color: t.textSec, marginTop: 3, lineHeight: 1.4 } }, 'Fréquence de chaque événement sur les ', h('span', { style: { fontWeight: 800, color: t.text } }, '10 derniers matchs'), ' de chaque joueur.')),
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: accent, letterSpacing: 1.1, textTransform: 'uppercase' } }, 'Tendances des 2 joueurs'),
+            window.NS_SelecteurEchantillon ? h(window.NS_SelecteurEchantillon, { t: t, accent: accent }) : null),
+          h('div', { style: { fontSize: 11, color: t.textSec, marginTop: 3, lineHeight: 1.4 } }, 'Fréquence de chaque événement sur les ', h('span', { style: { fontWeight: 800, color: t.text } }, Math.min(ech, Math.max(LA.length, LB.length)) + ' derniers matchs'), ' de chaque joueur.')),
         enTete(n1, LA, accent), enTete(n2, LB, '#F59E0B'),
         EVENEMENTS.map(ligne),
         h('div', { style: { padding: '8px 14px 12px', fontSize: 9.5, color: t.textTer, lineHeight: 1.4 } }, h('span', { style: { color: '#22C55E', fontWeight: 800 } }, 'V'), ' Victoire · ', h('span', { style: { color: '#EF4444', fontWeight: 800 } }, 'D'), ' Défaite. Une fréquence élevée ne garantit pas le résultat.'));
@@ -782,8 +787,9 @@
       return h(R.Fragment, null,
         h(Carte, { t: t },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '12px 14px 8px' } },
-            h('div', null, h('div', { style: { fontSize: 13.5, fontWeight: 800, color: t.text } }, 'Tendances en cours'), h('div', { style: { fontSize: 10.5, color: t.textSec } }, 'Sur les 10 derniers matchs')),
-            h('div', { style: { display: 'flex', gap: 4 } }, pilule('a', n1), pilule('b', n2))),
+            h('div', null, h('div', { style: { fontSize: 13.5, fontWeight: 800, color: t.text } }, 'Tendances en cours'), h('div', { style: { fontSize: 10.5, color: t.textSec } }, 'Sur les ' + Math.min(ech, L.length || ech) + ' derniers matchs')),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } }, pilule('a', n1), pilule('b', n2),
+              window.NS_SelecteurEchantillon ? h(window.NS_SelecteurEchantillon, { t: t, accent: accent }) : null)),
           EVENEMENTS.map(function (ev, i) {
             var r = freq(L, ev);
             return h('div', { key: ev.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderTop: '1px solid ' + t.divider } },

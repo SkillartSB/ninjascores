@@ -17,7 +17,7 @@
    texte français n'apparaît le temps d'un éclair. */
 (function () {
   var LANGUES = ['fr', 'en', 'es', 'pt'];
-  var VERSION_DICO = 14;  // 21/09/2026 : tout le mode tennis traduit (EN/ES/PT)
+  var VERSION_DICO = 15;  // 21/09/2026 : tout le mode tennis traduit (EN/ES/PT)
   // (10) 18/09/2026 : « Garde sa cage inviolée » -> « N’encaisse pas de but »
 
   // Le choix de langue se perdait et l'app repassait en anglais toute seule

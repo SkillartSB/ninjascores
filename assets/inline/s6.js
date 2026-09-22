@@ -1222,8 +1222,56 @@
       f:function(m){ return (m.gf + m.ga) - (m.hf + m.ha) > 0.5; } },
   ];
 
+  // ── Taille de l'echantillon : 5 ou 10 derniers matchs (22/09/2026) ────────
+  // Demande utilisateur : pouvoir juger sur les 5 derniers matchs plutot que
+  // sur 10. Le choix vaut pour le foot ET le tennis, et pour les trois blocs
+  // qui s'appuient sur la forme (tendances, tete-a-tete, pronostics), sinon
+  // deux ecrans du meme match afficheraient des chiffres differents.
+  //
+  // 10 reste le defaut : le backtest tennis du 21/09 (578 matchs) donne 53,9 %
+  // de reussite sur 10 derniers contre 48,9 % sur 5 pour designer le vainqueur.
+  // Le 5 sert a lire la forme du moment, pas a la preferer par principe.
+  window.NS_ECHANTILLON = (function () {
+    var abonnes = [], courant = 10;
+    try { var m = parseInt(localStorage.getItem('ns_echantillon'), 10); if (m === 5) courant = 5; } catch (e) {}
+    return {
+      get: function () { return courant; },
+      set: function (v) {
+        v = (Number(v) === 5) ? 5 : 10;
+        if (v === courant) return;
+        courant = v;
+        try { localStorage.setItem('ns_echantillon', String(v)); } catch (e) {}
+        abonnes.slice().forEach(function (f) { try { f(v); } catch (e) {} });
+      },
+      couper: function (L) { return (L || []).slice(0, courant); },
+      abonner: function (f) { abonnes.push(f); return function () { abonnes = abonnes.filter(function (x) { return x !== f; }); }; }
+    };
+  })();
+
+  // Le bouton « 5 | 10 », pose dans l'en-tete des blocs concernes.
+  window.NS_SelecteurEchantillon = function (props) {
+    var R = window.React; if (!R) return null;
+    var t = (props && props.t) || {}, accent = (props && props.accent) || '#6133E0';
+    var st = R.useState(window.NS_ECHANTILLON.get()), v = st[0], setV = st[1];
+    R.useEffect(function () { return window.NS_ECHANTILLON.abonner(setV); }, []);
+    return R.createElement('div', { style: { display: 'flex', gap: 2, background: t.cardAlt || 'rgba(0,0,0,0.05)', borderRadius: 8, padding: 2, flexShrink: 0 },
+      title: 'Nombre de matchs analyses' },
+      [5, 10].map(function (n) {
+        var on = n === v;
+        return R.createElement('button', { key: n, type: 'button',
+          onClick: function (e) { e.stopPropagation(); window.NS_ECHANTILLON.set(n); },
+          style: { border: 'none', borderRadius: 6, padding: '3px 10px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer',
+            fontFamily: 'inherit', background: on ? accent : 'transparent', color: on ? '#fff' : (t.textSec || '#6b7280') } }, n);
+      }));
+  };
+
   window.NS_PRONOS = function (forme, cotes) {
     if (!forme || !forme.A || !forme.B || !forme.A.length || !forme.B.length) return null;
+    // L'echantillon choisi par l'utilisateur (5 ou 10) s'applique ici aussi :
+    // un pronostic calcule sur 10 matchs a cote de tendances affichees sur 5
+    // serait incomprehensible.
+    var coupe = (window.NS_ECHANTILLON && window.NS_ECHANTILLON.couper) || function (L) { return L; };
+    forme = { teams: forme.teams, A: coupe(forme.A), B: coupe(forme.B) };
     var both = forme.A.concat(forme.B);
     var lire = function (ref) {
       var g = cotes && ref && cotes[ref[0]];
@@ -1240,7 +1288,11 @@
     // Marches « de match » : chaque equipe apporte ses 10 rencontres, d'ou
     // 20 observations. Le libelle doit le dire, sinon « 17/20 sur les 10
     // derniers matchs » est incomprehensible.
-    var srcDeux = '10 derniers matchs de chaque équipe';
+    // Le libelle suit l'echantillon choisi : « 9/10 sur les 10 derniers matchs »
+    // alors que les tendances affichaient 5 matchs juste au-dessus, personne
+    // ne s'y retrouvait (22/09/2026).
+    var nEch = Math.max(forme.A.length, forme.B.length);
+    var srcDeux = nEch + ' derniers matchs de chaque équipe';
     var out = MARCHES.map(function (M) {
       return ligne(M.lbl, M.pred, both.filter(M.f).length, both.length, lire(M.c), srcDeux);
     });
@@ -1252,7 +1304,7 @@
       .forEach(function (d) {
         var L = d[1], k = L.filter(function (m) { return m.gf >= m.ga; }).length;
         var r = ligne('Double Chance', d[0], k, L.length, lire(d[2]),
-                      '10 derniers matchs' + (d[3] ? ' de ' + d[3] : ''));
+                      L.length + ' derniers matchs' + (d[3] ? ' de ' + d[3] : ''));
         r.g = 'dc'; out.push(r);
       });
 
