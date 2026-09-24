@@ -23,9 +23,12 @@
 .fx .h{font:700 25px/1 'JBMono',monospace;letter-spacing:.04em;color:var(--amber);width:92px;flex:none}
 .fx .duo{display:flex;flex:none;width:96px}
 .fx .duo img{width:57px;height:57px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))}
+.fx .duo img.round{border-radius:50%;object-fit:cover}
 .fx .duo img:last-child{margin-left:-18px}
 .fx .n{font:900 39px/1 'Archivo';font-stretch:104%;letter-spacing:-.005em;text-transform:uppercase;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* le span est mesurable par fitLine : il se réduit au lieu d'être tronqué */
+.fx .n span{display:block;width:max-content;white-space:nowrap}
 .fx .lg{margin-left:auto;font:500 18px/1 'JBMono',monospace;letter-spacing:.15em;
   color:rgba(255,255,255,.46);text-transform:uppercase;white-space:nowrap}
 
@@ -75,7 +78,11 @@
 .disc .ticks{position:absolute;inset:-16px;border-radius:50%;opacity:.5}
 .disc img{position:relative;width:170px;height:200px;object-fit:contain;
   filter:drop-shadow(0 16px 26px rgba(0,0,0,.75)) drop-shadow(0 0 30px color-mix(in srgb,var(--c) 45%,transparent))}
+/* round:true → drapeau de sélection, recadré en pastille ronde */
+.disc img.round{width:198px;height:198px;border-radius:50%;object-fit:cover;filter:none;
+  box-shadow:0 16px 30px rgba(0,0,0,.66), 0 0 0 3px rgba(255,255,255,.14) inset}
 .side .nm{margin-top:36px;font:900 54px/1 'Archivo';font-stretch:112%;letter-spacing:-.015em;
+  white-space:nowrap;width:max-content;
   text-transform:uppercase;text-align:center}
 .side .meta{margin-top:14px;font:600 16px/1 'JBMono',monospace;letter-spacing:.24em;color:rgba(255,255,255,.42)}
 
@@ -97,8 +104,9 @@
   display:flex;align-items:center;gap:14px}
 .stats .v em{font-style:normal;color:var(--amber)}
 .stats .v u{text-decoration:none;font-size:.62em;color:rgba(255,255,255,.44);margin-left:-6px}
-.stats .s{font:500 16px/1 'JBMono',monospace;letter-spacing:.11em;color:rgba(255,255,255,.46);
-  text-transform:uppercase;white-space:nowrap}
+/* la légende passe à la ligne plutôt que de déborder sur la colonne voisine */
+.stats .s{font:500 16px/1.34 'JBMono',monospace;letter-spacing:.11em;color:rgba(255,255,255,.46);
+  text-transform:uppercase;white-space:normal;max-width:97%}
 .stats .dots{display:inline-flex;gap:5px;margin-left:10px;vertical-align:middle}
 .stats .dots i{width:9px;height:9px;border-radius:50%;background:var(--amber);display:block}
 .stats .dots i.off{background:rgba(255,255,255,.18)}
@@ -198,6 +206,7 @@
 :root[data-fmt="story"] .mhead{margin-top:86px}
 :root[data-fmt="story"] .disc{width:352px;height:352px}
 :root[data-fmt="story"] .disc img{width:206px;height:242px}
+:root[data-fmt="story"] .disc img.round{width:240px;height:240px}
 :root[data-fmt="story"] .side .nm{margin-top:46px;font-size:64px}
 :root[data-fmt="story"] .vs .bar{height:420px}
 :root[data-fmt="story"] .stats .cell{padding:34px 0}
@@ -227,8 +236,14 @@
 /* Les 7 slides du carrousel. */
 const TOTAL = CAROUSEL.matches.length + 2;
 
+/* le format pilote la taille de départ des noms d'équipe : 54 px en 4:5,
+   64 px en 9:16 (cf. l'override :root[data-fmt="story"]). */
+const FMT = new URLSearchParams(location.search).get('format');
+
 FIT.push(['.cover-title', 240, 60], ['.cover-sub', 124, 40],
-         ['.cta-title', 190, 50], ['.cta-sub', 118, 40]);
+         ['.cta-title', 190, 50], ['.cta-sub', 118, 40],
+         ['.side .nm', FMT === 'story' ? 64 : 54, 30],
+         ['.fx .n span', FMT === 'story' ? 42 : 39, 20]);
 
 /* ── Slide 1 : la sélection du jour ───────────────────────────── */
 function slideCover() {
@@ -237,9 +252,10 @@ function slideCover() {
     <div class="fx a-wipe" style="--d:${.62 + i * .09}s">
       <div class="h">${m.time}</div>
       <div class="duo">
-        <img src="${m.home.crest}" alt=""><img src="${m.away.crest}" alt="">
+        <img class="${m.home.round ? 'round' : ''}" src="${m.home.crest}" alt=""
+        ><img class="${m.away.round ? 'round' : ''}" src="${m.away.crest}" alt="">
       </div>
-      <div class="n">${up(m.home.name)} / ${up(m.away.name)}</div>
+      <div class="n"><span>${up(m.home.name)} / ${up(m.away.name)}</span></div>
       <div class="lg">${up(m.league.name)}</div>
     </div>`).join('');
 
@@ -280,7 +296,7 @@ function slideMatch(m, i) {
             stroke="rgba(255,255,255,.34)" stroke-width=".5" stroke-dasharray=".6 4.2"/></svg>
         </div>
         <div class="ring"></div><div class="plate"></div>
-        <img src="${t.crest}" alt="${t.name}">
+        <img class="${t.round ? 'round' : ''}" src="${t.crest}" alt="${t.name}">
       </div>
       <div class="nm a-rise" style="--d:${d + .12}s">${up(t.name)}</div>
     </div>`;

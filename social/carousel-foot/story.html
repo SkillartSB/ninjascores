@@ -42,6 +42,8 @@
   filter:drop-shadow(0 4px 10px rgba(0,0,0,.65))}
 .scard .duo img:last-child{margin-left:-24px}
 .scard .duo img.lit{border-radius:50%;background:#F4F1FB;padding:5px}
+.scard .duo img.round{border-radius:50%;object-fit:cover;background:none;padding:0;
+  box-shadow:0 0 0 2px rgba(255,255,255,.18) inset}
 
 .scard .mid{position:relative;flex:1;min-width:0}
 .scard .top{display:flex;align-items:center;gap:14px;
@@ -112,7 +114,7 @@ const c = CAROUSEL.cover, a = CAROUSEL.cta;
 
 /* Une ligne par match : heure, écussons, affiche, prono, cote. */
 function card(m, i) {
-  const crest = t => `<img class="${t.plate === 'light' ? 'lit' : ''}" src="${t.crest}" alt="">`;
+  const crest = t => `<img class="${t.round ? 'round' : (t.plate === 'light' ? 'lit' : '')}" src="${t.crest}" alt="">`;
   return `
   <div class="scard a-wipe" style="--c:${m.home.color};--d:${.62 + i * .09}s">
     <div class="cglow"></div>

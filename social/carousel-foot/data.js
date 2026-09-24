@@ -5,10 +5,11 @@
        color     → couleur du club, elle pilote le halo derrière l'écusson
        plate:'light' → écusson très sombre : on le pose sur un disque blanc
        light: true   → logo de ligue très sombre : badge sur fond blanc
+       round: true   → drapeau de sélection : recadré en pastille ronde
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'DIM 20.09',
+  date: 'JEU 24.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -20,71 +21,75 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Dimanche 20 septembre : derby de Madrid, Classique OM – PSG et
-     Clássico portugais le même jour. Horaires et cotes Bet365 via
-     /api/foot ; fréquences sur des historiques de championnat
-     continus.                                                    */
+     Jeudi 24 septembre : trêve internationale. Première journée de
+     Ligue des Nations et qualifications CAN. Horaires et cotes Bet365
+     via /api/foot (relevées à 12h20). Fréquences calculées sur les
+     8 derniers matchs de chaque sélection, sans trou de calendrier.  */
   matches: [
     {
-      league: { name: 'LaLiga', country: 'Espagne',
-                badge: 'assets/leagues/la-liga.png', light: true },
-      time: '16:15',
-      home: { name: 'Atlético',    crest: 'assets/crests/atletico.png',    color: '#E03127' },
-      away: { name: 'Real Madrid', crest: 'assets/crests/real-madrid.png', color: '#D4B24A' },
-      prono: ['Atlético', 'ou match nul'],
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Pays-Bas',  crest: 'assets/crests/flag-nl.svg', color: '#F36C21', round: true },
+      away: { name: 'Allemagne', crest: 'assets/crests/flag-de.svg', color: '#DD0000', round: true },
+      prono: ['Plus de', '2.5 buts'],
+      cote: '1.44',
+      book: '',
+      freq: '86%',
+      note: 9,
+      sample: 'Sur 14 matchs des 2 sélections',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Norvège',  crest: 'assets/crests/flag-no.svg', color: '#00205B', round: true },
+      away: { name: 'Danemark', crest: 'assets/crests/flag-dk.svg', color: '#C60C30', round: true },
+      prono: ['Plus de', '2.5 buts'],
+      cote: '1.57',
+      book: '',
+      freq: '86%',
+      note: 9,
+      sample: 'Sur 14 matchs des 2 sélections',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Kosovo',  crest: 'assets/crests/flag-xk.svg', color: '#244AA5', round: true },
+      away: { name: 'Irlande', crest: 'assets/crests/flag-ie.svg', color: '#169B62', round: true },
+      prono: ['Une équipe', 'finit à 0'],
       cote: '1.80',
       book: '',
-      freq: '70%',
+      freq: '67%',
       note: 7,
-      sample: "Sur les 10 derniers matchs de l'Atlético",
+      sample: "Irlande : 3 buts encaissés en 7 matchs",
     },
     {
-      league: { name: 'Premier League', country: 'Angleterre',
-                badge: 'assets/leagues/premier-league.png', light: true },
-      time: '17:30',
-      home: { name: 'Fulham',     crest: 'assets/crests/fulham.png',     color: '#9FA8B8' },
-      away: { name: 'Man United', crest: 'assets/crests/man-united.png', color: '#DA291C' },
-      prono: ['Moins de', '3.5 buts'],
-      cote: '1.62',
-      book: '',
-      freq: '70%',
-      note: 7,
-    },
-    {
-      league: { name: 'Serie A', country: 'Italie', badge: 'assets/leagues/serie-a.png' },
-      time: '18:00',
-      home: { name: 'Juventus', crest: 'assets/crests/juventus.png', color: '#8E99A8',
-              plate: 'light' },
-      away: { name: 'Atalanta', crest: 'assets/crests/atalanta.png', color: '#2A7FD4' },
-      prono: ['Moins de', '2.5 buts'],
-      cote: '1.91',
+      league: { name: 'Qualif. CAN', country: 'Afrique',
+                badge: 'assets/leagues/can-qualif.svg' },
+      time: '21:00',
+      home: { name: "Côte d'Ivoire", crest: 'assets/crests/flag-ci.svg', color: '#FF8200', round: true },
+      away: { name: 'Ghana',         crest: 'assets/crests/flag-gh.svg', color: '#CE1126', round: true },
+      prono: ['Victoire', "Côte d'Ivoire"],
+      cote: '1.57',
       book: '',
       freq: '75%',
       note: 8,
+      sample: 'Ghana : 1 victoire sur 8 matchs',
     },
     {
-      league: { name: 'Ligue 1', country: 'France', badge: 'assets/leagues/ligue-1.png' },
-      time: '20:45',
-      home: { name: 'Marseille', crest: 'assets/crests/marseille.png', color: '#2FAEE0' },
-      away: { name: 'PSG',       crest: 'assets/crests/psg.png',       color: '#E31837' },
-      prono: ['Moins de', '4.5 buts'],
-      cote: '1.40',
+      league: { name: 'Qualif. CAN', country: 'Afrique',
+                badge: 'assets/leagues/can-qualif.svg' },
+      time: '21:00',
+      home: { name: 'Cameroun', crest: 'assets/crests/flag-cm.svg', color: '#007A5E', round: true },
+      away: { name: 'Comores',  crest: 'assets/crests/flag-km.svg', color: '#3A75C4', round: true },
+      prono: ['Moins de', '2.5 buts'],
+      cote: '1.75',
       book: '',
-      freq: '95%',
-      note: 10,
-    },
-    {
-      league: { name: 'Liga Portugal', country: 'Portugal',
-                badge: 'assets/leagues/liga-portugal.png' },
-      time: '21:30',
-      home: { name: 'Porto',   crest: 'assets/crests/porto.png',   color: '#0057B8' },
-      away: { name: 'Benfica', crest: 'assets/crests/benfica.png', color: '#E00000' },
-      prono: ['Benfica', 'ou match nul'],
-      cote: '1.44',
-      book: '',
-      freq: '100%',
-      note: 10,
-      sample: 'Sur les 10 derniers matchs de Benfica',
+      freq: '77%',
+      note: 8,
+      sample: 'Sur 13 matchs des 2 sélections',
     },
   ],
 
@@ -97,7 +102,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 1149 autres matchs aujourd\'hui',   // 1154 matchs au total le 20/09 selon l'API
-    mention: 'Cotes indicatives · fréquences sur les 10 derniers matchs',
+    more: '+ 102 autres matchs aujourd\'hui',   // 107 matchs au total le 24/09 selon l'API
+    mention: 'Cotes relevées à 12h20 · fréquences sur 8 matchs',
   },
 };
