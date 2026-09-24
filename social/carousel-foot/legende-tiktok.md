@@ -21,8 +21,17 @@ Cotes, fréquences et notes sur 10 → tout est dans l'app, gratuit.
 18+ · Jouer comporte des risques : endettement, isolement, dépendance.
 Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).
 
-#pronos #pronosfoot #parissportifs #seriea #ligue1 #premierleague #laliga #football
+#pronos #pronosfoot #football #[competition] #[affiche]
 ```
+
+**5 hashtags maximum**, et pas `#parissportifs` : c'est le tag le plus
+surveillé de la catégorie. Le dosage qui marche : 2 larges (`#football`,
+`#foot`), 2 ciblés (`#pronos`, `#pronosfoot`), 1 d'actualité — un tag peu
+concurrentiel sur lequel la vidéo peut réellement se classer le jour même.
+
+Dans le corps de la légende, laisse les visuels porter les chiffres : ils
+affichent déjà les cotes. Moins le texte contient de vocabulaire de mise,
+moins le post donne de prise à la modération.
 
 ## Premier commentaire (à poster dans la foulée)
 
