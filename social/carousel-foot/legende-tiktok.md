@@ -18,11 +18,12 @@ Cotes, fréquences et notes sur 10 → tout est dans l'app, gratuit.
 
 📲 NinjaScores — App Store & Google Play
 
-18+ · Jouer comporte des risques : endettement, isolement, dépendance.
-Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).
-
 #pronos #pronosfoot #football #[competition] #[affiche]
 ```
+
+Pas de mention légale ici : le carrousel TikTok ne porte aucun lien
+affilié, il promeut l'app. La mention reste sur les posts Telegram, qui
+eux portent le lien partenaire.
 
 **5 hashtags maximum**, et pas `#parissportifs` : c'est le tag le plus
 surveillé de la catégorie. Le dosage qui marche : 2 larges (`#football`,
