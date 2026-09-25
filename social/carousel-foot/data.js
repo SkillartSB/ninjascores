@@ -9,7 +9,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'JEU 24.09',
+  date: 'VEN 25.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -21,75 +21,75 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Jeudi 24 septembre : trêve internationale. Première journée de
-     Ligue des Nations et qualifications CAN. Horaires et cotes Bet365
-     via /api/foot (relevées à 12h20). Fréquences calculées sur les
-     8 derniers matchs de chaque sélection, sans trou de calendrier.  */
+     Vendredi 25 septembre : 2e journée de Ligue des Nations et
+     qualifications CAN. Horaires et cotes Bet365 via /api/foot
+     (relevées à 12h35). Fréquences calculées sur les 8 derniers
+     matchs de chaque sélection, sans trou de calendrier.           */
   matches: [
     {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '20:45',
-      home: { name: 'Pays-Bas',  crest: 'assets/crests/flag-nl.svg', color: '#F36C21', round: true },
-      away: { name: 'Allemagne', crest: 'assets/crests/flag-de.svg', color: '#DD0000', round: true },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.44',
-      book: '',
-      freq: '86%',
-      note: 9,
-      sample: 'Sur 14 matchs des 2 sélections',
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '20:45',
-      home: { name: 'Norvège',  crest: 'assets/crests/flag-no.svg', color: '#00205B', round: true },
-      away: { name: 'Danemark', crest: 'assets/crests/flag-dk.svg', color: '#C60C30', round: true },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.57',
-      book: '',
-      freq: '86%',
-      note: 9,
-      sample: 'Sur 14 matchs des 2 sélections',
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '20:45',
-      home: { name: 'Kosovo',  crest: 'assets/crests/flag-xk.svg', color: '#244AA5', round: true },
-      away: { name: 'Irlande', crest: 'assets/crests/flag-ie.svg', color: '#169B62', round: true },
-      prono: ['Une équipe', 'finit à 0'],
-      cote: '1.80',
-      book: '',
-      freq: '67%',
-      note: 7,
-      sample: "Irlande : 3 buts encaissés en 7 matchs",
-    },
-    {
       league: { name: 'Qualif. CAN', country: 'Afrique',
                 badge: 'assets/leagues/can-qualif.svg' },
-      time: '21:00',
-      home: { name: "Côte d'Ivoire", crest: 'assets/crests/flag-ci.svg', color: '#FF8200', round: true },
-      away: { name: 'Ghana',         crest: 'assets/crests/flag-gh.svg', color: '#CE1126', round: true },
-      prono: ['Victoire', "Côte d'Ivoire"],
-      cote: '1.57',
-      book: '',
-      freq: '75%',
-      note: 8,
-      sample: 'Ghana : 1 victoire sur 8 matchs',
-    },
-    {
-      league: { name: 'Qualif. CAN', country: 'Afrique',
-                badge: 'assets/leagues/can-qualif.svg' },
-      time: '21:00',
-      home: { name: 'Cameroun', crest: 'assets/crests/flag-cm.svg', color: '#007A5E', round: true },
-      away: { name: 'Comores',  crest: 'assets/crests/flag-km.svg', color: '#3A75C4', round: true },
-      prono: ['Moins de', '2.5 buts'],
-      cote: '1.75',
+      time: '18:00',
+      home: { name: 'Nigeria',    crest: 'assets/crests/flag-ng.svg', color: '#008751', round: true },
+      away: { name: 'Madagascar', crest: 'assets/crests/flag-mg.svg', color: '#FC3D32', round: true },
+      prono: ['Plus de', '2.5 buts'],
+      cote: '1.73',
       book: '',
       freq: '77%',
       note: 8,
       sample: 'Sur 13 matchs des 2 sélections',
+    },
+    {
+      league: { name: 'Qualif. CAN', country: 'Afrique',
+                badge: 'assets/leagues/can-qualif.svg' },
+      time: '18:00',
+      home: { name: 'Malawi',  crest: 'assets/crests/flag-mw.svg', color: '#CE1126', round: true },
+      away: { name: 'S. Sud',  crest: 'assets/crests/flag-ss.svg', color: '#0F47AF', round: true },
+      prono: ['Moins de', '2.5 buts'],
+      cote: '1.57',
+      book: '',
+      freq: '79%',
+      note: 8,
+      sample: 'Malawi : 0 match à +2,5 buts sur 6',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Turquie', crest: 'assets/crests/flag-tr.svg', color: '#E30A17', round: true },
+      away: { name: 'France',  crest: 'assets/crests/flag-fr.svg', color: '#1E5BC6', round: true },
+      prono: ['Victoire', 'de la France'],
+      cote: '1.33',
+      book: '',
+      freq: '75%',
+      note: 7,
+      sample: 'France : 6 victoires sur 8',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Italie',   crest: 'assets/crests/flag-it.svg', color: '#1A62B3', round: true },
+      away: { name: 'Belgique', crest: 'assets/crests/flag-be.svg', color: '#FDDA24', round: true },
+      prono: ['Une équipe', 'finit à 0'],
+      cote: '2.25',
+      book: '',
+      freq: '57%',
+      note: 7,
+      sample: 'Italie : 5 clean sheets sur 7',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Suède',    crest: 'assets/crests/flag-se.svg', color: '#FECC02', round: true },
+      away: { name: 'Roumanie', crest: 'assets/crests/flag-ro.svg', color: '#002B7F', round: true },
+      prono: ['Les 2 équipes', 'marquent'],
+      cote: '1.73',
+      book: '',
+      freq: '75%',
+      note: 8,
+      sample: 'Suède : 0 clean sheet sur 8',
     },
   ],
 
@@ -102,7 +102,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 102 autres matchs aujourd\'hui',   // 107 matchs au total le 24/09 selon l'API
-    mention: 'Cotes relevées à 12h20 · fréquences sur 8 matchs',
+    more: '+ 247 autres matchs aujourd\'hui',   // 252 matchs au total le 25/09 selon l'API
+    mention: 'Cotes relevées à 12h35 · fréquences sur 8 matchs',
   },
 };
