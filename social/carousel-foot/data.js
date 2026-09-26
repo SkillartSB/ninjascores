@@ -106,6 +106,13 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
+    // Le canal Telegram : c'est LE lien de la bio, donc la destination
+    // reelle du « lien en bio ». On ne montre jamais l'URL (personne ne
+    // recopie une invite t.me/+xxxx), on renvoie vers la bio.
+    telegram: {
+      t1: 'Mes pronos en direct',
+      t2: 'Sur Telegram · lien en bio',
+    },
     more: '+ 1172 autres matchs aujourd\'hui',   // 1177 matchs au total le 26/09 selon l'API
     mention: 'Cotes relevées à 11h30 · fréquences sur 8 matchs',
   },

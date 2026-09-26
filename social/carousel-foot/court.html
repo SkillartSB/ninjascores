@@ -110,20 +110,38 @@
 .cta-band .t2{margin-top:9px;font:600 19px/1 'JBMono',monospace;letter-spacing:.18em;
   color:rgba(255,255,255,.82);text-transform:uppercase}
 
+.cta-band.tg{background:linear-gradient(135deg, #229ED9, #2AB6F0);
+  box-shadow:0 22px 56px rgba(20,110,170,.5), inset 0 1px 0 rgba(255,255,255,.28)}
+.cta-band.tg .ico{background:#fff;display:grid;place-items:center}
+.cta-band.tg .ico svg{width:52px;height:52px;fill:#229ED9}
+
 /* ══ SLIDE 3 — le CTA complet ══════════════════════════════════ */
 .fin{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
 .fin .big{font:900 150px/.96 'Archivo';font-stretch:118%;letter-spacing:-.04em;text-transform:uppercase;
   background:linear-gradient(180deg,#fff,#CFC0F2);-webkit-background-clip:text;background-clip:text;color:transparent}
 .fin .big em{display:block;font-style:normal;-webkit-text-fill-color:transparent;
   -webkit-text-stroke:2.5px rgba(255,255,255,.44);color:transparent;background:none}
-.fin .store{margin-top:64px;display:flex;flex-direction:column;gap:22px}
-.fin .btn{display:flex;align-items:center;gap:24px;padding:30px 36px;border-radius:26px;
+.fin .tg{margin-top:56px;display:flex;align-items:center;gap:26px;text-align:left;
+  padding:32px 36px;border-radius:28px;
+  background:linear-gradient(135deg, #229ED9, #2AB6F0);
+  box-shadow:0 26px 64px rgba(20,110,170,.52), inset 0 1px 0 rgba(255,255,255,.28)}
+.fin .tg .ico{width:88px;height:88px;border-radius:24px;flex:none;background:#fff;
+  display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.28)}
+.fin .tg .ico svg{width:58px;height:58px;fill:#229ED9}
+.fin .tg .t1{font:900 46px/1.04 'Archivo';font-stretch:106%;letter-spacing:-.015em}
+.fin .tg .t2{margin-top:10px;font:600 20px/1 'JBMono',monospace;letter-spacing:.16em;
+  color:rgba(255,255,255,.9);text-transform:uppercase}
+.fin .ou{margin-top:32px;font:600 19px/1 'JBMono',monospace;letter-spacing:.26em;
+  color:rgba(255,255,255,.36);text-transform:uppercase}
+
+.fin .store{margin-top:26px;display:flex;flex-direction:column;gap:18px}
+.fin .btn{display:flex;align-items:center;gap:24px;padding:24px 34px;border-radius:24px;
   background:#fff;color:#0A0714;text-align:left}
 .fin .btn .g{font:600 17px/1 'JBMono',monospace;letter-spacing:.2em;
   color:rgba(10,7,20,.55);text-transform:uppercase}
-.fin .btn .n{margin-top:9px;font:900 42px/1 'Archivo';font-stretch:104%;letter-spacing:-.015em}
+.fin .btn .n{margin-top:8px;font:900 36px/1 'Archivo';font-stretch:104%;letter-spacing:-.015em}
 .fin .btn svg{width:52px;height:52px;flex:none}
-.fin .claim{margin-top:44px;font:600 24px/1 'JBMono',monospace;letter-spacing:.2em;
+.fin .claim{margin-top:34px;font:600 24px/1 'JBMono',monospace;letter-spacing:.2em;
   color:rgba(255,255,255,.6);text-transform:uppercase}
 .fin .site{margin-top:22px;font:700 40px/1 'JBMono',monospace;letter-spacing:.02em;color:#fff}
 
@@ -147,6 +165,11 @@ FIT.push(['.hero .names', 96, 46], ['.picks .ttl', 132, 60], ['.fin .big', 150, 
 
 const M = CAROUSEL.matches, a = CAROUSEL.cta;
 const HERO = M[0];
+
+const tgLogo = () => `
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.78 18.65l.28-4.23
+    7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33
+    1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>`;
 
 const logo = () => `
   <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -234,11 +257,11 @@ function slidePicks() {
         <div class="ttl a-rise dodge" style="--d:.14s">5 pronos</div>
         <div class="sub a-rise dodge" style="--d:.2s">Ligue des Nations · ${CAROUSEL.date}</div>
         <div class="rows">${rows}</div>
-        <div class="cta-band a-rise dodge" style="--d:.78s">
-          <div class="ico">${logo()}</div>
+        <div class="cta-band tg a-rise dodge" style="--d:.78s">
+          <div class="ico">${tgLogo()}</div>
           <div>
-            <div class="t1">Tous les pronos dans l'app</div>
-            <div class="t2">${up(a.claim)} · Lien en bio</div>
+            <div class="t1">${a.telegram.t1}</div>
+            <div class="t2">${up(a.telegram.t2)}</div>
           </div>
         </div>
       </div>
@@ -257,7 +280,15 @@ function slideFin() {
     <div class="inner">
       ${head()}
       <div class="fin">
-        <div class="big a-rise" style="--d:.16s">${up(a.l1)}<em>${up(a.l2a)} ${up(a.l2b)}</em></div>
+        <div class="big a-rise" style="--d:.16s">Rejoins<em>la team</em></div>
+        <div class="tg a-rise dodge" style="--d:.26s">
+          <div class="ico">${tgLogo()}</div>
+          <div>
+            <div class="t1">${a.telegram.t1}</div>
+            <div class="t2">${up(a.telegram.t2)}</div>
+          </div>
+        </div>
+        <div class="ou a-rise dodge" style="--d:.3s">— ou l'application —</div>
         <div class="store dodge">
           <div class="btn a-rise" style="--d:.34s">
             <svg viewBox="0 0 24 24" fill="#0A0714"><path d="M16.365 1.43c0 1.14-.42 2.2-1.12 3.01-.85.98-2.24 1.74-3.38 1.65-.13-1.1.42-2.25 1.1-3 .77-.86 2.14-1.5 3.4-1.66zM20.8 17.02c-.6 1.37-.89 1.98-1.66 3.19-1.08 1.69-2.6 3.8-4.48 3.81-1.67.02-2.1-1.09-4.37-1.08-2.27.01-2.74 1.1-4.42 1.08-1.88-.01-3.32-1.91-4.4-3.6C-1.5 15.8-1.8 9.3.9 6.07c1.2-1.45 3.1-2.37 4.9-2.37 1.83 0 2.98 1.1 4.5 1.1 1.47 0 2.36-1.1 4.48-1.1 1.6 0 3.3.87 4.5 2.38-3.96 2.17-3.32 7.82.52 9.94z"/></svg>
