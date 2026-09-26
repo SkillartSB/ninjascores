@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>NinjaScores — Carrousel court TikTok</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Format COURT — 3 slides, 1080×1920.
+
+   Pourquoi il existe : sur le carrousel 7 slides, les statistiques
+   TikTok donnaient 1,4 photo vue sur 7. Les slides 3 à 7 n'étaient
+   jamais atteintes — y compris le CTA. Ici :
+
+     1. une seule affiche plein cadre + la stat choc  → arrête le pouce
+     2. les 5 pronos + le CTA                          → la slide utile
+     3. le CTA complet                                 → bonus
+
+   Tout ce qui compte est donc vu à la slide 2, pas à la 7.
+   Marges TikTok : 180 px en haut, 250 px en bas, 168 px à droite.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{--H:1920px}
+
+.slide .inner{padding:150px 72px 210px}
+.dodge{margin-right:150px}          /* évite la colonne de boutons TikTok */
+
+/* ══ SLIDE 1 — l'affiche ═══════════════════════════════════════ */
+.hero{flex:1;display:flex;flex-direction:column}
+
+.hero .comp{margin-top:46px;display:flex;align-items:center;gap:22px}
+.hero .comp .badge{width:76px;height:76px;border-radius:20px;flex:none;display:grid;place-items:center;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.5)}
+.hero .comp .badge img{width:50px;height:50px;object-fit:contain}
+.hero .comp .t1{font:900 34px/1.05 'Archivo';font-stretch:108%;letter-spacing:.05em;text-transform:uppercase}
+.hero .comp .t2{margin-top:9px;font:600 20px/1 'JBMono',monospace;letter-spacing:.2em;
+  color:var(--amber);text-transform:uppercase}
+
+/* Le duel : deux pastilles géantes */
+.hero .duel{margin-top:64px;display:flex;align-items:center;justify-content:center;gap:34px}
+.hero .disc{position:relative;width:340px;height:340px;display:grid;place-items:center}
+.hero .disc .halo{position:absolute;inset:-52px;border-radius:50%;filter:blur(44px);opacity:.72;
+  background:radial-gradient(circle, color-mix(in srgb,var(--c) 66%,transparent) 0%, transparent 62%)}
+.hero .disc img{position:relative;width:300px;height:300px;border-radius:50%;object-fit:cover;
+  box-shadow:0 22px 44px rgba(0,0,0,.7), 0 0 0 4px rgba(255,255,255,.16) inset}
+.hero .vs{font:900 44px/1 'Archivo';font-stretch:112%;letter-spacing:.06em;
+  color:rgba(255,255,255,.62);flex:none}
+
+.hero .names{margin-top:44px;text-align:center;
+  font:900 96px/1.02 'Archivo';font-stretch:112%;letter-spacing:-.02em;text-transform:uppercase;
+  white-space:nowrap;width:max-content;margin-left:auto;margin-right:auto}
+.hero .names i{font-style:normal;color:rgba(255,255,255,.34);margin:0 .12em}
+
+/* La stat choc */
+.hero .hook{margin-top:86px;padding:44px 46px 46px;border-radius:30px;
+  background:linear-gradient(135deg, rgba(124,58,237,.9), rgba(168,85,247,.72));
+  box-shadow:0 26px 70px rgba(80,20,160,.5), inset 0 1px 0 rgba(255,255,255,.2)}
+.hero .hook .k{font:600 21px/1 'JBMono',monospace;letter-spacing:.24em;
+  color:rgba(255,255,255,.72);text-transform:uppercase}
+.hero .hook .l1{margin-top:22px;font:800 52px/1.1 'Archivo';font-stretch:104%;letter-spacing:-.01em}
+.hero .hook .l2{margin-top:4px;font:900 104px/1 'Archivo';font-stretch:116%;letter-spacing:-.03em;
+  color:var(--amber)}
+.hero .hook .l3{margin-top:12px;font:700 42px/1.12 'Archivo';font-stretch:102%;
+  color:rgba(255,255,255,.9)}
+
+.hero .go{margin-top:auto;padding-top:40px;display:flex;align-items:center;gap:20px;
+  font:900 50px/1 'Archivo';font-stretch:108%;letter-spacing:.01em;text-transform:uppercase}
+.hero .go .arrow{width:74px;height:3px;background:#fff;position:relative}
+.hero .go .arrow::after{content:'';position:absolute;right:-1px;top:-9px;width:20px;height:20px;
+  border-top:3px solid #fff;border-right:3px solid #fff;transform:rotate(45deg)}
+
+/* ══ SLIDE 2 — les 5 pronos ════════════════════════════════════ */
+.picks{flex:1;display:flex;flex-direction:column}
+.picks .ttl{margin-top:46px;font:900 132px/1 'Archivo';font-stretch:116%;letter-spacing:-.03em;
+  text-transform:uppercase;white-space:nowrap;width:max-content;
+  background:linear-gradient(180deg,#fff,#D9CEF7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.picks .sub{margin-top:16px;font:600 22px/1 'JBMono',monospace;letter-spacing:.22em;
+  color:rgba(255,255,255,.5);text-transform:uppercase}
+
+.rows{margin-top:52px;display:flex;flex-direction:column;gap:20px}
+.row{position:relative;display:flex;align-items:center;gap:26px;padding:26px 28px 26px 32px;
+  border-radius:24px;background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.1);overflow:hidden}
+.row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c)}
+.row .duo{display:flex;flex:none;width:118px}
+.row .duo img{width:74px;height:74px;border-radius:50%;object-fit:cover;
+  box-shadow:0 0 0 2px rgba(255,255,255,.2) inset}
+.row .duo img:last-child{margin-left:-30px}
+.row .mid{flex:1;min-width:0}
+.row .aff{font:900 40px/1 'Archivo';font-stretch:104%;letter-spacing:-.01em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row .aff span{display:block;width:max-content;white-space:nowrap}
+.row .prn{margin-top:12px;font:700 30px/1 'Archivo';font-stretch:100%;color:var(--amber-hi)}
+.row .odd{flex:none;text-align:center;padding:16px 24px 14px;border-radius:18px;
+  background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.34)}
+.row .odd b{display:block;font:900 46px/1 'Archivo';font-stretch:112%;letter-spacing:-.02em;color:var(--amber)}
+.row .odd i{display:block;margin-top:5px;font:600 14px/1 'JBMono',monospace;
+  letter-spacing:.2em;color:rgba(255,255,255,.44);font-style:normal;text-transform:uppercase}
+
+/* Le CTA vit ici, slide 2 — pas en slide 7 */
+.cta-band{margin-top:auto;display:flex;align-items:center;gap:26px;padding:30px 34px;border-radius:26px;
+  background:linear-gradient(135deg, rgba(124,58,237,.95), rgba(168,85,247,.78));
+  box-shadow:0 22px 56px rgba(80,20,160,.46), inset 0 1px 0 rgba(255,255,255,.22)}
+.cta-band .ico{width:76px;height:76px;border-radius:20px;flex:none;overflow:hidden;
+  box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.cta-band .ico svg{width:100%;height:100%;display:block}
+.cta-band .t1{font:900 40px/1.05 'Archivo';font-stretch:106%;letter-spacing:-.01em}
+.cta-band .t2{margin-top:9px;font:600 19px/1 'JBMono',monospace;letter-spacing:.18em;
+  color:rgba(255,255,255,.82);text-transform:uppercase}
+
+/* ══ SLIDE 3 — le CTA complet ══════════════════════════════════ */
+.fin{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.fin .big{font:900 150px/.96 'Archivo';font-stretch:118%;letter-spacing:-.04em;text-transform:uppercase;
+  background:linear-gradient(180deg,#fff,#CFC0F2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fin .big em{display:block;font-style:normal;-webkit-text-fill-color:transparent;
+  -webkit-text-stroke:2.5px rgba(255,255,255,.44);color:transparent;background:none}
+.fin .store{margin-top:64px;display:flex;flex-direction:column;gap:22px}
+.fin .btn{display:flex;align-items:center;gap:24px;padding:30px 36px;border-radius:26px;
+  background:#fff;color:#0A0714;text-align:left}
+.fin .btn .g{font:600 17px/1 'JBMono',monospace;letter-spacing:.2em;
+  color:rgba(10,7,20,.55);text-transform:uppercase}
+.fin .btn .n{margin-top:9px;font:900 42px/1 'Archivo';font-stretch:104%;letter-spacing:-.015em}
+.fin .btn svg{width:52px;height:52px;flex:none}
+.fin .claim{margin-top:44px;font:600 24px/1 'JBMono',monospace;letter-spacing:.2em;
+  color:rgba(255,255,255,.6);text-transform:uppercase}
+.fin .site{margin-top:22px;font:700 40px/1 'JBMono',monospace;letter-spacing:.02em;color:#fff}
+
+.mention{margin-top:34px;font:500 19px/1.4 'JBMono',monospace;letter-spacing:.08em;
+  color:rgba(255,255,255,.34);text-transform:uppercase;text-align:center}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="bar">
+  <button id="btn-play">▶ Rejouer l'anim</button>
+  <button id="btn-safe">Zones TikTok</button>
+  <button id="btn-zoom">Zoom 100%</button>
+</div>
+
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script>
+FIT.push(['.hero .names', 96, 46], ['.picks .ttl', 132, 60], ['.fin .big', 150, 70],
+         ['.row .aff span', 40, 22]);
+
+const M = CAROUSEL.matches, a = CAROUSEL.cta;
+const HERO = M[0];
+
+const logo = () => `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" rx="38" fill="#7c2fbe"/>
+    <ellipse cx="68" cy="28" rx="8" ry="14" fill="#fff" transform="rotate(-40 68 28)"/>
+    <ellipse cx="56" cy="42" rx="8" ry="13" fill="#fff" transform="rotate(15 56 42)"/>
+    <circle cx="70" cy="38" r="8" fill="#fff"/>
+    <circle cx="118" cy="80" r="62" fill="#fff"/>
+    <path d="M56 82 Q118 70 180 82 Q180 100 118 98 Q56 100 56 82 Z" fill="#7c2fbe"/>
+    <path d="M72 85 Q85 76 98 83 Q85 90 72 85 Z" fill="#fff"/>
+    <path d="M110 83 Q123 75 136 82 Q123 89 110 83 Z" fill="#fff"/>
+  </svg>`;
+
+/* ── Slide 1 : une seule affiche, plein cadre ─────────────────── */
+function slideHero() {
+  const side = t => `
+    <div class="disc a-pop" style="--c:${t.color};--d:.3s">
+      <div class="halo"></div>
+      <img src="${t.crest}" alt="${t.name}">
+    </div>`;
+
+  return `
+  <div class="slide">
+    ${bg(HERO.home.color, HERO.away.color)}
+    <div class="sweep"></div>
+    <div class="inner">
+      ${head()}
+      <div class="hero">
+        <div class="comp a-rise dodge" style="--d:.18s">
+          <div class="badge"><img src="${HERO.league.badge}" alt=""></div>
+          <div>
+            <div class="t1">${up(HERO.league.name)}</div>
+            <div class="t2">Ce soir · ${HERO.time}</div>
+          </div>
+        </div>
+
+        <div class="duel">
+          ${side(HERO.home)}
+          <div class="vs a-pop" style="--d:.42s">VS</div>
+          ${side(HERO.away)}
+        </div>
+
+        <div class="names a-rise" style="--d:.5s">
+          ${up(HERO.home.name)}<i>/</i>${up(HERO.away.name)}
+        </div>
+
+        <div class="hook a-rise dodge" style="--d:.62s">
+          <div class="k">◆ Le chiffre du soir</div>
+          <div class="l1">${HERO.hook[0]}</div>
+          <div class="l2">${HERO.hook[1]}</div>
+          <div class="l3">${HERO.hook[2]}</div>
+        </div>
+
+        <div class="go a-rise dodge" style="--d:.74s">
+          Mes 5 pronos <span class="arrow"></span>
+        </div>
+      </div>
+    </div>
+    ${safeZones()}
+    <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
+  </div>`;
+}
+
+/* ── Slide 2 : les 5 pronos + le CTA ──────────────────────────── */
+function slidePicks() {
+  const rows = M.map((m, i) => `
+    <div class="row a-wipe" style="--c:${m.home.color};--d:${.3 + i * .08}s">
+      <div class="duo">
+        <img src="${m.home.crest}" alt=""><img src="${m.away.crest}" alt="">
+      </div>
+      <div class="mid">
+        <div class="aff"><span>${up(m.home.name)} / ${up(m.away.name)}</span></div>
+        <div class="prn">◆ ${m.prono.join(' ')}</div>
+      </div>
+      <div class="odd"><b>${m.cote}</b><i>cote</i></div>
+    </div>`).join('');
+
+  return `
+  <div class="slide">
+    ${bg('#7C3AED', '#A855F7')}
+    <div class="sweep"></div>
+    <div class="inner">
+      ${head()}
+      <div class="picks">
+        <div class="ttl a-rise dodge" style="--d:.14s">5 pronos</div>
+        <div class="sub a-rise dodge" style="--d:.2s">Ligue des Nations · ${CAROUSEL.date}</div>
+        <div class="rows">${rows}</div>
+        <div class="cta-band a-rise dodge" style="--d:.78s">
+          <div class="ico">${logo()}</div>
+          <div>
+            <div class="t1">Tous les pronos dans l'app</div>
+            <div class="t2">${up(a.claim)} · Lien en bio</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${safeZones()}
+    <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
+  </div>`;
+}
+
+/* ── Slide 3 : le CTA complet ─────────────────────────────────── */
+function slideFin() {
+  return `
+  <div class="slide">
+    ${bg('#7C3AED', '#6D28D9')}
+    <div class="sweep"></div>
+    <div class="inner">
+      ${head()}
+      <div class="fin">
+        <div class="big a-rise" style="--d:.16s">${up(a.l1)}<em>${up(a.l2a)} ${up(a.l2b)}</em></div>
+        <div class="store dodge">
+          <div class="btn a-rise" style="--d:.34s">
+            <svg viewBox="0 0 24 24" fill="#0A0714"><path d="M16.365 1.43c0 1.14-.42 2.2-1.12 3.01-.85.98-2.24 1.74-3.38 1.65-.13-1.1.42-2.25 1.1-3 .77-.86 2.14-1.5 3.4-1.66zM20.8 17.02c-.6 1.37-.89 1.98-1.66 3.19-1.08 1.69-2.6 3.8-4.48 3.81-1.67.02-2.1-1.09-4.37-1.08-2.27.01-2.74 1.1-4.42 1.08-1.88-.01-3.32-1.91-4.4-3.6C-1.5 15.8-1.8 9.3.9 6.07c1.2-1.45 3.1-2.37 4.9-2.37 1.83 0 2.98 1.1 4.5 1.1 1.47 0 2.36-1.1 4.48-1.1 1.6 0 3.3.87 4.5 2.38-3.96 2.17-3.32 7.82.52 9.94z"/></svg>
+            <div><div class="g">Télécharger sur</div><div class="n">App Store</div></div>
+          </div>
+          <div class="btn a-rise" style="--d:.44s">
+            <svg viewBox="0 0 24 24"><path fill="#00D9FF" d="M3.6 1.8 13.1 11.3 3.6 20.8c-.4-.3-.6-.8-.6-1.4V3.2c0-.6.2-1.1.6-1.4z"/><path fill="#FFD400" d="m17.6 7.9 2.8 1.6c1 .6 1 1.4 0 2l-2.8 1.6-3.1-3.1 3.1-2.1z"/><path fill="#FF3B3B" d="M13.1 11.3 3.6 1.8c.5-.4 1.2-.4 1.9 0l9.1 5.1-1.5 4.4z"/><path fill="#00E676" d="m13.1 11.3 1.5 4.4-9.1 5.1c-.7.4-1.4.4-1.9 0l9.5-9.5z"/></svg>
+            <div><div class="g">Disponible sur</div><div class="n">Google Play</div></div>
+          </div>
+        </div>
+        <div class="claim a-rise dodge" style="--d:.56s">● ${up(a.claim)}</div>
+        <div class="site a-rise dodge" style="--d:.62s">${a.site}</div>
+        <div class="mention a-rise dodge" style="--d:.7s">${up(a.mention)}</div>
+      </div>
+    </div>
+    ${safeZones()}
+    <div class="vignette"></div><div class="scan"></div><div class="grain"></div>
+  </div>`;
+}
+
+mount({
+  slides: [slideHero(), slidePicks(), slideFin()],
+  label: (i, n) => `Format court · ${i + 1}/${n} · 1080×1920`,
+  height: 1920,
+});
+</script>
+</body>
+</html>

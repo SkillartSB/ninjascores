@@ -6,10 +6,13 @@
        plate:'light' → écusson très sombre : on le pose sur un disque blanc
        light: true   → logo de ligue très sombre : badge sur fond blanc
        round: true   → drapeau de sélection : recadré en pastille ronde
+       hook          → la phrase choc du 1er match, utilisée par le format
+                       court (court.html) comme couverture. Une seule idée,
+                       lisible en miniature dans le fil.
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'VEN 25.09',
+  date: 'SAM 26.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -21,75 +24,76 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Vendredi 25 septembre : 2e journée de Ligue des Nations et
-     qualifications CAN. Horaires et cotes Bet365 via /api/foot
-     (relevées à 12h35). Fréquences calculées sur les 8 derniers
-     matchs de chaque sélection, sans trou de calendrier.           */
+     Samedi 26 septembre : 3e journée de Ligue des Nations. Horaires
+     et cotes Bet365 via /api/foot (relevées à 11h30). Fréquences sur
+     les 8 derniers matchs de chaque sélection, sans trou de calendrier.
+     Le 1er match sert de couverture au format court.                */
   matches: [
     {
-      league: { name: 'Qualif. CAN', country: 'Afrique',
-                badge: 'assets/leagues/can-qualif.svg' },
-      time: '18:00',
-      home: { name: 'Nigeria',    crest: 'assets/crests/flag-ng.svg', color: '#008751', round: true },
-      away: { name: 'Madagascar', crest: 'assets/crests/flag-mg.svg', color: '#FC3D32', round: true },
-      prono: ['Plus de', '2.5 buts'],
-      cote: '1.73',
-      book: '',
-      freq: '77%',
-      note: 8,
-      sample: 'Sur 13 matchs des 2 sélections',
-    },
-    {
-      league: { name: 'Qualif. CAN', country: 'Afrique',
-                badge: 'assets/leagues/can-qualif.svg' },
-      time: '18:00',
-      home: { name: 'Malawi',  crest: 'assets/crests/flag-mw.svg', color: '#CE1126', round: true },
-      away: { name: 'S. Sud',  crest: 'assets/crests/flag-ss.svg', color: '#0F47AF', round: true },
-      prono: ['Moins de', '2.5 buts'],
-      cote: '1.57',
-      book: '',
-      freq: '79%',
-      note: 8,
-      sample: 'Malawi : 0 match à +2,5 buts sur 6',
-    },
-    {
       league: { name: 'Ligue des Nations', country: 'Europe',
                 badge: 'assets/leagues/nations-league.svg' },
       time: '20:45',
-      home: { name: 'Turquie', crest: 'assets/crests/flag-tr.svg', color: '#E30A17', round: true },
-      away: { name: 'France',  crest: 'assets/crests/flag-fr.svg', color: '#1E5BC6', round: true },
-      prono: ['Victoire', 'de la France'],
-      cote: '1.33',
-      book: '',
-      freq: '75%',
-      note: 7,
-      sample: 'France : 6 victoires sur 8',
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '20:45',
-      home: { name: 'Italie',   crest: 'assets/crests/flag-it.svg', color: '#1A62B3', round: true },
-      away: { name: 'Belgique', crest: 'assets/crests/flag-be.svg', color: '#FDDA24', round: true },
+      home: { name: 'Angleterre', crest: 'assets/crests/flag-gb-eng.svg', color: '#C8102E', round: true },
+      away: { name: 'Espagne',    crest: 'assets/crests/flag-es.svg',     color: '#FFC400', round: true },
       prono: ['Une équipe', 'finit à 0'],
-      cote: '2.25',
+      cote: '2.20',
       book: '',
       freq: '57%',
       note: 7,
-      sample: 'Italie : 5 clean sheets sur 7',
+      sample: 'Espagne : 1 but encaissé en 7 matchs',
+      hook: ["L'Espagne a encaissé", '1 SEUL BUT', 'sur ses 7 derniers matchs'],
     },
     {
       league: { name: 'Ligue des Nations', country: 'Europe',
                 badge: 'assets/leagues/nations-league.svg' },
       time: '20:45',
-      home: { name: 'Suède',    crest: 'assets/crests/flag-se.svg', color: '#FECC02', round: true },
-      away: { name: 'Roumanie', crest: 'assets/crests/flag-ro.svg', color: '#002B7F', round: true },
-      prono: ['Les 2 équipes', 'marquent'],
-      cote: '1.73',
+      home: { name: 'Tchéquie', crest: 'assets/crests/flag-cz.svg', color: '#11457E', round: true },
+      away: { name: 'Croatie',  crest: 'assets/crests/flag-hr.svg', color: '#D10000', round: true },
+      prono: ['Plus de', '2.5 buts'],
+      cote: '1.85',
+      book: '',
+      freq: '79%',
+      note: 9,
+      sample: 'Sur 14 matchs des 2 sélections',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '18:00',
+      home: { name: 'Bulgarie',   crest: 'assets/crests/flag-bg.svg', color: '#00966E', round: true },
+      away: { name: 'Luxembourg', crest: 'assets/crests/flag-lu.svg', color: '#00A1DE', round: true },
+      prono: ['Une équipe', 'finit à 0'],
+      cote: '1.67',
       book: '',
       freq: '75%',
       note: 8,
-      sample: 'Suède : 0 clean sheet sur 8',
+      sample: 'Luxembourg : 0 match sur 8 avec 2 buteurs',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Slovaquie', crest: 'assets/crests/flag-sk.svg', color: '#0B4EA2', round: true },
+      away: { name: 'Moldavie',  crest: 'assets/crests/flag-md.svg', color: '#FFD200', round: true },
+      prono: ['Les 2 équipes', 'marquent'],
+      cote: '2.50',
+      book: '',
+      freq: '56%',
+      note: 7,
+      sample: 'Moldavie : 0 clean sheet sur 8 matchs',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '18:00',
+      home: { name: 'Féroé',      crest: 'assets/crests/flag-fo.svg', color: '#0065BD', round: true },
+      away: { name: 'Kazakhstan', crest: 'assets/crests/flag-kz.svg', color: '#FEC50C', round: true },
+      prono: ['Moins de', '2.5 buts'],
+      cote: '1.60',
+      book: '',
+      freq: '69%',
+      note: 7,
+      sample: 'Kazakhstan : 1 match à +2,5 buts sur 7',
     },
   ],
 
@@ -102,7 +106,7 @@ const CAROUSEL = {
     search: 'NinjaScores : Scores en direct',
     claim: 'Gratuit · sans abonnement',
     site: 'ninjascores.com',
-    more: '+ 247 autres matchs aujourd\'hui',   // 252 matchs au total le 25/09 selon l'API
-    mention: 'Cotes relevées à 12h35 · fréquences sur 8 matchs',
+    more: '+ 1172 autres matchs aujourd\'hui',   // 1177 matchs au total le 26/09 selon l'API
+    mention: 'Cotes relevées à 11h30 · fréquences sur 8 matchs',
   },
 };

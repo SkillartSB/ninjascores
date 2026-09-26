@@ -5,6 +5,7 @@
  *   node social/carousel-foot/export.mjs ig       → carrousel 1080×1350 (Instagram)
  *   node social/carousel-foot/export.mjs 9x16     → carrousel 1080×1920 (TikTok)
  *   node social/carousel-foot/export.mjs story    → la story unique 1080×1920
+ *   node social/carousel-foot/export.mjs court    → le carrousel court 3 slides
  *
  * Sortie : social/carousel-foot/out/<cible>/01.png …
  */
@@ -18,6 +19,7 @@ const CIBLES = {
   ig:    { page: 'index.html', height: 1350, query: 'format=ig',    dir: 'carrousel-4x5'  },
   '9x16':{ page: 'index.html', height: 1920, query: 'format=story', dir: 'carrousel-9x16' },
   story: { page: 'story.html', height: 1920, query: '',             dir: 'story'          },
+  court: { page: 'court.html', height: 1920, query: '',             dir: 'carrousel-court'},
 };
 
 const arg = (process.argv[2] || 'tout').toLowerCase();
