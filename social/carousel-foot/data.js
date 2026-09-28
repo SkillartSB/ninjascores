@@ -12,7 +12,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 const CAROUSEL = {
 
-  date: 'DIM 27.09',
+  date: 'LUN 28.09',
 
   /* ── Slide 1 ────────────────────────────────────────────────── */
   cover: {
@@ -24,78 +24,80 @@ const CAROUSEL = {
   },
 
   /* ── Slides 2 → 6 ───────────────────────────────────────────────
-     Dimanche 27 septembre : 2e journee de Ligue des Nations. Horaires
-     et cotes Bet365 via /api/foot (relevees a 13h20). Frequences sur
-     les 7 a 8 derniers matchs de chaque selection, sans trou de
-     calendrier. Les 5 retenus sortent du scan complet du slate
-     (scan.mjs) : 611 matchs du creneau, 655 lignes de pari classees
-     par edge. Le 1er match sert de couverture au format court.       */
+     Lundi 28 septembre : 3e journee de Ligue des Nations. Horaires et
+     cotes Bet365 via /api/foot (relevees a 10h40). Frequences sur les
+     7 a 8 derniers matchs de chaque selection, sans trou de calendrier.
+     Les 5 retenus sortent du scan complet du slate (scan.mjs) : 104
+     matchs du creneau, 149 lignes de pari classees par edge — toutes
+     les meilleures sont en Ligue des Nations ce soir. Le 1er match sert
+     de couverture au format court : Belgique - France, l'affiche qui
+     parle le plus a une audience francaise.                          */
   matches: [
     {
       league: { name: 'Ligue des Nations', country: 'Europe',
                 badge: 'assets/leagues/nations-league.svg' },
-      time: '18:00',
-      home: { name: 'Serbie',   crest: 'assets/crests/flag-rs.svg', color: '#C6363C', round: true },
-      away: { name: 'Pays-Bas', crest: 'assets/crests/flag-nl.svg', color: '#FF6B00', round: true },
-      prono: ['Les 2 équipes', 'marquent'],
-      cote: '1.73',
-      book: '',
-      freq: '71%',
-      note: 8,
-      sample: 'Pays-Bas : 6 matchs sur 7 avec 2 buteurs',
-      hook: ['Les Pays-Bas :', '6 MATCHS SUR 7', 'avec les 2 équipes qui marquent'],
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '18:00',
-      home: { name: 'Danemark',       crest: 'assets/crests/flag-dk.svg',     color: '#C8102E', round: true },
-      away: { name: 'Pays de Galles', crest: 'assets/crests/flag-gb-wls.svg', color: '#00AD48', round: true },
-      prono: ['Les 2 équipes', 'marquent'],
-      cote: '1.83',
-      book: '',
-      freq: '71%',
-      note: 8,
-      sample: 'Sur 14 matchs des 2 sélections',
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '18:00',
-      home: { name: 'Autriche', crest: 'assets/crests/flag-at.svg', color: '#ED2939', round: true },
-      away: { name: 'Kosovo',   crest: 'assets/crests/flag-xk.svg', color: '#244AA5', round: true },
+      time: '20:45',
+      home: { name: 'Belgique', crest: 'assets/crests/flag-be.svg', color: '#FDDA24', round: true },
+      away: { name: 'France',   crest: 'assets/crests/flag-fr.svg', color: '#002395', round: true },
       prono: ['Une équipe', 'finit à 0'],
-      cote: '1.83',
+      cote: '2.50',
       book: '',
       freq: '60%',
       note: 7,
-      sample: 'Kosovo : 5 matchs sur 8 avec un 0',
+      sample: 'France : 6 matchs sur 8 avec une équipe à 0',
+      hook: ['La France :', '6 MATCHS SUR 8', 'avec une équipe qui finit à 0'],
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '18:00',
+      home: { name: 'Arménie',    crest: 'assets/crests/flag-am.svg', color: '#D90012', round: true },
+      away: { name: 'Monténégro', crest: 'assets/crests/flag-me.svg', color: '#C40308', round: true },
+      prono: ['Les 2 équipes', 'marquent'],
+      cote: '1.91',
+      book: '',
+      freq: '67%',
+      note: 7,
+      sample: 'Monténégro : 6 matchs sur 8 avec 2 buteurs',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '18:00',
+      home: { name: 'Lettonie', crest: 'assets/crests/flag-lv.svg', color: '#9E3039', round: true },
+      away: { name: 'Chypre',   crest: 'assets/crests/flag-cy.svg', color: '#D57800', round: true },
+      prono: ['Une équipe', 'finit à 0'],
+      cote: '1.73',
+      book: '',
+      freq: '67%',
+      note: 7,
+      sample: 'Lettonie : 6 matchs sur 7 avec une équipe à 0',
     },
     {
       league: { name: 'Ligue des Nations', country: 'Europe',
                 badge: 'assets/leagues/nations-league.svg' },
       time: '20:45',
-      home: { name: 'Allemagne', crest: 'assets/crests/flag-de.svg', color: '#FFCC00', round: true },
-      away: { name: 'Grèce',     crest: 'assets/crests/flag-gr.svg', color: '#0D5EAF', round: true },
+      home: { name: 'Turquie', crest: 'assets/crests/flag-tr.svg', color: '#E30A17', round: true },
+      away: { name: 'Italie',  crest: 'assets/crests/flag-it.svg', color: '#008C45', round: true },
+      prono: ['Une équipe', 'finit à 0'],
+      cote: '2.38',
+      book: '',
+      freq: '80%',
+      note: 9,
+      sample: 'Sur 15 matchs des 2 sélections',
+    },
+    {
+      league: { name: 'Ligue des Nations', country: 'Europe',
+                badge: 'assets/leagues/nations-league.svg' },
+      time: '20:45',
+      home: { name: 'Suède',   crest: 'assets/crests/flag-se.svg', color: '#FECC00', round: true },
+      away: { name: 'Pologne', crest: 'assets/crests/flag-pl.svg', color: '#DC143C', round: true },
       prono: ['Les 2 équipes', 'marquent'],
       cote: '1.57',
       book: '',
-      freq: '67%',
-      note: 6,
-      sample: 'Allemagne : 6 matchs sur 7 avec 2 buteurs',
-    },
-    {
-      league: { name: 'Ligue des Nations', country: 'Europe',
-                badge: 'assets/leagues/nations-league.svg' },
-      time: '20:45',
-      home: { name: 'Israël',  crest: 'assets/crests/flag-il.svg', color: '#0038B8', round: true },
-      away: { name: 'Irlande', crest: 'assets/crests/flag-ie.svg', color: '#169B62', round: true },
-      prono: ['Une équipe', 'finit à 0'],
-      cote: '1.91',
-      book: '',
-      freq: '60%',
-      note: 7,
-      sample: 'Irlande : 5 matchs sur 7 avec un 0',
+      freq: '75%',
+      note: 8,
+      sample: 'Suède : 7 matchs sur 8 avec 2 buteurs',
     },
   ],
 
@@ -115,7 +117,7 @@ const CAROUSEL = {
       t1: 'Mes pronos en direct',
       t2: 'Sur Telegram · lien en bio',
     },
-    more: '+ 887 autres matchs aujourd\'hui',   // 892 matchs au total le 27/09 selon l'API
-    mention: 'Cotes relevées à 13h20 · fréquences sur 7 à 8 matchs',
+    more: '+ 90 autres matchs aujourd\'hui',   // 95 matchs au total le 28/09 selon l'API
+    mention: 'Cotes relevées à 10h40 · fréquences sur 7 à 8 matchs',
   },
 };
