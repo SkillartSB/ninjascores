@@ -36,9 +36,22 @@ const BOOKMAKER = 8;
 const BET_OU = 5;      // Goals Over/Under
 const BET_BTTS = 8;    // Both Teams Score
 
-// Fourchette de cotes par defaut. En dessous de 1,45 le gain ne paye pas le
-// risque pour un canal ; au dessus de 3,30 on vend du hasard.
-const COTE_MIN = 1.45;
+// Fourchette de cotes par defaut.
+//
+// PLANCHER A 1,40 (regle de l'utilisateur, 18/10) : en dessous, le gain
+// affiche ne justifie pas le post. Le 18/10 au soir PMU proposait « Lyon ou
+// nul » a 1,18 — 85 % implicites pour une ligne estimee a 80 % : 36 € de gain
+// contre 200 € de risque, et perdant sur la duree.
+//
+// LE PLANCHER SE FRANCHIT EN PARI SIMPLE, PAS EN COMBINE. La marge du
+// bookmaker se multiplie a chaque jambe : deux lignes a 1,18 donnent 1,39,
+// mais 0,80 x 0,80 = 64 % de chances reelles contre 72 % implicites — on paie
+// 11 % de marge au lieu de 5 %. Monter la cote en empilant des jambes revient
+// a perdre plus vite. Si aucune ligne simple n'atteint le plancher avec un
+// ecart positif, la bonne reponse est « pas de prono ce soir ».
+//
+// Au dessus de 3,30 on vend du hasard.
+const COTE_MIN = 1.40;
 const COTE_MAX = 3.30;
 
 // Nombre minimum de matchs observes (domicile + exterieur cumules) sous
